@@ -1,0 +1,44 @@
+{
+  "name": "@ripple/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Host-independent knowledge relations and one-hop exploration kernel",
+  "exports": {
+    ".": {
+      "types": "./dist/packages/sdk/index.d.ts",
+      "import": "./dist/packages/sdk/index.js"
+    },
+    "./core": {
+      "types": "./dist/packages/core/index.d.ts",
+      "import": "./dist/packages/core/index.js"
+    },
+    "./node": {
+      "types": "./dist/packages/adapters/node/index.d.ts",
+      "import": "./dist/packages/adapters/node/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "cli": "node --import tsx apps/playground-cli/main.ts",
+    "validate:vault": "node --import tsx scripts/validate-vault.ts",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
