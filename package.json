@@ -16,6 +16,10 @@
     "./node": {
       "types": "./dist/packages/adapters/node/index.d.ts",
       "import": "./dist/packages/adapters/node/index.js"
+    },
+    "./embedding-http": {
+      "types": "./dist/packages/adapters/embedding-http/index.d.ts",
+      "import": "./dist/packages/adapters/embedding-http/index.js"
     }
   },
   "scripts": {
@@ -24,6 +28,10 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "cli": "node --import tsx apps/playground-cli/main.ts",
     "validate:vault": "node --import tsx scripts/validate-vault.ts",
+    "validate:embedding": "node --import tsx scripts/validate-embedding.ts",
+    "wemm:doctor": "node --import tsx scripts/wemm.ts doctor",
+    "wemm:setup": "node --import tsx scripts/wemm.ts setup",
+    "wemm:start": "node --import tsx scripts/wemm.ts start",
     "check": "npm run typecheck && npm test && npm run build"
   },
   "engines": {

@@ -1,4 +1,5 @@
 import { KernelError, type Mention, type Relation, type RelationCandidate, type ScorePolicy, type UserDeclarations, type WikiLink } from './model.js';
+import type { SemanticState } from './embedding/model.js';
 
 export const DEFAULT_SCORE_POLICY: Readonly<ScorePolicy> = Object.freeze({
   version: 'mention-explicit-v1', mentionBase: 0.5, sectionIncrement: 0.1, mentionCap: 0.8, explicitBoost: 0.3,
@@ -29,15 +30,17 @@ export function generateCandidates(mentions: Mention[], links: WikiLink[]): Rela
   }
   return [...pairs.values()];
 }
-export function scoreCandidate(candidate: RelationCandidate, policy: ScorePolicy, declarations: UserDeclarations): Relation {
+export function scoreCandidate(candidate: RelationCandidate, policy: ScorePolicy, declarations: UserDeclarations, semanticState: SemanticState = { status: 'not-configured' }): Relation {
   const sections = new Set(candidate.signals.filter(s => s.kind === 'mention')
     .flatMap(s => s.evidence.map(e => `${e.documentId}:${e.sectionId}`)));
   const mention = sections.size ? Math.min(policy.mentionCap, policy.mentionBase + (sections.size - 1) * policy.sectionIncrement) : 0;
   const explicit = candidate.signals.some(s => s.kind === 'explicit') ? 1 : 0;
-  const score = Number((mention + policy.explicitBoost * explicit * (1 - mention)).toFixed(12));
+  const semantic = candidate.signals.filter(s => s.kind === 'semantic').sort((a, b) => (b.semantic?.strength ?? 0) - (a.semantic?.strength ?? 0))[0];
+  const base = Math.max(mention, semantic?.semantic?.strength ?? 0);
+  const score = Number((base + policy.explicitBoost * explicit * (1 - base)).toFixed(12));
   return {
     ...candidate, score, scoreVersion: policy.version,
-    components: { mention, explicit, semantic: { status: 'not-configured' } },
+    components: { mention, explicit, semantic: semantic?.semantic ? { status: 'ready', spaceId: semantic.semantic.spaceId, strength: semantic.semantic.strength, cosine: semantic.rawValue } : semanticState },
     override: { ...declarations.relations[candidate.id] },
   };
 }

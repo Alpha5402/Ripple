@@ -3,6 +3,10 @@ import { extractReferences } from './mention.js';
 import { compareRelations, DEFAULT_SCORE_POLICY, generateCandidates, relationKey, scoreCandidate, validateScorePolicy } from './relation.js';
 import { DEFAULT_LENS_MAPPING, thresholdFor, validateBudget, validateLens, validateSnapshot } from './exploration.js';
 import { validateDeclarations } from './declarations.js';
+import { EmbeddingEngine } from './embedding/engine.js';
+import { DEFAULT_EMBEDDING_CONFIG, stableStringify } from './embedding/config.js';
+import { activeSpace, generateSemanticCandidates, semanticPairState, semanticSignalValid } from './embedding/relations.js';
+import { EmbeddingError, type EmbeddingCache, type EmbeddingConfig, type EmbeddingCoverage, type EmbeddingProvider, type EmbeddingRunReport, type KnowledgeUnit, type MediaResolver } from './embedding/model.js';
 import type { IdentityProvider, KnowledgeStorage, MarkdownParser } from './ports.js';
 import {
   KernelError, type Document, type DocumentInput, type EvidenceLocator, type KernelState, type Mention,
@@ -19,14 +23,23 @@ export class KnowledgeService {
   private documentsById = new Map<string, Document>();
   private validReferences = new Set<string>();
   private policy: ScorePolicy;
+  private embeddingEngine: EmbeddingEngine | undefined;
+  private embeddingGeneration = 0;
   constructor(private readonly dependencies: { storage: KnowledgeStorage; parser: MarkdownParser; identity: IdentityProvider }, policy: ScorePolicy = DEFAULT_SCORE_POLICY) {
     validateScorePolicy(policy); this.policy = structuredClone(policy);
-    this.state = dependencies.storage.load(); validateDeclarations(this.state.declarations); this.rebuild();
+    this.state = dependencies.storage.load();
+    // Persisted vectors are reusable caches; selecting an active provider/mode remains an explicit action.
+    if (this.state.embedding) delete this.state.embedding.activeSpaceId;
+    validateDeclarations(this.state.declarations); this.rebuild();
   }
   get indexRevision(): number { return this.state.indexRevision; }
   get scorePolicy(): ScorePolicy { return structuredClone(this.policy); }
-  get capabilities(): { semantic: 'not-configured'; storage: 'adapter'; deterministicRelations: true } {
-    return { semantic: 'not-configured', storage: 'adapter', deterministicRelations: true };
+  get capabilities(): { semantic: EmbeddingCoverage['status']; storage: 'adapter'; deterministicRelations: true } {
+    return { semantic: this.getEmbeddingCoverage().status, storage: 'adapter', deterministicRelations: true };
+  }
+  private get effectiveScoreVersion(): string {
+    const space = activeSpace(this.state.embedding);
+    return space ? `${this.policy.version}+${space.config.retrieval.version}:${this.dependencies.identity.hash(stableStringify(space.config.retrieval)).slice(0, 16)}` : this.policy.version;
   }
   private rebuild(): void {
     this.documentsById = new Map(this.state.documents.map(doc => [doc.id, doc]));
@@ -36,8 +49,14 @@ export class KnowledgeService {
       const refs = extractReferences(doc, this.entities);
       this.mentions.push(...refs.mentions); this.wikiLinks.push(...refs.wikiLinks);
     }
-    this.relations = generateCandidates(this.mentions, this.wikiLinks)
-      .map(candidate => scoreCandidate(candidate, this.policy, this.state.declarations)).sort(compareRelations);
+    const candidates = new Map(generateCandidates(this.mentions, this.wikiLinks).map(candidate => [candidate.id, candidate]));
+    for (const semantic of generateSemanticCandidates(this.state.embedding, this.state.documents)) {
+      const existing = candidates.get(semantic.id);
+      if (existing) existing.signals.push(...semantic.signals);
+      else candidates.set(semantic.id, semantic);
+    }
+    this.relations = [...candidates.values()].map(candidate => scoreCandidate(candidate, { ...this.policy, version: this.effectiveScoreVersion },
+      this.state.declarations, semanticPairState(this.state.embedding, candidate.nodes, this.state.documents))).sort(compareRelations);
     this.validReferences = new Set([
       ...this.mentions.filter(m => m.resolution.status === 'resolved').map(m => JSON.stringify(['mention', m.sourceDocumentId, m.resolution.candidates[0]!.documentId, m.evidence.revision, m.evidence.start, m.evidence.end])),
       ...this.wikiLinks.filter(l => l.resolution.status === 'resolved').map(l => JSON.stringify(['explicit', l.sourceDocumentId, l.resolution.candidates[0]!.documentId, l.evidence.revision, l.evidence.start, l.evidence.end])),
@@ -49,6 +68,7 @@ export class KnowledgeService {
     try {
       this.rebuild();
       this.dependencies.storage.save(next);
+      this.embeddingEngine?.invalidateChangedDocuments();
     } catch (error) { this.state = previous; this.rebuild(); throw error; }
   }
   ingestDocument(input: DocumentInput): Document { return this.ingestDocuments([input])[0]!; }
@@ -107,8 +127,39 @@ export class KnowledgeService {
   }
   getRelations(nodeId: string, options: { includeHidden?: boolean } = {}): Relation[] {
     this.requireNode(nodeId);
-    return structuredClone(this.relations.filter(r => r.nodes.includes(nodeId) && (options.includeHidden || !r.override.hidden)));
+    const relations = this.relations.filter(r => r.nodes.includes(nodeId));
+    const budget = activeSpace(this.state.embedding)?.config.retrieval.candidateBudget ?? 0;
+    const semanticIds = new Set(relations.filter(r => r.signals.some(s => s.kind === 'semantic'))
+      .sort((a, b) => ('strength' in b.components.semantic ? b.components.semantic.strength ?? 0 : 0)
+        - ('strength' in a.components.semantic ? a.components.semantic.strength ?? 0 : 0) || compareRelations(a, b)).slice(0, budget).map(r => r.id));
+    return structuredClone(relations.filter(r => (semanticIds.has(r.id) || r.signals.some(s => s.kind !== 'semantic')) && (options.includeHidden || !r.override.hidden)));
   }
+  configureEmbedding(provider: EmbeddingProvider, config: EmbeddingConfig = structuredClone(DEFAULT_EMBEDDING_CONFIG), resolver?: MediaResolver): void {
+    const generation = this.embeddingGeneration + 1;
+    const engine = new EmbeddingEngine(provider, structuredClone(config), this.dependencies.identity, () => this.state.documents,
+      cache => { if (this.embeddingGeneration === generation) this.commit({ ...this.state, embedding: cache, indexRevision: this.indexRevision + 1 }); }, this.state.embedding, resolver);
+    this.embeddingEngine?.stop(); this.embeddingGeneration = generation; this.embeddingEngine = engine; engine.activate();
+  }
+  disableEmbedding(): void {
+    this.embeddingEngine?.stop(); this.embeddingEngine = undefined; this.embeddingGeneration++;
+    if (this.state.embedding) {
+      const embedding = structuredClone(this.state.embedding); delete embedding.activeSpaceId;
+      this.commit({ ...this.state, embedding, indexRevision: this.indexRevision + 1 });
+    }
+  }
+  cancelEmbeddings(): void { this.embeddingEngine?.cancel(); }
+  async indexEmbeddings(options: { documentIds?: string[]; signal?: AbortSignal } = {}): Promise<EmbeddingRunReport> {
+    if (!this.embeddingEngine) throw new EmbeddingError('NOT_CONFIGURED', 'Configure an EmbeddingProvider before indexing');
+    return this.embeddingEngine.index(options);
+  }
+  getEmbeddingCoverage(): EmbeddingCoverage {
+    return this.embeddingEngine?.coverage() ?? { status: 'not-configured', documents: {}, readyUnits: 0, totalUnits: 0 };
+  }
+  getKnowledgeUnits(documentId?: string): KnowledgeUnit[] {
+    return structuredClone((activeSpace(this.state.embedding)?.records ?? []).filter(record => (!documentId || record.unit.documentId === documentId)
+      && this.documentsById.get(record.unit.documentId)?.revision === record.unit.revision).map(record => record.unit));
+  }
+  exportEmbeddingCache(): EmbeddingCache | undefined { return structuredClone(this.state.embedding); }
   getEvidence(locator: EvidenceLocator): { status: 'valid' | 'stale' | 'missing'; locator: EvidenceLocator; text?: string; excerpt?: string; path?: string } {
     const doc = this.documentsById.get(locator.documentId);
     if (!doc) return { status: 'missing', locator: structuredClone(locator) };
@@ -157,7 +208,8 @@ export class KnowledgeService {
       schemaVersion: 1, id: this.dependencies.identity.newId(), focusNode, focusRevision: focus.revision,
       candidateSet, candidateRevisions: Object.fromEntries([...ids].map(id => [id, this.requireNode(id).revision])),
       candidateVersion: this.dependencies.identity.hash(JSON.stringify([this.indexRevision, this.policy.version, candidateSet])),
-      candidateBudget: { deterministic: 'all', semantic: 0 }, relationScoreVersion: this.policy.version,
+      candidateBudget: { deterministic: 'all', semantic: activeSpace(this.state.embedding)?.config.retrieval.candidateBudget ?? 0 }, relationScoreVersion: this.effectiveScoreVersion,
+      ...(activeSpace(this.state.embedding) ? { embeddingSpaceId: activeSpace(this.state.embedding)!.space.id } : {}),
       indexRevision: this.indexRevision, lensValue, lensMapping: { ...DEFAULT_LENS_MAPPING }, visibleBudget,
       userOverrides: structuredClone(this.state.declarations.relations),
       validityEpochs: { ...this.state.validityEpochs }, userPolicyRevision: this.state.userPolicyRevision,
@@ -178,13 +230,15 @@ export class KnowledgeService {
       return { status: 'invalid', reasons: [focus ? 'focus-revision-changed' : 'focus-removed'], threshold, relations: [], eligibleCount: 0, remainingCount: 0, pinnedCount: 0, invalidatedCount: snapshot.candidateSet.length };
     }
     if (snapshot.indexRevision !== this.indexRevision) reasons.push('index-revision-changed');
-    if (snapshot.relationScoreVersion !== this.policy.version) reasons.push('score-policy-changed');
+    if (snapshot.relationScoreVersion !== this.effectiveScoreVersion) reasons.push('score-policy-changed');
+    if (snapshot.embeddingSpaceId !== activeSpace(this.state.embedding)?.space.id) reasons.push('embedding-space-changed');
     if (snapshot.userPolicyRevision !== this.state.userPolicyRevision) reasons.push('user-declarations-changed');
     let invalidatedCount = 0;
     const eligible = snapshot.candidateSet.filter(relation => {
       if (relation.nodes.some(id => !this.documentsById.has(id)
         || snapshot.validityEpochs[id] !== this.state.validityEpochs[id])
-        || relation.signals.some(signal => signal.evidence.some(evidence => !this.validReferences.has(JSON.stringify([signal.kind, signal.from, signal.to, evidence.revision, evidence.start, evidence.end]))))) {
+        || relation.signals.some(signal => signal.kind === 'semantic' ? !semanticSignalValid(signal, this.state.embedding, this.state.documents)
+          : signal.evidence.some(evidence => !this.validReferences.has(JSON.stringify([signal.kind, signal.from, signal.to, evidence.revision, evidence.start, evidence.end]))))) {
         invalidatedCount++; return false;
       }
       return true;

@@ -6,6 +6,7 @@ import { openVault, atomicJson } from '../../packages/adapters/filesystem/worksp
 import { NodeIdentityProvider } from '../../packages/adapters/runtime-node/index.js';
 import { Playground } from './controller.js';
 import { KernelError } from '../../packages/core/model.js';
+import { configureEmbeddingFromFile } from '../../packages/adapters/embedding-http/config.js';
 
 async function main(): Promise<void> {
   const { values } = parseArgs({ options: {
@@ -13,18 +14,24 @@ async function main(): Promise<void> {
     commands: { type: 'string' }, 'state-dir': { type: 'string' },
     ephemeral: { type: 'boolean', default: false }, 'all-markdown': { type: 'boolean', default: false },
     help: { type: 'boolean', default: false },
+    embedding: { type: 'string' }, index: { type: 'boolean', default: false },
   } });
   if (values.help) {
-    console.log('Ripple K1–K3 Playground\n--vault <directory> [--commands <file>] [--state-dir <outside-vault directory>] [--ephemeral] [--all-markdown]'); return;
+    console.log('Ripple Knowledge Playground\n--vault <directory> [--commands <file>] [--state-dir <outside-vault directory>] [--ephemeral] [--all-markdown] [--embedding <config.json>] [--index]'); return;
   }
   const stateDir = values.ephemeral ? undefined : resolve(values['state-dir'] ?? join('.ripple', new NodeIdentityProvider().hash(resolve(values.vault)).slice(0, 16)));
   const workspace = await openVault(values.vault, { ...(stateDir ? { stateDir } : {}), allMarkdown: values['all-markdown'] });
   const playground = new Playground(workspace.service);
+  if (values.embedding) {
+    try { await configureEmbeddingFromFile(workspace.service, values.embedding, values.vault); }
+    catch (error) { console.error(`Embedding configuration unavailable: ${(error as Error).message}. Deterministic knowledge remains available.`); }
+  }
+  if (values.index && workspace.service.capabilities.semantic !== 'not-configured') console.log(await playground.indexEmbeddings('all'));
   if (stateDir) {
     try { playground.session.importState(JSON.parse(await readFile(join(stateDir, 'session.json'), 'utf8'))); }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   }
-  console.log(`Ripple | ${workspace.service.listDocuments().length} documents | semantic: not-configured`);
+  console.log(`Ripple | ${workspace.service.listDocuments().length} documents | semantic: ${workspace.service.capabilities.semantic}`);
   for (const warning of workspace.sources.warnings) console.error(warning);
   const save = async (): Promise<void> => {
     await workspace.save();
@@ -33,6 +40,8 @@ async function main(): Promise<void> {
   await save();
   const execute = async (line: string, strict: boolean): Promise<boolean> => {
     try {
+      const index = line.trim().match(/^index(?:\s+(.*))?$/i);
+      if (index) { console.log(await playground.indexEmbeddings(index[1] ?? 'all')); await save(); return true; }
       const result = playground.execute(line);
       if (result.output) console.log(result.output);
       await save(); return !result.quit;

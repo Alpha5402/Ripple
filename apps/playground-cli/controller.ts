@@ -4,6 +4,11 @@ import { ExplorationSession } from '../../packages/sdk/session.js';
 export class Playground {
   readonly session: ExplorationSession;
   constructor(readonly service: KnowledgeService) { this.session = new ExplorationSession(service); }
+  async indexEmbeddings(argument: string): Promise<string> {
+    const selected = argument && argument !== 'all' ? [this.resolve(argument)] : undefined;
+    const report = await this.service.indexEmbeddings(selected ? { documentIds: selected } : {});
+    return JSON.stringify({ encoded: report.encoded, reused: report.reused, discarded: report.discarded, cancelled: report.cancelled, coverage: this.service.getEmbeddingCoverage() }, null, 2);
+  }
   private resolve(input: string): string {
     const value = input.replace(/^(["'])(.*)\1$/, '$2');
     if (this.service.getNode(value)) return value;
@@ -19,7 +24,7 @@ export class Playground {
     const relations = all ? this.service.getRelations(current.snapshot.focusNode) : view.relations;
     const lines = [
       `Focus: ${this.title(current.snapshot.focusNode)} | Lens: ${current.snapshot.lensValue.toFixed(1)} | threshold: ${view.threshold.toFixed(3)} | ${view.status}`,
-      all ? `All deterministic relations: ${relations.length} (not filtered by Lens)`
+      all ? `All ${this.service.capabilities.semantic === 'not-configured' ? 'deterministic relations' : 'recalled relations'}: ${relations.length} (not filtered by Lens)`
         : `Visible: ${relations.length} | eligible: ${view.eligibleCount} | remaining: ${view.remainingCount} | pinned: ${view.pinnedCount}`,
     ];
     if (view.reasons.length) lines.push(`State: ${view.reasons.join(', ')}; use refresh to rebuild candidates.`);
@@ -59,7 +64,8 @@ export class Playground {
         if (!relation) throw new KernelError('NOT_FOUND', 'No such relation; use evidence <row number or target>');
         return { output: [`Score: ${relation.score.toFixed(3)} | rule: ${relation.scoreVersion} | semantic: ${relation.components.semantic.status}`,
           ...relation.signals.flatMap(signal => [
-            `${signal.kind}: ${this.title(signal.from)} → ${this.title(signal.to)} (${signal.rawValue} occurrences)`,
+            signal.kind === 'semantic' ? `semantic: ${this.title(signal.from)} ↔ ${this.title(signal.to)} (cosine ${signal.rawValue.toFixed(4)}; model similarity, not a causal claim)`
+              : `${signal.kind}: ${this.title(signal.from)} → ${this.title(signal.to)} (${signal.rawValue} occurrences)`,
             ...signal.evidence.map(locator => {
               const evidence = this.service.getEvidence(locator);
               return `  ${evidence.status} ${evidence.path ?? locator.documentId}@${locator.revision} UTF-16 [${locator.start}, ${locator.end})\n  ${JSON.stringify(evidence.text)}`;
@@ -73,8 +79,9 @@ export class Playground {
         return { output: this.printRelations() };
       }
       case 'nodes': return { output: this.service.listDocuments().map(doc => `${doc.parsed.title}\t${doc.path}`).join('\n') };
-      case 'status': return { output: `Documents: ${this.service.listDocuments().length} | indexRevision: ${this.service.indexRevision} | semantic: not-configured` };
-      case 'help': return { output: 'focus <name/path/id> | lens <0..100> | relations [all] | evidence <row/name> | more [count] | back | refresh | read [name] | hide/unhide/pin/unpin <name> | nodes | status | quit' };
+      case 'status': return { output: `Documents: ${this.service.listDocuments().length} | indexRevision: ${this.service.indexRevision} | semantic: ${this.service.capabilities.semantic}` };
+      case 'coverage': return { output: JSON.stringify(this.service.getEmbeddingCoverage(), null, 2) };
+      case 'help': return { output: 'focus <name/path/id> | lens <0..100> | relations [all] | evidence <row/name> | more [count] | back | refresh | read [name] | hide/unhide/pin/unpin <name> | index [name/all] | coverage | nodes | status | quit' };
       case 'quit': case 'exit': return { output: 'Bye.', quit: true };
       default: throw new KernelError('INVALID_INPUT', `Unknown command: ${command}; use help`);
     }

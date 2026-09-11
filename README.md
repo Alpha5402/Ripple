@@ -1,6 +1,6 @@
 # Ripple Knowledge Kernel
 
-已实现设计基线 1.1 的 **K1、K2、K3**：从 Markdown 构建可追溯的确定性关系，以当前文档为中心进行一跳渐进探索。交付物是 TypeScript Core、SDK、Node 适配器和 CLI。
+已实现设计基线 1.1 的 **K1～K4**：从 Markdown 构建可追溯的确定性与语义关系，以当前文档为中心进行一跳渐进探索。交付物是 TypeScript Core、SDK、Node/HTTP 适配器、CLI 和 WeMM 2B 本地部署脚本。
 
 ## 运行
 
@@ -35,13 +35,23 @@ relations all
 quit
 ```
 
-`evidence` 可接可见行号或目标名称。其他命令包括 `read`、`nodes`、`more`、`refresh`、`hide`、`unhide`、`pin`、`unpin`、`status` 和 `help`。`relations all` 查询当前全部确定关系，不受 Lens 裁剪；被用户隐藏的关系仍保持隐藏。
+`evidence` 可接可见行号或目标名称。其他命令包括 `read`、`nodes`、`more`、`refresh`、`hide`、`unhide`、`pin`、`unpin`、`status` 和 `help`。`relations all` 查询当前全部已召回关系，不受 Lens 裁剪；被用户隐藏的关系仍保持隐藏。
+
+可选启用真实 Embedding，在一个终端启动模型，另一个终端索引：
+
+```sh
+npm run wemm:start
+npm run cli -- --vault fixtures/embedding --embedding configs/embedding.wemm-local.json --index
+```
+
+默认 **Text Only**，不会因为 WeMM 支持图片就读取图片。换用 `configs/embedding.wemm-multimodal.json` 可开启文本与图片上下文索引。`index <名称>` / `index all` 显式更新，`coverage` 查看逐文档状态。本地和云端配置、切分规则、空间隔离与一键部署细节见 [Embedding 文档](docs/embedding.md)。首次运行会下载约 5.44 GB 权重；本地实测结果见 [验证记录](docs/validation.md)。
 
 ## 已实现的行为
 
 - **K1 / Markdown → Knowledge Model**：AST 解析、文件名/主标题/frontmatter 名称与别名索引、自然提及、明确 WikiLink、章节目标、歧义与缺失状态、反向查询、UTF-16 证据位置、正文版本和变更更新。
 - **K2 / Relation Engine**：候选生成与评分分离、双向发现、保留信号原始方向、重复提及饱和、章节覆盖增量、显式链接增强、用户隐藏/固定/备注及声明导入导出。
 - **K3 / Exploration Engine**：冻结候选与分数的 Snapshot、0～100 Lens、单调展开、候选与显示预算分离、明确分页、过期和失效状态、序列化会话及历史恢复。
+- **K4 / Embedding**：可替换 Provider、默认文本/可选图文策略、按章节与 token 预算切分、两端贡献片段、文档去重召回、增量缓存、取消/重试/迟到结果隔离；本地 WeMM 与云端 HTTP 适配。
 
 一篇文档就是一个图节点。章节用于实体目标、证据和评分聚合，不自动成为全局概念节点。原 Markdown 原样保留，阅读装饰由宿主依据 Mention 提供，不插入链接或改写段落。
 
@@ -55,7 +65,7 @@ E = 有有效显式链接时 1，否则 0
 R = M + 0.3 × E × (1 - M)
 ```
 
-同一章节重复再多次也不会继续加分，但所有有效位置保留。显式链接里的文字不重复计为自然提及。仅有明确 WikiLink 的关系也会形成候选，得分 0.3。分数用于展示，不代表概率、知识重要性或掌握程度；语义能力明确为 `not-configured`。
+同一章节重复再多次也不会继续加分，但所有有效位置保留。显式链接里的文字不重复计为自然提及。仅有明确 WikiLink 的关系也会形成候选，得分 0.3。启用 Embedding 后，基数变为 `max(M, S)`，再作相同显式增强；S 来自可配置的分模态余弦映射。分数用于展示，不代表概率、知识重要性或掌握程度；未配置 Provider 时语义状态为 `not-configured`。
 
 Lens 从 0 到 100 对应阈值从 1 到 0，分数与阈值统一消除小数运算噪声。默认聚焦取第 3 个候选的分数作为阈值，不足 3 个时取最后一个候选，且不低于 0.5；同分节点同时通过，不保证恰好 3～6 个。当前所有有效确定关系都进入候选池，默认展示其中前 40 个，`more` 增加显示预算。固定关系是预算之外的显式视图例外，隐藏优先于固定，两者不修改分数。
 
@@ -105,11 +115,11 @@ docs/                  计划、协议、架构决策与验证说明
 
 ## 当前边界
 
-此次未实现 Embedding、SQLite/FTS、正式桌面/网页、布局算法、Mark-it、MCP 或 Agent。坐标、相机和阅读位置由宿主提供，SDK 负责保存与恢复。
+此次未实现 SQLite/FTS/ANN、正式桌面/网页、布局算法、Mark-it、MCP 或 Agent。坐标、相机和阅读位置由宿主提供，SDK 负责保存与恢复。K4 当前是小库精确余弦实现；推荐质量与大库性能留待 K5/K6 验证。
 
 增量导入跳过完全未变文档的 Markdown 解析；发生变更时，先完整解析该文档，再重建全库实体提及和关系，保证跨文档别名依赖正确。尚未做 K6 的千级/万级压力测试或细粒度依赖优化。外部文件改名不会依据相同内容强行认定身份；已知改名可由 SDK 传入原 ID 更新路径。
 
-目前在 AST 的可链接文本片段内匹配原始名称，不跨加粗等格式节点拼接名称，也不将 HTML 实体编码还原后匹配。Obsidian 嵌入、块 ID 和自定义 Markdown 扩展未作为关系类型实现。
+目前在 AST 的可链接文本片段内匹配原始名称，不跨加粗等格式节点拼接名称，也不将 HTML 实体编码还原后匹配。Obsidian 图片嵌入可用于 MultiModal 单元；笔记嵌入、块 ID 和其他自定义 Markdown 扩展未作为独立关系类型实现。
 
 ## 真实笔记验收
 

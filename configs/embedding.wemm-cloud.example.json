@@ -1,0 +1,8 @@
+{
+  "provider": {
+    "protocol": "ripple",
+    "baseUrl": "https://your-wemm-service.example",
+    "apiKeyEnv": "RIPPLE_CLOUD_EMBEDDING_KEY"
+  },
+  "indexing": { "mode": "text-only", "chunking": { "maxTokens": 512 } }
+}

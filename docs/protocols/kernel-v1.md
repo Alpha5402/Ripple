@@ -1,4 +1,4 @@
-# Knowledge Service / K1–K3 协议
+# Knowledge Service / K1–K4 协议
 
 协议版本 `schemaVersion: 1`。本阶段不承诺公开发布后的长期兼容性；序列化结构变更需要显式迁移或拒绝，不静默把旧数据解释成新语义。
 
@@ -18,7 +18,7 @@ WikiLink 支持 `[[A]]`、`[[A|展示文字]]`、`[[A#标题]]`、`[[#本页标�
 
 ## 关系
 
-`RelationCandidate` 保留无向文档对及多个有向 `RelationSignal`。当前 Signal 有 `mention` 和 `explicit`，各自保留 `from/to`、所有原始 Evidence 和原始出现次数。语义信号未实现，不以 0 代替“未配置”。
+`RelationCandidate` 保留无向文档对及多个 `RelationSignal`。`mention` 和 `explicit` 保留真实 `from/to`、所有原始 Evidence 和原始出现次数；`semantic` 是对称相似度，保留 spaceId、cosine、聚合方式与两端贡献单元，不表达作者引用方向。未配置和未召回是不同状态，不以 0 代替“未配置”。
 
 文档对只有一个显示分，两端都可通过 `getRelations` 发现。`findMentions({ targetDocumentId })` 是真正的反向提及查询，保留原始出处；不会因为双向发现而生成相反方向的 Mention。
 
@@ -32,7 +32,7 @@ Snapshot 冻结：中心及其 revision、候选关系和分数、候选版本�
 
 Lens 0～100 映射到 `[1, 0]` 的下降阈值；判断条件为 `score >= threshold`。分数与阈值统一保留至 12 位小数，以消除浮点运算噪声。候选按分数降序、关系 ID 确定排序；同分一起通过阈值，显示预算可分页同分节点。固定、候选与数据不变时，增加 Lens 不会移除已显示关系。
 
-候选预算当前为 `{ deterministic: 'all', semantic: 0 }`，不按屏幕 Top-K 截断确定关系。常规显示默认 40 个；固定节点在常规预算之外显示，避免挤走已有节点。`eligibleCount`、`remainingCount`、`pinnedCount` 分别解释合格总数、剩余常规节点、固定节点数。
+候选预算为 `{ deterministic: 'all', semantic: N }`，N 未配置时为 0、配置后默认 100。语义预算在文档去重后应用，不按屏幕 Top-K 截断确定关系。常规显示默认 40 个；固定节点在常规预算之外显示，避免挤走已有节点。`eligibleCount`、`remainingCount`、`pinnedCount` 分别解释合格总数、剩余常规节点、固定节点数。
 
 状态规则：
 
@@ -45,6 +45,8 @@ Lens 0～100 映射到 `[1, 0]` 的下降阈值；判断条件为 `score >= thre
 | 邻居被删除或正文 revision 更新 | 对应关系整体撤下，标记 stale，不对冻结分数局部修补 |
 | 中心删除或 revision 改变 | invalid，不继续展示旧关系 |
 | 删除后重新导入同 ID | 不恢复旧 Snapshot 的已失效关系 |
+| 语义索引发布新结果 | 标记 stale；候选保持冻结，显式 refresh 后更新 |
+| 切换/关闭 Embedding Space | 含旧空间语义证据的关系撤下，等待 refresh |
 
 点击 `refresh` 才创建新候选快照。旧证据部分失效时，本版保守撤下整条关系，刷新后基于有效证据重新评分。这里不实现权限模型；未来宿主撤销访问权限时，需要同步从知识服务中移除文档。
 
@@ -52,8 +54,8 @@ Lens 0～100 映射到 `[1, 0]` 的下降阈值；判断条件为 `score >= thre
 
 ## 索引与持久化
 
-源变化采用同步批量事务，当前没有异步模型任务，因而尚不涉及模型取消/重试。未变 Markdown 复用解析结果；实体索引、提及和关系在变更后重建。迟到写入必须带 `expectedRevision`，由服务拒绝。
+源变化采用同步批量事务。未变 Markdown 复用解析结果；实体索引、提及和关系在变更后重建。源文迟到写入必须带 `expectedRevision`，由服务拒绝。Embedding 为独立异步任务，按模型 generation、文档 revision、任务 sequence 检查提交资格，支持取消与有限重试。详情见 [Embedding 协议与运行](../embedding.md)。
 
 `KnowledgeStorage` 的 load/save 均需隔离对象引用，save 应原子成功或抛错。MemoryStorage 是当前实现。Node 文件宿主保存 `manifest.json` 的身份、版本和策略签名，以及单独 `user-relations.json` 的用户声明；启动从原文重建派生数据，无需缓存即可恢复整理成果。`session.json` 单独保存探索历史。文件宿主当前按单进程使用设计。
 
-错误码：`NOT_FOUND`、`CONFLICT`、`INVALID_INPUT`、`INVALID_SNAPSHOT`。可选语义能力通过 `capabilities.semantic = 'not-configured'` 明确暴露。
+错误码：`NOT_FOUND`、`CONFLICT`、`INVALID_INPUT`、`INVALID_SNAPSHOT`。Embedding 使用独立 `EmbeddingError`，区分 `CONFIG`、`CAPABILITY`、`LIMIT`、`AUTH`、`NETWORK`、`CANCELLED`、`SPACE_MISMATCH` 和 `INVALID_RESPONSE` 等。语义能力通过 `getEmbeddingCoverage()` 和 `capabilities.semantic` 暴露；缓存可单独删除，不影响源笔记和用户声明。

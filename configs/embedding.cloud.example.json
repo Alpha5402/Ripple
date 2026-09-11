@@ -1,0 +1,18 @@
+{
+  "provider": {
+    "protocol": "openai-compatible",
+    "baseUrl": "https://your-embedding-service.example",
+    "apiKeyEnv": "RIPPLE_CLOUD_EMBEDDING_KEY",
+    "descriptor": {
+      "model": "YOUR_MODEL_NAME",
+      "revision": "YOUR_DEPLOYMENT_VERSION",
+      "dimensions": 1024,
+      "normalized": false,
+      "modalities": ["text"],
+      "maxInputTokens": 8192,
+      "representation": "document-document/plain-text-v1",
+      "tokenizer": "utf8-upper-bound-v1"
+    }
+  },
+  "indexing": { "mode": "text-only", "chunking": { "maxTokens": 512 } }
+}

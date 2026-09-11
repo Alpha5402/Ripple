@@ -1,0 +1,7 @@
+status
+focus Visual Sample
+lens 70
+evidence Geometric Description
+relations all
+index all
+quit

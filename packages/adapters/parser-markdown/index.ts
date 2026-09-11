@@ -5,9 +5,11 @@ import remarkGfm from 'remark-gfm';
 import { parseDocument } from 'yaml';
 import { KernelError, type ParsedDocument, type ParsedWikiLink, type Section, type TextSpan } from '../../core/model.js';
 import type { MarkdownParser } from '../../core/ports.js';
+import type { MediaReference } from '../../core/embedding/model.js';
 
 interface AstNode {
   type: string; value?: string; depth?: number; children?: AstNode[];
+  url?: string; alt?: string; identifier?: string;
   position?: { start: { offset?: number }; end: { offset?: number } };
 }
 const processor = unified().use(remarkParse).use(remarkFrontmatter, ['yaml']).use(remarkGfm);
@@ -22,7 +24,7 @@ const escaped = (text: string, offset: number): boolean => {
 };
 
 export class RemarkMarkdownParser implements MarkdownParser {
-  readonly version = 'remark-ripple-v1';
+  readonly version = 'remark-ripple-v2';
   parse(documentId: string, path: string, markdown: string): ParsedDocument {
     const tree = processor.parse(markdown) as AstNode;
     const names: ParsedDocument['names'] = [{ name: path.split('/').at(-1)!.replace(/\.md$/i, ''), source: 'filename' }];
@@ -75,7 +77,18 @@ export class RemarkMarkdownParser implements MarkdownParser {
     }
     const textSpans: TextSpan[] = [];
     const wikiLinks: ParsedWikiLink[] = [];
+    const media: MediaReference[] = [];
+    const definitions = new Map<string, string>();
+    const collectDefinitions = (node: AstNode): void => {
+      if (node.type === 'definition' && node.identifier && node.url) definitions.set(node.identifier, node.url);
+      node.children?.forEach(collectDefinitions);
+    };
+    collectDefinitions(tree);
     const scan = (node: AstNode, blockId: string): void => {
+      if (node.type === 'image' || node.type === 'imageReference') {
+        const source = node.url ?? (node.identifier ? definitions.get(node.identifier) : undefined);
+        if (source) media.push({ source, alt: node.alt ?? '', start: startOf(node), end: endOf(node), sectionId: sections.findLast(s => s.start <= startOf(node))!.id });
+      }
       if (ignored.has(node.type)) return;
       if (['paragraph', 'heading', 'tableCell'].includes(node.type)) blockId = `${documentId}:block:${startOf(node)}`;
       if (node.type === 'text') {
@@ -89,10 +102,13 @@ export class RemarkMarkdownParser implements MarkdownParser {
           const absoluteEnd = absoluteStart + match[0].length;
           exclusions.push({ start: absoluteStart, end: absoluteEnd });
           // Obsidian embeds are attachment/content rendering, not author link boosts.
-          if (source[match.index - 1] === '!') continue;
           const split = match[1]!.indexOf('|');
           const target = (split < 0 ? match[1]! : match[1]!.slice(0, split)).trim();
           const label = split < 0 ? target : match[1]!.slice(split + 1);
+          if (source[match.index - 1] === '!') {
+            media.push({ source: target, alt: split < 0 || /^\d+(?:x\d+)?$/.test(label) ? '' : label, start: absoluteStart - 1, end: absoluteEnd, sectionId });
+            continue;
+          }
           wikiLinks.push({ start: absoluteStart, end: absoluteEnd, target, label, sectionId, blockId });
         }
         for (const match of source.matchAll(/(?:https?:\/\/|www\.)[^\s<>]+/g)) exclusions.push({ start: start + match.index, end: start + match.index + match[0].length });
@@ -106,6 +122,6 @@ export class RemarkMarkdownParser implements MarkdownParser {
       } else node.children?.forEach(child => scan(child, blockId));
     };
     scan(tree, `${documentId}:root`);
-    return { title, names, sections, textSpans, wikiLinks, parserVersion: this.version, warnings };
+    return { title, names, sections, textSpans, wikiLinks, parserVersion: this.version, warnings, media, contentStart: yaml ? endOf(yaml) : 0 };
   }
 }

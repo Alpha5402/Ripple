@@ -22,6 +22,8 @@ export interface ParsedDocument {
   wikiLinks: ParsedWikiLink[];
   parserVersion: string;
   warnings: string[];
+  contentStart?: number;
+  media?: MediaReference[];
 }
 export interface Document {
   id: DocumentId;
@@ -55,16 +57,17 @@ export interface UserDeclarations {
   relations: Record<string, RelationOverride>;
 }
 export interface RelationSignal {
-  kind: 'mention' | 'explicit';
+  kind: 'mention' | 'explicit' | 'semantic';
   from: DocumentId; to: DocumentId;
   evidence: EvidenceLocator[];
   rawValue: number;
+  semantic?: SemanticMetadata;
 }
 export interface RelationCandidate { id: string; nodes: [DocumentId, DocumentId]; signals: RelationSignal[] }
 export interface Relation extends RelationCandidate {
   score: number;
   scoreVersion: string;
-  components: { mention: number; explicit: 0 | 1; semantic: { status: 'not-configured' } };
+  components: { mention: number; explicit: 0 | 1; semantic: SemanticState };
   override: RelationOverride;
 }
 export interface ScorePolicy {
@@ -83,7 +86,8 @@ export interface Snapshot {
   candidateSet: Relation[];
   candidateRevisions: Record<DocumentId, number>;
   candidateVersion: string;
-  candidateBudget: { deterministic: 'all'; semantic: 0 };
+  candidateBudget: { deterministic: 'all'; semantic: number };
+  embeddingSpaceId?: string;
   relationScoreVersion: string;
   indexRevision: IndexRevision;
   lensValue: number;
@@ -118,9 +122,11 @@ export interface KernelState {
   indexRevision: number;
   userPolicyRevision: number;
   declarations: UserDeclarations;
+  embedding?: EmbeddingCache;
 }
 export class KernelError extends Error {
   constructor(public readonly code: 'NOT_FOUND' | 'CONFLICT' | 'INVALID_INPUT' | 'INVALID_SNAPSHOT', message: string) {
     super(message); this.name = 'KernelError';
   }
 }
+import type { EmbeddingCache, MediaReference, SemanticMetadata, SemanticState } from './embedding/model.js';

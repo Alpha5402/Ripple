@@ -29,6 +29,14 @@ test('CLI reports errors instead of silently choosing ambiguous nodes; all refer
   assert.throws(() => playground.execute('lens'), /0\.\.100/);
 });
 
+test('an unavailable embedding configuration does not prevent deterministic CLI exploration with --index', () => {
+  const child = spawnSync(process.execPath, ['--import', 'tsx', 'apps/playground-cli/main.ts', '--vault', 'fixtures/vault',
+    '--embedding', 'fixtures/no-such-embedding-config.json', '--index', '--commands', 'fixtures/demo.txt', '--ephemeral'], { encoding: 'utf8' });
+  assert.equal(child.status, 0, child.stderr + child.stdout);
+  assert.match(child.stderr, /Deterministic knowledge remains available/);
+  assert.match(child.stdout, /Promise → Microtask/);
+});
+
 test('CLI process restart restores the earlier focus and frozen Lens through durable identity and session files', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'ripple-cli-restart-'));
   try {

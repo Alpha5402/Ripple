@@ -1,0 +1,8 @@
+{
+  "provider": { "protocol": "ripple", "baseUrl": "http://127.0.0.1:8787", "timeoutMs": 120000 },
+  "indexing": {
+    "mode": "text-only",
+    "chunking": { "maxTokens": 512 },
+    "execution": { "batchSize": 1, "maxRetries": 2 }
+  }
+}

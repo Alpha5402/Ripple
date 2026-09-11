@@ -28,7 +28,8 @@ export function validateSnapshot(snapshot: Snapshot): void {
     if (!relation || !Array.isArray(relation.nodes) || relation.nodes.length !== 2 || !relation.nodes.includes(snapshot.focusNode)
       || !Number.isFinite(relation.score) || relation.score < 0 || relation.score > 1 || relation.scoreVersion !== snapshot.relationScoreVersion
       || !Array.isArray(relation.signals) || !relation.signals.length
-      || relation.signals.some(signal => !['mention', 'explicit'].includes(signal.kind) || !Array.isArray(signal.evidence) || !signal.evidence.length)) {
+      || relation.signals.some(signal => !['mention', 'explicit', 'semantic'].includes(signal.kind) || !Array.isArray(signal.evidence) || !signal.evidence.length
+        || (signal.kind === 'semantic' && (!signal.semantic || !signal.semantic.contributions.length)))) {
       throw new KernelError('INVALID_SNAPSHOT', 'Malformed snapshot relation');
     }
   }

@@ -7,6 +7,7 @@ import { RemarkMarkdownParser } from '../parser-markdown/index.js';
 import { NodeIdentityProvider } from '../runtime-node/index.js';
 import { readVault } from './index.js';
 import { DEFAULT_SCORE_POLICY } from '../../core/relation.js';
+import type { EmbeddingCache } from '../../core/embedding/model.js';
 
 interface Manifest {
   schemaVersion: 1;
@@ -48,6 +49,8 @@ export async function openVault(root: string, options: { stateDir?: string; allM
     documents: [], declarations, revisions: { ...manifest?.revisions }, validityEpochs: { ...manifest?.validityEpochs },
     indexRevision: manifest?.indexRevision ?? 0, userPolicyRevision: manifest?.userPolicyRevision ?? 0,
   };
+  const embedding = stateDir ? await readJson<EmbeddingCache>(join(stateDir, 'cache/embeddings.json')) : undefined;
+  if (embedding?.schemaVersion === 1) initial.embedding = embedding;
   if (manifest && (manifest.parserVersion !== parser.version || manifest.scorePolicyVersion !== DEFAULT_SCORE_POLICY.version)) initial.indexRevision++;
   if (manifest && manifest.declarationsHash !== identity.hash(JSON.stringify(declarations))) {
     initial.indexRevision++; initial.userPolicyRevision++;
@@ -83,6 +86,10 @@ export async function openVault(root: string, options: { stateDir?: string; allM
     };
     await atomicJson(join(stateDir, 'manifest.json'), next);
     await atomicJson(join(stateDir, 'user-relations.json'), state.declarations);
+    if (state.embedding) {
+      await mkdir(join(stateDir, 'cache'), { recursive: true });
+      await atomicJson(join(stateDir, 'cache/embeddings.json'), state.embedding);
+    }
   };
   return { service, sources, save, stateDir };
 }

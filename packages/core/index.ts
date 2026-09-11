@@ -4,3 +4,6 @@ export * from './entity.js';
 export * from './relation.js';
 export * from './exploration.js';
 export * from './service.js';
+export * from './embedding/model.js';
+export * from './embedding/config.js';
+export * from './embedding/chunk.js';

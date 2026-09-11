@@ -2,6 +2,8 @@
 
 状态：本次 K1–K3 实现已采用。
 
+后续 K4 已通过独立 Provider 与 HTTP Adapter 接入异步 Embedding，沿用此处 Core/Host 分离原则；运行协议见 [Embedding 文档](../embedding.md)。
+
 ## 背景
 
 设计基线 1.1 要求先交付可脱离 UI 运行的知识内核。用户进一步确认，单向提及应支持双向发现，并提供现有 iWiki 作为只读试验田。
