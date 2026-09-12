@@ -12,11 +12,11 @@ let window: BrowserWindow;
 let worker: Worker | undefined;
 let dirty = false, quitting = false, sequence = 0;
 const pending = new Map<number, { resolve: (value: any) => void; reject: (error: Error) => void }>();
-function askWorker(data: unknown): Promise<any> {
+function askWorker(data: unknown, timeoutMs = 30000): Promise<any> {
   if (!worker) return Promise.resolve({ ok: false, error: { code: 'NOT_FOUND', message: '请先打开一个 Markdown 目录' } });
   const id = ++sequence;
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => { pending.delete(id); reject(new Error('目录服务响应超时，请重试')); }, 30000); timer.unref();
+    const timer = setTimeout(() => { pending.delete(id); reject(new Error('目录服务响应超时，请重试')); }, timeoutMs); timer.unref();
     pending.set(id, { resolve: value => { clearTimeout(timer); resolve(value); }, reject: error => { clearTimeout(timer); reject(error); } });
     try { worker!.postMessage({ id, ...data as object }); } catch (error) { pending.get(id)?.reject(error as Error); pending.delete(id); }
   });
@@ -70,7 +70,7 @@ window.webContents.on('will-navigate', (event, url) => { if (!isAppUrl(url)) eve
 window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
 ipcMain.handle('ripple:command', (event, command) => {
   if (!trusted(event)) return { ok: false, error: { code: 'ORIGIN', message: 'Untrusted sender' } };
-  return askWorker({ command }).catch(() => ({ ok: false, error: { code: 'HOST', message: '目录服务不可用，请重新打开目录' } }));
+  return askWorker({ command }, command?.type === 'configure-embedding' ? 90000 : 30000).catch(() => ({ ok: false, error: { code: 'HOST', message: '目录服务不可用，请重新打开目录' } }));
 });
 ipcMain.handle('ripple:choose-folder', async (event, readOnly) => {
   if (!trusted(event) || typeof readOnly !== 'boolean' || !await mayLeave()) return false;

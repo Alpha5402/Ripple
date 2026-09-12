@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { embeddingConnectionSchema, type SafeEmbeddingConnection } from './embedding-connection.js';
 import type { Document, EvidenceLocator, ExplorationHistoryState, Mention, WikiLink, VisibleRelations } from '../core/model.js';
 import type { KnowledgeService } from '../core/service.js';
 
@@ -16,6 +17,7 @@ export const commandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('evidence'), locator: z.object({ documentId: id, revision: z.number().int().positive(), sectionId: z.string().max(500), start: z.number().int().nonnegative(), end: z.number().int().nonnegative() }) }),
   z.object({ type: z.literal('save'), id, expectedHash: z.string().max(200), markdown: z.string().max(4 * 1024 * 1024) }),
   z.object({ type: z.literal('view'), layout: z.record(id, point).optional(), camera: point.extend({ zoom: z.number().min(0.2).max(4) }).optional(), reading: z.object({ documentId: id, offset: z.number().nonnegative().max(10000000) }).nullable().optional() }),
+  z.object({ type: z.literal('configure-embedding'), settings: embeddingConnectionSchema }),
   z.object({ type: z.literal('index') }),
   z.object({ type: z.literal('cancel-index') }),
 ]);
@@ -32,9 +34,11 @@ export interface WorkbenchState {
   canBack: boolean;
   coverage: ReturnType<KnowledgeService['getIndexCoverage']>;
   indexing: boolean;
+  embeddingConnection?: SafeEmbeddingConnection | undefined;
   notices: string[];
 }
 export interface WorkbenchBridge {
+  supportsEmbedding?: boolean;
   command(command: HostCommand): Promise<unknown>;
   subscribe(listener: () => void): () => void;
   chooseFolder?(readOnly: boolean): Promise<boolean>;

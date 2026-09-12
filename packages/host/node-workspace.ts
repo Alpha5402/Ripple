@@ -1,3 +1,4 @@
+import { connectEmbedding, embeddingErrorMessage, type SafeEmbeddingConnection } from './embedding-connection.js';
 import { watch, type FSWatcher } from 'chokidar';
 import { readFile, realpath, rename, writeFile, rm, stat, lstat, open } from 'node:fs/promises';
 import { constants } from 'node:fs';
@@ -22,6 +23,7 @@ export class NodeWorkspace {
   private tail: Promise<unknown> = Promise.resolve();
   private indexing: Promise<unknown> | undefined;
   private notices: string[] = [];
+  private embeddingConnection?: SafeEmbeddingConnection;
   private autoIndex = false;
   private pendingIndex = new Set<string>();
   private fullIndexRequested = false;
@@ -82,7 +84,7 @@ export class NodeWorkspace {
     return { label: basename(this.root), mode: 'desktop', readOnly: this.readOnly,
       documents: this.service.listDocuments().map(d => ({ id: d.id, path: d.path, title: d.parsed.title, revision: d.revision })),
       current: this.session.current, visible: this.session.current ? this.session.visible() : null,
-      canBack: !!this.session.exportState().backStack.length, coverage: this.service.getIndexCoverage(), indexing: !!this.indexing, notices: [...this.notices] };
+      canBack: !!this.session.exportState().backStack.length, coverage: this.service.getIndexCoverage(), indexing: !!this.indexing, embeddingConnection: this.embeddingConnection, notices: [...this.notices] };
   }
   read(id: string): ReadingDocument {
     const document = this.service.getNode(id); if (!document) throw new KernelError('NOT_FOUND', '文档已不存在');
@@ -103,9 +105,10 @@ export class NodeWorkspace {
     const ids = this.fullIndexRequested ? undefined : [...this.pendingIndex].filter(id => this.service.getNode(id));
     this.pendingIndex.clear(); this.fullIndexRequested = false;
     if (ids?.length === 0) return;
+    const progress = setInterval(this.changed, 250);
     this.indexing = this.service.indexEmbeddings(ids ? { documentIds: ids } : {}).then(report => { this.notices = [`语义索引：编码 ${report.encoded}，复用 ${report.reused}${report.cancelled ? '，已取消' : ''}。`]; })
       .catch(() => { this.notices = ['语义索引暂不可用，确定性关系不受影响。']; })
-      .finally(() => { this.indexing = undefined; this.changed(); if (this.autoIndex && (this.pendingIndex.size || this.fullIndexRequested)) this.startIndex([]); });
+      .finally(() => { clearInterval(progress); this.indexing = undefined; if (!this.closing && this.session.current) { this.session.refresh(); this.session.setViewState({ layout: completeLayout(this.session.current) }); } this.changed(); if (this.autoIndex && (this.pendingIndex.size || this.fullIndexRequested)) this.startIndex([]); });
     this.changed();
   }
   async rescan(): Promise<void> {
@@ -154,6 +157,17 @@ export class NodeWorkspace {
     return this.enqueue(async () => {
       switch (command.type) {
         case 'state': return this.state();
+        case 'configure-embedding': {
+          if (this.indexing) throw new KernelError('INVALID_INPUT', '请先停止索引，再更换模型');
+          try {
+            const connected = await connectEmbedding(command.settings);
+            this.service.configureEmbedding(connected.provider, connected.config);
+            this.embeddingConnection = connected.settings; this.autoIndex = false; this.pendingIndex.clear(); this.fullIndexRequested = false;
+            this.notices = ['模型连接成功，可以开始索引。'];
+            if (this.session.current) this.session.refresh();
+            this.changed(); return this.state();
+          } catch (error) { throw new KernelError('INVALID_INPUT', embeddingErrorMessage(error)); }
+        }
         case 'read': return this.read(command.id);
         case 'search': return command.query.trim() ? this.service.search(command.query, { limit: 50 }) : [];
         case 'evidence': return this.service.getEvidence(command.locator);

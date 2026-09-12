@@ -1,3 +1,4 @@
+import { connectEmbedding, embeddingErrorMessage, type SafeEmbeddingConnection } from '../host/embedding-connection.js';
 import { PublicKnowledgeService } from '../adapters/public-snapshot/service.js';
 import type { PublicBundle } from '../adapters/public-snapshot/model.js';
 import { KernelError } from '../core/model.js';
@@ -8,7 +9,22 @@ import { completeLayout, initialLens } from '../host/layout.js';
 import { commandSchema, type WorkbenchBridge, type WorkbenchState } from '../host/contract.js';
 
 export function createPublicBridge(bundle: PublicBundle): WorkbenchBridge {
-  const service = new PublicKnowledgeService(bundle, new BrowserIdentityProvider());
+  const snapshotService = new PublicKnowledgeService(bundle, new BrowserIdentityProvider());
+  const service = bundle.semantic ? snapshotService : snapshotService.kernel;
+  const listeners = new Set<() => void>();
+  const changed = () => { for (const listener of listeners) listener(); };
+  let indexing = false, connection: SafeEmbeddingConnection | undefined, notice = '';
+  const refresh = () => { if (session.current) { session.refresh(); session.setViewState({ layout: completeLayout(session.current) }); } };
+  const startIndex = () => {
+    if (indexing) return;
+    if (!connection) throw new KernelError('INVALID_INPUT', '请先配置并连接模型');
+    indexing = true; notice = ''; changed();
+    const progress = setInterval(changed, 250);
+    void snapshotService.kernel.indexEmbeddings().then(report => {
+      const failed = Object.values(report.documents).filter(doc => doc.errors.length).length;
+      notice = report.cancelled ? '索引已取消，可继续建立索引。' : failed ? `${failed} 篇笔记索引未完成，请检查模型服务后重试。` : `索引完成：新增 ${report.encoded} 个片段，复用 ${report.reused} 个片段。`;
+    }).catch(error => { notice = embeddingErrorMessage(error); }).finally(() => { clearInterval(progress); indexing = false; refresh(); changed(); });
+  };
   const session = new ExplorationSession(service);
   const query = new URLSearchParams(typeof location === 'undefined' ? '' : location.search);
   const first = service.getNode(query.get('focus') ?? '') ?? service.listDocuments()[0];
@@ -16,12 +32,20 @@ export function createPublicBridge(bundle: PublicBundle): WorkbenchBridge {
   const defaultLens = Number.isFinite(requestedLens) && requestedLens >= 0 && requestedLens <= 100 ? requestedLens : 45;
   const focus = (id: string) => { const current = session.focus(id, { lensValue: session.current?.snapshot.lensValue ?? defaultLens }); session.setViewState({ layout: completeLayout(current), reading: { documentId: id, offset: 0 } }); };
   if (first) focus(first.id);
-  const state = (): WorkbenchState => ({ label: bundle.title, mode: 'public', readOnly: false, documents: service.listDocuments().map(d => ({ id: d.id, title: d.parsed.title, path: d.path, revision: d.revision })), current: session.current, visible: session.current ? session.visible() : null, canBack: !!session.exportState().backStack.length, coverage: service.getIndexCoverage(), indexing: false,
-    notices: [bundle.semantic ? `语义关联由 ${bundle.semantic.descriptor.model} 预先计算，不进行实时模型查询。` : '此数据包包含名称提及和显式链接关系。', '文件仅在当前页面内处理。编辑不会写回原文件；刷新后需要重新打开目录。'] });
-  return { subscribe: () => () => {}, async command(raw) {
+  const state = (): WorkbenchState => ({ label: bundle.title, mode: 'public', readOnly: false, documents: service.listDocuments().map(d => ({ id: d.id, title: d.parsed.title, path: d.path, revision: d.revision })), current: session.current, visible: session.current ? session.visible() : null, canBack: !!session.exportState().backStack.length, coverage: service.getIndexCoverage(), indexing, embeddingConnection: connection,
+    notices: [...(notice ? [notice] : []), bundle.semantic ? `语义关联由 ${bundle.semantic.descriptor.model} 预先计算，不进行实时模型查询。` : connection ? `文本索引使用 ${connection.model}。` : '配置 Embedding 后，可发现没有显式链接的语义关联。', '笔记编辑保存在当前页面，不会写回原文件；刷新后需要重新打开目录。'] });
+  return { supportsEmbedding: !bundle.semantic, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }, async command(raw) {
     const c = commandSchema.parse(raw);
     switch (c.type) {
       case 'state': return state();
+      case 'configure-embedding': {
+        if (bundle.semantic || indexing) throw new KernelError('INVALID_INPUT', '请等待当前索引完成后再更换模型');
+        try { const connected = await connectEmbedding(c.settings); snapshotService.kernel.configureEmbedding(connected.provider, connected.config); connection = connected.settings; notice = '模型连接成功，可以开始索引。'; refresh(); changed(); }
+        catch (error) { throw new Error(embeddingErrorMessage(error)); }
+        break;
+      }
+      case 'index': startIndex(); break;
+      case 'cancel-index': snapshotService.kernel.cancelEmbeddings(); break;
       case 'read': { const document = service.getNode(c.id); if (!document) throw new KernelError('NOT_FOUND', '文档不存在'); return { document, mentions: service.findMentions({ sourceDocumentId: c.id }), links: service.findWikiLinks({ sourceDocumentId: c.id }) }; }
       case 'focus': focus(c.id); break;
       case 'lens': session.setLens(c.value); break;
@@ -42,7 +66,10 @@ export async function loadPublicBridge(): Promise<WorkbenchBridge> {
   const empty: PublicBundle = { schemaVersion: 1, id: 'local-browser', title: '你的知识空间', generatedAt: '', documents: [], scorePolicy: { ...DEFAULT_SCORE_POLICY } };
   let current = createPublicBridge(empty);
   const listeners = new Set<() => void>();
+  const changed = () => { for (const listener of listeners) listener(); };
+  let unsubscribe = current.subscribe(changed);
   return {
+    supportsEmbedding: true,
     command: command => current.command(command),
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     chooseFolder() {
@@ -58,7 +85,8 @@ export async function loadPublicBridge(): Promise<WorkbenchBridge> {
             if (files.length > 1000 || files.some(file => file.size > 4 * 1024 * 1024) || files.reduce((size, file) => size + file.size, 0) > 32 * 1024 * 1024) throw new Error('目录较大，请使用桌面版打开，或选择较小的笔记目录。');
             const documents = await Promise.all(files.map(async (file, index) => ({ id: `local-${index}`, path: file.webkitRelativePath ? file.webkitRelativePath.split('/').slice(1).join('/') : file.name, markdown: await file.text() })));
             const next = createPublicBridge({ ...empty, title: files[0]!.webkitRelativePath.split('/')[0] || '我的笔记', documents });
-            current = next;
+            await current.command({ type: 'cancel-index' });
+            unsubscribe(); current = next; unsubscribe = current.subscribe(changed);
             for (const listener of listeners) listener();
             resolve(true);
           } catch (error) { reject(error); } finally { finish(); }

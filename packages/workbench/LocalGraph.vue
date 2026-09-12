@@ -1,58 +1,110 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onBeforeUnmount, onMounted } from 'vue';
 import type { WorkbenchState } from '../host/contract.js';
+import { stepForces, type ForceNode } from './force-layout.js';
 const props = defineProps<{ state: WorkbenchState; selected?: string }>();
 const emit = defineEmits<{ preview: [id: string]; focus: [id: string]; evidence: [id: string]; view: [view: { layout?: Record<string, { x: number; y: number }>; camera?: { x: number; y: number; zoom: number } }] }>();
 const canvas = ref<SVGSVGElement>();
 const camera = ref({ x: 0, y: 0, zoom: 1 });
 const layout = ref<Record<string, { x: number; y: number }>>({});
-watch(() => props.state.current, current => { if (current) { camera.value = { ...current.camera }; layout.value = { ...current.layout }; } }, { immediate: true });
+const hoveredEdge = ref<string>(), hoveredNode = ref<string>();
 const names = computed(() => new Map(props.state.documents.map(doc => [doc.id, doc.title])));
 const focusId = computed(() => props.state.current?.snapshot.focusNode ?? '');
 const relations = computed(() => props.state.visible?.relations ?? []);
 const nodes = computed(() => [...new Set([focusId.value, ...relations.value.flatMap(r => r.nodes)].filter(Boolean))]);
+const links = computed(() => relations.value.map(r => ({ source: r.nodes[0], target: r.nodes[1], score: r.score })));
 const pos = (id: string) => layout.value[id] ?? { x: 0, y: 0 };
-const trim = (name: string) => Array.from(name).length > 16 ? Array.from(name).slice(0, 15).join('') + '…' : name;
-let drag: { id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | undefined;
+const trim = (name: string) => Array.from(name).length > 18 ? Array.from(name).slice(0, 17).join('') + '…' : name;
+let particles: ForceNode[] = [], frame = 0, alpha = 0, tick = 0, reducedMotion = false, lastFocus = '';
+let lastTap: { id: string; at: number } | undefined;
+let drag: { id?: string; x: number; y: number; startX: number; startY: number; moved: boolean; pointer: number } | undefined;
+function publish() { const next = { ...layout.value }; for (const node of particles) next[node.id] = { x: node.x, y: node.y }; layout.value = next; }
+function saveView() { emit('view', { layout: { ...layout.value }, camera: { ...camera.value } }); }
+function step() {
+  frame = 0;
+  const pinned = drag?.id ? { id: drag.id, point: pos(drag.id) } : undefined;
+  const energy = stepForces(particles, links.value, alpha, pinned);
+  publish(); tick++; alpha *= .986;
+  if ((alpha > .02 && (energy > .001 || tick < 45)) || drag?.id) frame = requestAnimationFrame(step);
+  else saveView();
+}
+function restart() {
+  cancelAnimationFrame(frame); alpha = .9; tick = 0;
+  if (reducedMotion) { for (let i = 0; i < 200; i++) stepForces(particles, links.value, .5); publish(); saveView(); frame = 0; }
+  else frame = requestAnimationFrame(step);
+}
+watch(() => `${focusId.value}|${relations.value.map(r => `${r.id}:${r.score}`).join('|')}`, () => {
+  if (lastFocus !== focusId.value) {
+    lastFocus = focusId.value; camera.value = { ...(props.state.current?.camera ?? { x: 0, y: 0, zoom: 1 }) }; layout.value = { ...props.state.current?.layout }; particles = []; drag = undefined;
+  }
+  const previous = new Map(particles.map(node => [node.id, node]));
+  particles = nodes.value.map((id, index) => previous.get(id) ?? { id, ...(layout.value[id] ?? { x: Math.cos(index * 2.4) * 180, y: Math.sin(index * 2.4) * 180 }), vx: 0, vy: 0, labelWidth: Math.min(145, Array.from(names.value.get(id) ?? '').length * 7) });
+  hoveredEdge.value = undefined; hoveredNode.value = undefined;
+  restart();
+}, { immediate: true });
+onMounted(() => { reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; if (reducedMotion) restart(); });
+onBeforeUnmount(() => { cancelAnimationFrame(frame); });
 function coordinates(event: PointerEvent) { const matrix = canvas.value!.getScreenCTM(); return matrix ? new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse()) : { x: event.clientX, y: event.clientY }; }
 function down(event: PointerEvent, id?: string) {
   if (event.button !== 0) return;
   event.stopPropagation(); const p = coordinates(event); const start = id ? pos(id) : camera.value;
-  drag = { ...(id ? { id } : {}), x: p.x, y: p.y, startX: start.x, startY: start.y, moved: false }; canvas.value!.setPointerCapture(event.pointerId);
+  drag = { ...(id ? { id } : {}), x: p.x, y: p.y, startX: start.x, startY: start.y, moved: false, pointer: event.pointerId }; canvas.value!.setPointerCapture(event.pointerId);
 }
 function move(event: PointerEvent) {
   if (!drag) return; const p = coordinates(event); const dx = p.x - drag.x, dy = p.y - drag.y;
   if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
-  if (drag.id) layout.value[drag.id] = { x: drag.startX + dx / camera.value.zoom, y: drag.startY + dy / camera.value.zoom };
-  else camera.value = { ...camera.value, x: drag.startX + dx, y: drag.startY + dy };
+  if (drag.id && drag.moved) {
+    layout.value[drag.id] = { x: drag.startX + dx / camera.value.zoom, y: drag.startY + dy / camera.value.zoom };
+    const node = particles.find(node => node.id === drag!.id); if (node) Object.assign(node, pos(drag.id), { vx: 0, vy: 0 });
+    if (!reducedMotion) { alpha = .65; if (!frame) frame = requestAnimationFrame(step); }
+  } else if (!drag.id) camera.value = { ...camera.value, x: drag.startX + dx, y: drag.startY + dy };
 }
-function up() {
+function up(event: PointerEvent) {
   if (!drag) return;
-  if (drag.moved) emit('view', { layout: layout.value, camera: camera.value });
-  else if (drag.id) emit('preview', drag.id);
-  drag = undefined;
+  const previous = drag; drag = undefined;
+  if (canvas.value?.hasPointerCapture(previous.pointer)) canvas.value.releasePointerCapture(previous.pointer);
+  if (previous.moved) { lastTap = undefined; saveView(); if (previous.id) restart(); }
+  else if (previous.id && event.type !== 'pointercancel') {
+    // Pointer capture retargets native dblclick to the SVG; recognize consecutive node taps here.
+    if (lastTap?.id === previous.id && event.timeStamp - lastTap.at < 350) { lastTap = undefined; explore(previous.id); }
+    else { lastTap = { id: previous.id, at: event.timeStamp }; emit('preview', previous.id); }
+  } else lastTap = undefined;
 }
-function zoom(delta: number) { camera.value.zoom = Math.max(0.2, Math.min(4, camera.value.zoom + delta)); emit('view', { camera: camera.value }); }
+function explore(id: string) { if (id !== focusId.value) { saveView(); emit('focus', id); } }
+function zoom(delta: number) { camera.value.zoom = Math.max(.2, Math.min(4, camera.value.zoom + delta)); emit('view', { camera: { ...camera.value } }); }
 </script>
 <template>
-  <div class="graph-surface">
-    <div class="graph-caption"><span class="eyebrow">LOCAL EXPLORATION</span><h2>从这里，发现关联。</h2><p>点击预览 · 双击继续探索</p></div>
+  <div class="graph-surface force-graph">
+    <div class="graph-caption"><span class="eyebrow">LOCAL EXPLORATION</span><h2>从这里，发现关联。</h2><p>拖动节点 · 点击预览 · 双击探索</p></div>
     <svg ref="canvas" class="local-graph" viewBox="0 0 1000 720" aria-label="当前笔记的局部知识图" @pointerdown="down($event)" @pointermove="move" @pointerup="up" @pointercancel="up">
-      <defs><radialGradient id="focus-halo"><stop offset="0" stop-color="#668ee9" stop-opacity=".13"/><stop offset="1" stop-color="#668ee9" stop-opacity="0"/></radialGradient></defs>
       <g :transform="`translate(${500 + camera.x} ${365 + camera.y}) scale(${camera.zoom})`">
-        <circle r="255" fill="url(#focus-halo)" pointer-events="none" />
-        <circle class="orbit" r="195"/><circle class="orbit" r="355"/>
-        <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected }">
-          <line :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y" :style="{ opacity: .22 + relation.score * .55 }" />
-          <g role="button" tabindex="0" :aria-label="`查看与 ${names.get(relation.nodes.find(id => id !== focusId)!)} 的关系证据`" :transform="`translate(${(pos(relation.nodes[0]).x + pos(relation.nodes[1]).x) / 2} ${(pos(relation.nodes[0]).y + pos(relation.nodes[1]).y) / 2})`" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)"><rect x="-18" y="-10" width="36" height="20" rx="10"/><text text-anchor="middle" dominant-baseline="middle">{{ Math.round(relation.score * 100) }}</text></g>
+        <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected, 'edge-active': hoveredEdge === relation.id || (hoveredNode && relation.nodes.includes(hoveredNode)) }" role="button" tabindex="0" :aria-label="`查看与 ${names.get(relation.nodes.find(id => id !== focusId)!)} 的关系证据，权重 ${Math.round(relation.score * 100)}`" @pointerenter="hoveredEdge = relation.id" @pointerleave="hoveredEdge = undefined" @focus="hoveredEdge = relation.id" @blur="hoveredEdge = undefined" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)" @keydown.space.prevent="emit('evidence', relation.id)">
+          <line class="edge-stroke" :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y" :style="{ opacity: .25 + relation.score * .4 }"/>
+          <line class="edge-hit" :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y"/>
+          <text class="edge-weight" text-anchor="middle" :x="(pos(relation.nodes[0]).x + pos(relation.nodes[1]).x) / 2" :y="(pos(relation.nodes[0]).y + pos(relation.nodes[1]).y) / 2 - 9">{{ Math.round(relation.score * 100) }}</text>
         </g>
-        <g v-for="id in nodes" :key="id" class="graph-node" :class="{ center: id === focusId, visited: state.current?.visited.includes(id) }" :transform="`translate(${pos(id).x} ${pos(id).y})`" role="button" tabindex="0" :aria-label="`${id === focusId ? '当前中心' : '预览'}：${names.get(id)}`" @pointerdown="down($event, id)" @dblclick.stop="id !== focusId && emit('focus', id)" @keydown.enter="emit('preview', id)" @keydown.space.prevent="id !== focusId && emit('focus', id)">
-          <circle :r="id === focusId ? 35 : 22"/><image v-if="id === focusId" :href="'./brand/ripple-logo.png'" x="-28" y="-28" width="56" height="56"/><text v-else text-anchor="middle" dominant-baseline="middle" y="1">{{ Array.from(names.get(id) ?? '?')[0] }}</text>
-          <rect :x="id === focusId ? -100 : -87" :y="id === focusId ? 44 : 31" :width="id === focusId ? 200 : 174" height="28" rx="8" class="node-label-background"/><text class="node-label" text-anchor="middle" :y="id === focusId ? 62 : 49">{{ trim(names.get(id) ?? '') }}</text><title>{{ names.get(id) }}</title>
+        <g v-for="id in nodes" :key="id" class="graph-node" :class="{ center: id === focusId, visited: state.current?.visited.includes(id) }" :transform="`translate(${pos(id).x} ${pos(id).y})`" role="button" tabindex="0" :aria-label="`${id === focusId ? '当前中心' : '预览'}：${names.get(id)}`" @pointerenter="hoveredNode = id" @pointerleave="hoveredNode = undefined" @pointerdown="down($event, id)" @keydown.enter="emit('preview', id)" @keydown.space.prevent="explore(id)">
+          <circle class="node-hit" r="18"/><circle class="node-dot" :r="id === focusId ? 7 : 4.5"/>
+          <text class="node-label" text-anchor="middle" y="25">{{ trim(names.get(id) ?? '') }}</text><title>{{ names.get(id) }}</title>
         </g>
       </g>
     </svg>
-    <div class="graph-controls"><button aria-label="缩小图谱" @click="zoom(-.15)">−</button><span>{{ Math.round(camera.zoom * 100) }}%</span><button aria-label="放大图谱" @click="zoom(.15)">+</button><button @click="camera = { x: 0, y: 0, zoom: 1 }; emit('view', { camera })">复位</button></div>
-    <div class="graph-legend"><span class="legend-dot"/> 当前中心 <span class="legend-dot neighbor"/> 可见关联 <span class="legend-line"/> 关系强度</div>
+    <div class="graph-controls"><button aria-label="缩小图谱" @click="zoom(-.15)">−</button><span>{{ Math.round(camera.zoom * 100) }}%</span><button aria-label="放大图谱" @click="zoom(.15)">+</button><button @click="camera = { x: 0, y: 0, zoom: 1 }; emit('view', { camera: { ...camera } })">复位</button></div>
+    <div class="graph-legend"><span class="legend-dot"/> 当前笔记 <span class="legend-dot neighbor"/> 关联笔记 <span class="legend-line"/> 悬停查看权重</div>
   </div>
 </template>
+<style>
+.force-graph.graph-surface{background:var(--canvas,#f8f9fc)}
+.force-graph .graph-node{cursor:grab;filter:none}.force-graph .graph-node:active{cursor:grabbing}
+.force-graph .graph-node>.node-hit{fill:transparent;stroke:none;filter:none}
+.force-graph .graph-node>.node-dot{fill:#8796b0;stroke:none;filter:none;transition:fill .15s}
+.force-graph .graph-node.center>.node-dot{fill:#587dd0}.force-graph .graph-node:hover>.node-dot,.force-graph .graph-node:focus>.node-dot{fill:#416dcc}
+.force-graph .graph-node .node-label{font-size:12px;font-weight:400;fill:var(--secondary,#65738a);pointer-events:auto}.force-graph .graph-node.center .node-label{font-size:12px;font-weight:550;fill:var(--ink,#243657)}
+.force-graph .graph-edge{cursor:pointer}.force-graph .graph-edge>.edge-stroke{stroke:#9aaac3;stroke-width:1;vector-effect:non-scaling-stroke}
+.force-graph .graph-edge>.edge-hit{stroke:transparent;stroke-width:16;pointer-events:stroke;vector-effect:non-scaling-stroke}
+.force-graph .graph-edge .edge-weight{opacity:0;fill:var(--secondary,#65738a);font-size:11px;pointer-events:none;transition:opacity .12s}
+.force-graph .graph-edge:hover .edge-weight,.force-graph .graph-edge:focus .edge-weight{opacity:1}
+.force-graph .graph-edge:focus-visible{outline:none}.force-graph .graph-edge:focus-visible>.edge-stroke{stroke:#416dcc;stroke-width:2.5}
+.force-graph .graph-edge.edge-active>.edge-stroke{stroke:#587dd0;stroke-width:1.6}
+@media(prefers-reduced-motion:reduce){.force-graph *{animation:none!important;transition:none!important}}
+</style>

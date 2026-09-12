@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
 
 MODEL = "tencent/WeMM-Embedding-2B"
@@ -71,6 +72,18 @@ async def guard(request: Request, call_next):
     if length and (not length.isdigit() or int(length) > 16 * 1024 * 1024):
         return JSONResponse({"error": "request-too-large"}, status_code=413)
     return await call_next(request)
+
+
+# Explicit UI origins only; do not expose a local inference service to arbitrary websites.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[origin.strip() for origin in os.environ.get(
+        "RIPPLE_EMBEDDING_ALLOWED_ORIGINS",
+        "http://127.0.0.1:4320,http://127.0.0.1:4321,http://localhost:4320,http://localhost:4321,https://alpha5402.github.io",
+    ).split(",") if origin.strip()],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 
 
 def batch(body):

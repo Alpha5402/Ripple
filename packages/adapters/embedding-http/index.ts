@@ -12,7 +12,7 @@ export class HttpEmbeddingProvider implements EmbeddingProvider {
     const url = new URL(options.baseUrl);
     if (url.username || url.password || url.search || url.hash || !['http:', 'https:'].includes(url.protocol)) throw new EmbeddingError('CONFIG', 'Use an HTTP endpoint without embedded credentials or query parameters');
     if (url.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) throw new EmbeddingError('CONFIG', 'Cloud endpoints require HTTPS; use HTTP only for loopback');
-    this.baseUrl = url.href.replace(/\/$/, ''); this.requestFetch = options.fetch ?? globalThis.fetch;
+    this.baseUrl = url.href.replace(/\/$/, ''); this.requestFetch = options.fetch ?? globalThis.fetch.bind(globalThis);
   }
   static async connect(options: HttpEmbeddingOptions): Promise<HttpEmbeddingProvider> {
     if (options.protocol === 'openai-compatible') {
