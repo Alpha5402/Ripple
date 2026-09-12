@@ -15,8 +15,6 @@ interface AstNode {
 const processor = unified().use(remarkParse).use(remarkFrontmatter, ['yaml']).use(remarkGfm);
 const ignored = new Set(['code', 'inlineCode', 'link', 'linkReference', 'image', 'imageReference', 'html', 'yaml', 'definition']);
 const plain = (node: AstNode): string => node.value ?? node.children?.map(plain).join('') ?? '';
-const startOf = (node: AstNode): number => node.position?.start.offset ?? 0;
-const endOf = (node: AstNode): number => node.position?.end.offset ?? 0;
 const escaped = (text: string, offset: number): boolean => {
   let count = 0;
   while (text[--offset] === '\\') count++;
@@ -24,9 +22,13 @@ const escaped = (text: string, offset: number): boolean => {
 };
 
 export class RemarkMarkdownParser implements MarkdownParser {
-  readonly version = 'remark-ripple-v2';
+  readonly version = 'remark-ripple-v3';
   parse(documentId: string, path: string, markdown: string): ParsedDocument {
-    const tree = processor.parse(markdown) as AstNode;
+    // mdast offsets exclude a leading BOM. Keep all evidence in the original UTF-16 source coordinates.
+    const bom = markdown.startsWith('\uFEFF') ? 1 : 0;
+    const tree = processor.parse(markdown.slice(bom)) as AstNode;
+    const startOf = (node: AstNode): number => (node.position?.start.offset ?? 0) + bom;
+    const endOf = (node: AstNode): number => (node.position?.end.offset ?? 0) + bom;
     const names: ParsedDocument['names'] = [{ name: path.split('/').at(-1)!.replace(/\.md$/i, ''), source: 'filename' }];
     const warnings: string[] = [];
     let configuredTitle: string | undefined;
@@ -122,6 +124,6 @@ export class RemarkMarkdownParser implements MarkdownParser {
       } else node.children?.forEach(child => scan(child, blockId));
     };
     scan(tree, `${documentId}:root`);
-    return { title, names, sections, textSpans, wikiLinks, parserVersion: this.version, warnings, media, contentStart: yaml ? endOf(yaml) : 0 };
+    return { title, names, sections, textSpans, wikiLinks, parserVersion: this.version, warnings, media, contentStart: yaml ? endOf(yaml) : bom };
   }
 }

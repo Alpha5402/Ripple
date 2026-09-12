@@ -6,3 +6,7 @@ reports/local/
 .DS_Store
 __pycache__/
 *.pyc
+release/
+vendor/mark-it/build/
+test-results/
+playwright-report/

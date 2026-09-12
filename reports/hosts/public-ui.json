@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-13",
+  "surface": "production static build in Chromium",
+  "graphNodes": 6,
+  "mobileOverflow": false,
+  "embedOverflow": false,
+  "sandboxReset": true,
+  "pageErrors": [],
+  "externalRequests": []
+}

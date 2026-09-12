@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "packages/workbench/**/*.ts",
+    "packages/workbench/**/*.vue",
+    "packages/host/contract.ts",
+    "packages/host/layout.ts",
+    "apps/workbench/**/*.ts",
+    "apps/workbench/**/*.mts",
+    "apps/graph-benchmark/**/*.ts",
+    "apps/graph-benchmark/**/*.vue"
+  ],
+  "exclude": [
+    "vendor/mark-it/src"
+  ]
+}

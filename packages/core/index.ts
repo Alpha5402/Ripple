@@ -8,3 +8,4 @@ export * from './embedding/model.js';
 export * from './embedding/config.js';
 export * from './embedding/chunk.js';
 export * from './errors.js';
+export * from './visibility.js';

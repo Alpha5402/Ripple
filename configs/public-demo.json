@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "ripple-async-garden",
+  "title": "异步的知识花园",
+  "documents": [
+    { "path": "Promise.md", "slug": "promise" },
+    { "path": "Event Loop.md", "slug": "event-loop" },
+    { "path": "Microtask.md", "slug": "microtask" },
+    { "path": "Async-Await.md", "slug": "async-await" },
+    { "path": "Web Workers.md", "slug": "web-workers" },
+    { "path": "AbortController.md", "slug": "abort-controller" },
+    { "path": "Fetch.md", "slug": "fetch" },
+    { "path": "Streams API.md", "slug": "streams-api" },
+    { "path": "Backpressure.md", "slug": "backpressure" },
+    { "path": "Observable.md", "slug": "observable" }
+  ]
+}

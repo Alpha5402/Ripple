@@ -1,0 +1,820 @@
+:root {
+  --line-height: 28px; /* 这是你每一行列表的标准高度 */
+}
+
+hr {
+  margin: 16px 0;
+}
+
+.md-editor-body {
+  flex: 1;
+  overflow-y: auto;
+  line-height: 1.6;
+  user-select: none;
+  overflow: auto;
+  min-height: 100%;
+}
+
+.md-editor-area {
+  /* 布局与盒模型 */
+  position: absolute; /* 添加：确保重叠 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* 关键：确保 padding 不会撑破 width 100% */
+  padding: 20px;          /* 以前在父容器的 padding 移到这里 */
+  
+  /* 视觉欺骗关键属性 */
+  background: transparent;
+  color: transparent;
+  caret-color: #333;       /* 光标颜色，否则光标也看不见了 */
+  z-index: 2;              /* 必须比高亮层高 */
+  
+  border: none;
+  resize: none;
+  outline: none;
+  
+  font-family: '微软雅黑';
+  font-size: 14px;
+  line-height: 1.6;
+  tab-size: 4;
+  
+  overflow-y: auto; 
+  caret-color: black;
+}
+
+.md-preview-editor-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* 关键 */
+  padding: 20px;          /* 必须与 textarea 一模一样 */
+  
+  background-color: #fff; /* 背景色在这里设置 */
+  color: #333;            /* 文字颜色在这里显示 */
+  z-index: 1;             /* 在下面 */
+  
+  pointer-events: none;   /* 鼠标穿透 */
+  
+  font-family: '微软雅黑';
+  font-size: 14px;
+  line-height: 1.6;
+  tab-size: 4;
+  
+  white-space: pre-wrap; 
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+.md-preview-area {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.md-line-block {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline; /* baseline 对齐，确保结构性标记符和文本对齐 */
+  padding: 4px;
+  tab-size: 4;
+  line-height: 1.6; /* 统一行高，避免展开/收起模式切换时行高变化导致抖动 */
+}
+
+/* 空行样式：确保有足够的点击区域 */
+.md-blank {
+  min-height: 1.6em; /* 与正常行高一致 */
+  line-height: 1.6;
+  width: 100%;
+  cursor: text;
+}
+
+.md-origin-block {
+  display: flex;
+  tab-size: 4;
+  padding: 4px;
+}
+
+/* 树形列表样式 */
+.md-list {
+  list-style-type: disc; /* 使用浏览器默认圆点 */
+}
+
+.md-list-item {
+  line-height: 1.6;
+  list-style-position: outside; 
+  display: flex;
+  align-items: baseline; /* baseline 对齐 */
+}
+
+/* 列表项的一行 */
+.md-list-item-ordered {
+  display: flex; /* 🔥 关键：使用 Flex 布局 */
+  align-items: flex-start; /* 顶部对齐 (如果文字换行，数字还在第一行) */
+  margin-bottom: 4px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* 序号样式 (对应 Obsidian 的 list-number) */
+.md-list-number {
+  flex-shrink: 0; /* 防止数字被压缩 */
+  min-width: 2em; /* 给数字留点固定宽度，对齐更好看 */
+  color: #888; /* 数字颜色稍微淡一点 */
+  font-family: 'Maple Mono'; /* 用等宽字体，数字对齐更整齐 */
+}
+
+/* 内容区域 */
+.md-inline-content {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: pre-wrap;     /* 保留用户空格 + 支持换行 */
+  overflow-wrap: anywhere;   /* 超长单词强制换行 */
+  word-break: break-word;
+}
+
+.md-indent {
+  display: inline-block;
+  flex-shrink: 0;
+  width: auto;
+  white-space: pre;          /* 保留空格不折叠 */
+  color: transparent;        /* 隐藏文本，仅用于撑宽度 */
+  user-select: none;         /* 不可选中 */
+  /* 不设置 height，避免无文本的 inline-block 在 baseline 对齐时撑高行 */
+}
+
+.md-spacing {
+  display: inline-block;
+  flex-shrink: 0;
+  width: auto;
+  white-space: pre;
+  color: transparent;
+  user-select: none;
+  /* 不设置 height，避免无文本的 inline-block 在 baseline 对齐时撑高行 */
+}
+
+.md-list-marker {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1em;
+  flex-shrink: 0;
+  color: #888;
+}
+
+.md-bold {
+  font-weight: bold;
+}
+
+.md-link {
+  color: #267AE9;
+  text-decoration: none;
+  cursor: default;
+}
+
+.md-link:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.md-link:visited {
+  color: #267AE9;
+}
+
+.md-highlight {
+  background-color: rgba(165, 42, 42, 0.2)
+}
+
+.md-italic {
+  font-style: italic;
+}
+
+.md-code {
+  font-family: 'SFMono-Regular', 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Maple Mono', monospace;
+  font-size: 0.92em;
+  background-color: #f0f0f0;
+  color: #666;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.md-strike {
+  text-decoration: line-through;
+}
+
+.md-heading-1,
+.md-heading-2,
+.md-heading-3,
+.md-heading-4,
+.md-heading-5,
+.md-heading-6 {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline; /* baseline 对齐，确保标记符和文本对齐 */
+  font-weight: bold;
+}
+
+.md-heading-1 {
+  font-size: 2em;
+}
+
+.md-heading-2 {
+  font-size: 1.8em;
+}
+
+.md-heading-3 {
+  font-size: 1.6em;
+}
+
+.md-heading-4 {
+  font-size: 1.4em;
+}
+
+.md-heading-5 {
+  font-size: 1.2em;
+}
+
+.md-heading-6 {
+  font-size: 1em;
+}
+
+
+.md-document {
+  padding: 60px;
+  user-select: text;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.md-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0 8px;
+  user-select: text;
+}
+
+.md-metadata-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px 12px 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f0f4f8, #e8eef4);
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  line-height: 1.5;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.md-metadata-item:hover {
+  background: linear-gradient(135deg, #e8eef4, #dfe7ed);
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.md-metadata-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.md-metadata-label::after {
+  content: '·';
+  margin: 0 5px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.md-metadata-value {
+  color: #334155;
+  font-weight: 600;
+}
+
+.active-line {
+  background-color: rgba(180, 213, 255, 0.4);
+  border-radius: 4px;
+  transition: background-color 0.5s ease;
+}
+
+.md-editing {
+  background-color: rgba(180, 213, 255, 0.4);
+  border-radius: 4px;
+}
+
+.md-renderer-area {
+  user-select: text;
+  outline: none;
+}
+
+.md-line-editor {
+  /* 1. 禁止用户手动调整宽高 */
+  resize: none;
+
+  /* 2. 宽度占满 100% */
+  width: 100%;
+  display: block; /* 消除内联元素的间隙 */
+
+  /* 3. 隐藏边框 */
+  border: none;
+  outline: none; /* 选中时的蓝框也去掉 */
+
+  /* 4. 样式美化 */
+  box-sizing: border-box; /* 确保 padding 不会撑开宽度 */
+  background-color: transparent;
+  /* 5. 自动高度的关键（目前仅最新版 Chrome/Edge 支持） */
+  /* 如果浏览器支持，这行代码能让高度根据内容自动撑开 */
+  field-sizing: content; 
+
+  /* 6. 兼容性降级：确保字体排版与外部一致 */
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  padding: 0;
+  margin: 0;
+}
+
+.md-block-active {
+  background-color: rgba(18, 71, 245, 0.2);
+  border-radius: 4px;
+  transition: background-color 0.5s ease;
+}
+
+/* 跨 Block 连续选区：首 block 只保留上方圆角 */
+.md-block-active.md-block-range-first {
+  border-radius: 4px 4px 0 0;
+}
+
+/* 跨 Block 连续选区：中间 block 无圆角，上下衔接 */
+.md-block-active.md-block-range-middle {
+  border-radius: 0;
+}
+
+/* 跨 Block 连续选区：尾 block 只保留下方圆角 */
+.md-block-active.md-block-range-last {
+  border-radius: 0 0 4px 4px;
+}
+
+.md-block-dirty {
+  background-color: rgba(245, 71, 18, 0.2);
+  border-radius: 4px;
+  transition: background-color 0.5s ease;
+}
+
+/* ========== 标记符回显样式 ========== */
+
+/* 标记符文本（如 **、~~、==、*、_、`） */
+.md-marker {
+  color: #b0b0b0;
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: none;
+  background: none;
+  padding: 0;
+  font-family: inherit; /* 与正文保持一致，避免错位 */
+  font-size: inherit; /* 继承父容器字体大小，适配 heading 等 */
+  user-select: text;
+}
+
+.md-completion-decoration {
+  display: inline;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.45;
+}
+
+.md-completion-decoration::after {
+  content: attr(data-suffix);
+}
+
+/* 展开状态的 inline 容器 */
+.md-marker-expanded {
+  /* 保持原有格式样式，不额外添加 */
+}
+
+/* 结构性标记符（indent、list marker、heading marker 展开时） */
+.md-struct-marker {
+  color: #888888;
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: none;
+  background: none;
+  padding: 0;
+  font-family: inherit; /* 与正文保持一致，避免错位 */
+  font-size: inherit; /* 继承父容器字体大小，适配 heading 等 */
+  line-height: inherit; /* 继承行高，保持对齐 */
+  user-select: text;
+  white-space: pre;
+  flex-shrink: 0;
+  vertical-align: baseline; /* 确保 baseline 对齐 */
+}
+
+/* 展开模式下 indent / spacing / list-marker 作为 inline 元素在 md-inline-content 内 */
+/* 使用 display: inline 让文本自然流动，选区完全连续无断层 */
+.md-struct-marker.md-indent {
+  width: auto;
+  height: auto;
+  display: inline;
+}
+
+.md-struct-marker.md-spacing {
+  width: auto;
+  height: auto;
+  display: inline;
+}
+
+.md-struct-marker.md-list-marker {
+  width: auto;
+  display: inline;
+  flex-shrink: unset;
+}
+
+/* 展开模式下的 block */
+.md-block-expanded {
+  /* 可选：展开时的视觉提示 */
+}
+
+/* ========== 水平线样式 ========== */
+.md-hr-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  min-height: 1.6em; /* 与行高一致，保证展开/收起时高度稳定 */
+}
+
+.md-hr {
+  border: none;
+  border-top: 1px solid #d0d0d0;
+  width: 100%;
+  margin: 0;
+}
+
+/* HR 展开模式：文本居中对齐 */
+.md-hr-content {
+  color: #b0b0b0;
+  width: 100%;
+}
+
+/* ========== 引用样式 ========== */
+.md-blockquote {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  border-left: 3px solid #d0d0d0;
+  padding-left: 12px;
+  color: #666;
+}
+
+.md-blockquote[data-depth="2"] {
+  border-left-color: #b0b0b0;
+  padding-left: 24px;
+}
+
+.md-blockquote[data-depth="3"] {
+  border-left-color: #909090;
+  padding-left: 36px;
+}
+
+/* ========== 围栏代码块样式 ========== */
+.md-code-block {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0;
+}
+
+.md-code-block pre {
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+}
+
+.md-code-block pre code {
+  font-family: 'Maple Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* 代码块展开模式：继承 pre 的字体样式 */
+.md-code-block-content {
+  display: block;
+  font-family: 'Maple Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* 代码块展开模式：围栏标记符 ``` 样式 */
+.md-code-fence-marker {
+  color: #888888;
+}
+
+.md-code-block-expanded .md-code-fence-marker::before {
+  display: inline-block;
+  width: 2.5em;
+  margin-right: 12px;
+  text-align: right;
+  color: #aaa;
+  font-size: 12px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.md-code-block-expanded .md-code-fence-open::before {
+  content: 'tag';
+}
+
+.md-code-block-expanded .md-code-fence-close::before {
+  content: '';
+}
+
+/* ========== 代码块行号样式 ========== */
+.md-code-block pre {
+  position: relative;
+  counter-reset: line-number;
+}
+
+.md-code-block pre code {
+  display: block;
+}
+
+.md-code-line {
+  display: block;
+  counter-increment: line-number;
+}
+
+.md-code-block-expanded .md-code-line {
+  display: inline;
+}
+
+.md-code-line::before {
+  content: counter(line-number);
+  display: inline-block;
+  width: 2.5em;
+  margin-right: 12px;
+  text-align: right;
+  color: #aaa;
+  font-size: 12px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ========== 任务列表样式 ========== */
+.md-task-checkbox {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 1.2em;
+}
+
+.md-task-input {
+  margin: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  accent-color: #267AE9;
+}
+
+/* 已完成的任务列表项文本：添加删除线效果 */
+.md-list-item.md-task-done .md-inline-content {
+  text-decoration: line-through;
+  color: #999;
+}
+
+/* ========== 表格样式 ========== */
+.md-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 4px 0;
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.md-table th,
+.md-table td {
+  border: 1px solid #d0d0d0;
+  padding: 8px 12px;
+}
+
+.md-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.md-table tbody tr:hover {
+  background-color: rgba(18, 71, 245, 0.05);
+}
+
+/* 展开模式的表格原始文本 */
+.md-table-content {
+  font-family: 'Maple Mono', 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  white-space: pre;
+  color: #555;
+}
+
+/* ========== Prism.js 语法高亮 token 样式 ========== */
+.md-code-block .token.comment,
+.md-code-block .token.prolog,
+.md-code-block .token.doctype,
+.md-code-block .token.cdata {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.md-code-block .token.punctuation {
+  color: #586069;
+}
+
+.md-code-block .token.namespace {
+  opacity: 0.7;
+}
+
+.md-code-block .token.property,
+.md-code-block .token.tag,
+.md-code-block .token.boolean,
+.md-code-block .token.number,
+.md-code-block .token.constant,
+.md-code-block .token.symbol,
+.md-code-block .token.deleted {
+  color: #d73a49;
+}
+
+.md-code-block .token.selector,
+.md-code-block .token.attr-name,
+.md-code-block .token.string,
+.md-code-block .token.char,
+.md-code-block .token.builtin,
+.md-code-block .token.inserted {
+  color: #22863a;
+}
+
+.md-code-block .token.operator,
+.md-code-block .token.entity,
+.md-code-block .token.url {
+  color: #d73a49;
+}
+
+.md-code-block .token.atrule,
+.md-code-block .token.attr-value,
+.md-code-block .token.keyword {
+  color: #d73a49;
+}
+
+.md-code-block .token.function,
+.md-code-block .token.class-name {
+  color: #6f42c1;
+}
+
+.md-code-block .token.regex,
+.md-code-block .token.important,
+.md-code-block .token.variable {
+  color: #e36209;
+}
+
+.md-code-block .token.important,
+.md-code-block .token.bold {
+  font-weight: bold;
+}
+
+.md-code-block .token.italic {
+  font-style: italic;
+}
+
+/* ========== 脚注样式 ========== */
+.md-footnote-ref {
+  font-size: 0.8em;
+  vertical-align: super;
+  line-height: 0;
+}
+
+.md-footnote-link {
+  color: #267AE9;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0 2px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.md-footnote-link:hover {
+  background: rgba(38, 122, 233, 0.15);
+  text-decoration: underline;
+}
+
+.md-footnote-def {
+  font-size: 0.88em;
+  color: #555;
+  padding-left: 8px;
+  border-left: 2px solid #267AE9;
+  margin-top: 4px;
+}
+
+.md-footnote-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  height: 1.4em;
+  margin-right: 6px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(38, 122, 233, 0.1);
+  color: #267AE9;
+  font-size: 0.82em;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ========== 数学公式样式 ========== */
+.md-math-inline {
+  display: inline;
+  vertical-align: baseline;
+}
+
+.md-math-inline .katex {
+  font-size: 1em;
+}
+
+.md-math-block {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.md-math-display {
+  display: block;
+  padding: 16px 12px;
+  background: #fafbfc;
+  border-radius: 6px;
+  border: 1px solid #eef0f2;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  text-align: center;
+}
+
+.md-math-display .katex-display {
+  display: inline-block;
+  min-width: max-content;
+  margin: 0;
+  text-align: left;
+}
+
+.md-math-display .katex {
+  font-size: 0.92em;
+}
+
+/* 展开模式的数学公式原始文本 */
+.md-math-block-content {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  font-family: 'SFMono-Regular', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  color: #6f42c1;
+}
+
+/* 数学公式渲染错误 */
+.md-math-error {
+  color: #d73a49;
+  font-family: 'SFMono-Regular', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  background: rgba(215, 58, 73, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}

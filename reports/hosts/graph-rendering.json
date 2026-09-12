@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-13",
+  "hardware": "Apple M5, 16 GiB",
+  "browser": "Chromium 152, Codex in-app browser",
+  "renderer": "Vue LocalGraph SVG, production build",
+  "method": "50 local filters, Vue nextTick then two requestAnimationFrame callbacks; DOM transforms of surviving nodes compared with the initial scene",
+  "modelEncodingIncluded": false,
+  "scenes": [
+    { "nodes": 41, "edges": 40, "samples": 50, "firstPresentationMs": 23.3, "lensToPresentationP50Ms": 33.3, "lensToPresentationP95Ms": 34.3, "stableLayout": true },
+    { "nodes": 1000, "edges": 5000, "samples": 50, "firstPresentationMs": 108.7, "lensToPresentationP50Ms": 488, "lensToPresentationP95Ms": 1092.4, "stableLayout": true }
+  ],
+  "interpretation": "The daily 40-edge budget meets the starting 100 ms presentation target on this machine. The unpaged stress scene is visibly slower and is not an acceptable default UI. First presentation reuses an already-mounted renderer and is not a cold application startup measurement."
+}

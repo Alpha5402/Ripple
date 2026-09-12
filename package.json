@@ -36,21 +36,54 @@
     "host:http": "node --import tsx apps/http-kernel/main.ts",
     "eval:relations": "node --import tsx scripts/evaluate-relations.ts",
     "eval:wiki": "node --import tsx scripts/review-wiki-relations.ts",
-    "benchmark:kernel": "node --import tsx scripts/benchmark-kernel.ts"
+    "benchmark:kernel": "node --import tsx scripts/benchmark-kernel.ts",
+    "build:editor": "node --import tsx scripts/build-editor.ts",
+    "typecheck:ui": "node scripts/typecheck-ui.cjs -p tsconfig.ui.json --noEmit",
+    "dev:ui": "npm run build:editor && vite --config apps/workbench/vite.config.mts",
+    "build:desktop": "npm run build:editor && node --import tsx scripts/build-desktop.ts",
+    "desktop": "electron dist/desktop",
+    "package:desktop": "npm run build:desktop && node --import tsx scripts/package-desktop.ts",
+    "export:public": "node --import tsx scripts/export-public.ts",
+    "build:web": "npm run build:editor && vite build --config apps/workbench/vite.config.mts",
+    "preview:web": "vite preview --config apps/workbench/vite.config.mts --host 127.0.0.1 --port 4321",
+    "mcp": "node --import tsx apps/mcp/main.ts",
+    "build:dsh": "npm run build:web && node --import tsx scripts/build-dsh.ts",
+    "validate:dsh": "node --import tsx scripts/validate-dsh-native.ts",
+    "benchmark:graph": "vite build --config apps/graph-benchmark/vite.config.mts && vite preview --config apps/graph-benchmark/vite.config.mts --host 127.0.0.1 --port 47324",
+    "audit:public": "node --import tsx scripts/audit-public.ts"
   },
   "engines": {
     "node": ">=22.16"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@noble/hashes": "^2.4.0",
+    "chokidar": "^5.0.0",
+    "dompurify": "^3.4.15",
+    "escape": "^0.0.1",
+    "katex": "^0.16.38",
+    "marked": "^18.0.12",
+    "prismjs": "^1.30.0",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5",
-    "yaml": "^2.9.0"
+    "vue": "^3.5.42",
+    "yaml": "^2.9.0",
+    "zod": "^4.6.2"
   },
   "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "@playwright/test": "^1.63.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^22.20.2",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "electron": "^44.3.0",
+    "esbuild": "^0.28.2",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "typescript-vue": "npm:typescript@^5.9.3",
+    "vite": "^8.3.0",
+    "vue-tsc": "^3.3.11"
   }
 }

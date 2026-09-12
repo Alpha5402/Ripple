@@ -153,3 +153,14 @@ test('reserved prototype document IDs are rejected without corrupting version ma
   for (const id of ['__proto__', 'constructor', 'toString']) assert.throws(() => service.ingestDocument(document(id, '# Title')), /reserved/);
   assert.equal(service.listDocuments().length, 0);
 });
+test('BOM and CRLF keep mentions, WikiLinks, media and section evidence in original source coordinates', () => {
+  const source = '\uFEFF---\r\naliases: [来源]\r\n---\r\n# Source\r\n\r\n😀 Target。[[Target]] ![图](image.png)\r\n\r\n## 后续\r\nTarget\r\n';
+  const service = kernel(document('source', source), document('target', '# Target'));
+  const parsed = service.getNode('source')!.parsed;
+  assert.equal(source.slice(parsed.sections[1]!.start, parsed.sections[1]!.start + 8), '# Source');
+  assert.equal(source.slice(parsed.contentStart!), '\r\n# Source\r\n\r\n😀 Target。[[Target]] ![图](image.png)\r\n\r\n## 后续\r\nTarget\r\n');
+  for (const mention of service.findMentions({ sourceDocumentId: 'source', targetDocumentId: 'target' })) assert.equal(source.slice(mention.evidence.start, mention.evidence.end), 'Target');
+  const link = service.findWikiLinks({ sourceDocumentId: 'source' })[0]!; assert.equal(source.slice(link.evidence.start, link.evidence.end), '[[Target]]');
+  const media = parsed.media![0]!; assert.equal(source.slice(media.start, media.end), '![图](image.png)');
+  assert.equal(service.getNode('source')!.markdown, source);
+});

@@ -1,0 +1,2739 @@
+{
+  "schemaVersion": 1,
+  "id": "ripple-async-garden",
+  "title": "异步的知识花园",
+  "generatedAt": "2026-09-12T05:37:55.979Z",
+  "scorePolicy": {
+    "version": "mention-explicit-v1",
+    "mentionBase": 0.5,
+    "sectionIncrement": 0.1,
+    "mentionCap": 0.8,
+    "explicitBoost": 0.3
+  },
+  "documents": [
+    {
+      "id": "promise",
+      "path": "promise.md",
+      "markdown": "# Promise\n\nPromise 表示一个异步操作最终成功或失败的结果。它把「现在发起操作」与「结果到达后做什么」分开，让异步过程可以组合。\n\n## 结果只有一次\n\n一个 Promise 最初处于 pending 状态，随后兑现为 fulfilled，或拒绝为 rejected。一旦落定，状态和结果就不会再改变。`then` 每次返回一个新的 Promise，因此链条中的每一步都可以转换结果，或者继续等待另一个异步操作。\n\n```js\nfetch('/api/notes')\n  .then(response => {\n    if (!response.ok) throw new Error('请求失败');\n    return response.json();\n  })\n  .then(notes => render(notes))\n  .catch(error => showError(error));\n```\n\n## 回调为什么不会立刻执行\n\n即使结果已经可用，注册的反应也会异步执行。在浏览器中，Promise 反应通过 Microtask 调度，Event Loop 在微任务检查点处理它们。\n\n这解释了一个常见顺序：同步代码先结束，已排队的 Promise 回调随后运行。不断加入新的 Microtask，会推迟浏览器继续处理任务和渲染的机会。\n\n## 组合与边界\n\nAsync-Await 把 Promise 链写成更接近顺序执行的形式，但不会把 JavaScript 变成同步阻塞代码。多个独立操作可以先同时启动，再使用 `Promise.all` 等待它们。\n\nPromise 的拒绝不等于底层操作已经停止。取消请求需要由操作本身支持，例如 Fetch 配合 AbortController。计算密集的工作也不会因为包在 Promise 里就离开主线程；这时可以考虑 Web Workers。\n\n> 理解 Promise，需要同时分清结果、调度和操作的生命周期。\n\n继续阅读：[[Async-Await]] 与 [[Event Loop]]。\n"
+    },
+    {
+      "id": "event-loop",
+      "path": "event-loop.md",
+      "markdown": "# Event Loop\n\nEvent Loop 让浏览器协调脚本、事件、网络通知和渲染机会。它不是一个简单的「所有回调排成一条队」的模型：任务来源、微任务检查点与渲染步骤各有职责。\n\n## 一次执行之后\n\nJavaScript 任务在当前调用栈清空前，不会被另一个普通任务从中间切走。任务结束后，浏览器可能执行微任务检查点，再决定是否更新渲染。\n\nPromise 的反应与 `queueMicrotask` 都会进入 Microtask 队列。处理微任务期间加入的微任务，会在同一检查点继续执行；如果始终有新的微任务，其他工作可能长时间得不到机会。\n\n```js\nconsole.log('同步开始');\nsetTimeout(() => console.log('后续任务'), 0);\nqueueMicrotask(() => console.log('微任务'));\nconsole.log('同步结束');\n```\n\n这段代码先输出两行同步日志，再输出微任务，最后才是计时器回调。`0` 表示计时条件，不保证立即执行。\n\n## 把工作交还给浏览器\n\n长时间占用主线程会推迟交互响应。把工作拆成小段，或者把适合迁移的计算放入 Web Workers，通常比把同步计算简单包进 Promise 更有意义。\n\nAsync-Await 可以暂停一个异步函数的后续执行，但恢复时机仍由 Promise 反应与微任务调度决定。\n"
+    },
+    {
+      "id": "microtask",
+      "path": "microtask.md",
+      "markdown": "# Microtask\n\nMicrotask 是一类在特定检查点执行的短小工作。Promise 反应和 `queueMicrotask` 是常见来源。\n\n## 同一轮里收拢变化\n\n当同步代码连续改变多个值时，可以只安排一次微任务，在当前调用栈结束后统一处理。\n\n```js\nlet scheduled = false;\nfunction scheduleUpdate() {\n  if (scheduled) return;\n  scheduled = true;\n  queueMicrotask(() => {\n    scheduled = false;\n    updateView();\n  });\n}\n```\n\n这个模式利用了微任务的调度位置：当前同步调用先完成，再做一次合并更新。\n\n## 不要把队列当成后台线程\n\nMicrotask 仍然在相应的执行环境中运行。递归安排微任务可能阻碍 Event Loop 进入下一个任务和渲染机会。\n\n如果计算本身很重，需要拆分执行或迁移工作。Web Workers 提供独立的执行环境，解决的是不同层面的问题。\n\n关联阅读：[[Promise]]。\n"
+    },
+    {
+      "id": "async-await",
+      "path": "async-await.md",
+      "markdown": "# Async-Await\n\nAsync-Await 是组织异步控制流的语法。`async` 函数返回 Promise；`await` 等待一个值或 Promise 的结果，并把函数的后续执行安排在之后恢复。\n\n## 暂停的是函数\n\n`await` 不会阻塞整个线程。等待期间，浏览器可以处理其他已准备好的工作。Promise 拒绝会让 `await` 抛出错误，因此可以使用普通的 `try` / `catch`。\n\n```js\nasync function loadNote(id, signal) {\n  const response = await fetch(`/api/notes/${id}`, { signal });\n  if (!response.ok) throw new Error('无法读取笔记');\n  return await response.json();\n}\n```\n\n## 顺序与并发由依赖决定\n\n两个操作没有先后依赖时，可以先发起，再一起等待；逐个 `await` 会让后一个操作延迟开始。\n\n```js\nconst [profile, notes] = await Promise.all([\n  loadProfile(),\n  loadNotes(),\n]);\n```\n\nAsync-Await 不自动提供取消，也不会取消过期结果的写回。Fetch 可以接收 AbortController 的 signal；界面还应校验请求对应的版本，避免旧响应覆盖新选择。\n\n恢复执行的调度背景见 [[Event Loop]]。\n"
+    },
+    {
+      "id": "web-workers",
+      "path": "web-workers.md",
+      "markdown": "# Web Workers\n\nWeb Workers 让脚本在与页面主线程分开的执行环境里运行。适合迁移的工作包括较重的解析、索引和数据转换。\n\n## 通过消息协作\n\nWorker 不能直接操作页面 DOM。主线程与 Worker 使用消息传递数据，通常经过结构化克隆；某些资源也可以转移所有权。\n\n```js\nconst worker = new Worker(new URL('./indexer.js', import.meta.url), {\n  type: 'module',\n});\nworker.postMessage({ type: 'index', revision: 7, markdown });\nworker.onmessage = ({ data }) => {\n  if (data.revision === currentRevision) showIndex(data.result);\n};\n```\n\n## 结果还需要版本\n\n把计算迁到另一处，不会自动解决过期响应。用户在计算期间切换文档、修改正文或者关闭工作区时，返回结果仍需验证身份与版本。\n\nPromise 可以包装一次消息往返，让调用方更方便地等待结果；这只是组织方式，计算是否离开主线程取决于工作实际在哪里执行。\n\n当生产结果比消费速度更快时，还要限制排队量。这个问题与 [[Backpressure|背压]] 的思路相通。\n"
+    },
+    {
+      "id": "abort-controller",
+      "path": "abort-controller.md",
+      "markdown": "# AbortController\n\nAbortController 提供一个取消信号：控制方调用 `abort()`，支持该信号的操作观察到中止后结束工作。\n\n## 取消与过期是两件事\n\n在搜索输入变化时，旧请求可能已经不再有用。中止旧请求可以减少浪费，但结果写回仍应校验它是否属于当前输入。\n\n```js\nlet controller;\nlet version = 0;\nasync function search(query) {\n  controller?.abort();\n  controller = new AbortController();\n  const current = ++version;\n  try {\n    const response = await fetch(`/search?q=${encodeURIComponent(query)}`, {\n      signal: controller.signal,\n    });\n    const result = await response.json();\n    if (current === version) render(result);\n  } catch (error) {\n    if (current === version && error.name !== 'AbortError') showError(error);\n  }\n}\n```\n\n## 取消是一种协作\n\n并非所有操作都支持中止。信号也不能把已经产生的外部副作用自动撤销。设计接口时，需要同时考虑资源清理、错误传播，以及晚到结果是否仍有执行权。\n\n已经中止的 signal 不能复用成一次新的未中止请求，应为新的生命周期创建新的控制器。\n"
+    },
+    {
+      "id": "fetch",
+      "path": "fetch.md",
+      "markdown": "# Fetch\n\nFetch 提供浏览器中的网络请求接口。`fetch()` 返回 Promise，在响应头可用时兑现为 `Response`；正文还可以继续被读取。\n\n## 状态码与失败\n\nHTTP 404 或 500 通常仍会得到一个正常的 Response。业务代码需要检查 `response.ok` 或状态码；网络层失败与 HTTP 错误响应应分别处理。\n\n```js\nconst response = await fetch('/api/notes');\nif (!response.ok) throw new Error(`HTTP ${response.status}`);\nconst notes = await response.json();\n```\n\n## 正文可以渐进消费\n\n`response.body` 是可读流，可以逐段处理数据。与一次性把所有内容读入内存相比，Streams API 提供了按块消费的方式。\n\nAbortController 可以用于中止支持该信号的请求及正文消费。界面在重新发起请求时，仍应避免旧结果覆盖当前页面状态。\n\n网络任务的完成与回调执行之间，还隔着 JavaScript 的调度机制。可结合 [[Promise]] 与 [[Event Loop]] 理解。\n"
+    },
+    {
+      "id": "streams-api",
+      "path": "streams-api.md",
+      "markdown": "# Streams API\n\nStreams API 把数据处理组织成持续产生和消费的块。数据不必全部到齐后才能开始处理，读取、转换与写入可以逐步进行。\n\n## 生产与消费的节奏\n\n一个流可能产生得很快，而下游写入较慢。无限缓存会带来内存压力，因此流需要表达下游还能接收多少数据。\n\n```js\nawait readable\n  .pipeThrough(new TextDecoderStream())\n  .pipeTo(writable);\n```\n\n管道把读取、转换和写入连接起来，并传播相关的关闭与错误状态。Backpressure 用于协调上下游速度，避免生产方持续压过消费方。\n\n## 资源有明确生命周期\n\n读者取消读取、写入方失败或处理链关闭时，需要让相邻环节有机会清理资源。不要只考虑成功输出，还要考虑结束过程。\n\nFetch 的响应正文可以作为流来消费。分块处理适合渐进展示，但解析器仍须处理一个逻辑记录跨越多个块的情况。\n"
+    },
+    {
+      "id": "backpressure",
+      "path": "backpressure.md",
+      "markdown": "# Backpressure\n\n背压表达的是消费方对生产速度的约束。当生产速度长时间大于消费速度时，系统必须做出选择：等待、限制、丢弃、合并，或者持久化到有界缓冲区。\n\n## 队列不是无限的空间\n\n缓存可以吸收短暂波动，却不能解决持续的速率差。如果工作不断进入、处理始终跟不上，队列会增长，延迟与内存占用也会随之增加。\n\n可以从三个问题开始设计：\n\n- 同时允许多少个正在执行的任务？\n- 等待队列最多容纳多少项？\n- 达到容量时，调用方应该等待、重试，还是得到明确拒绝？\n\n## 把需求反馈给上游\n\n一个有用的协议会让上游知道下游的容量，而不是只让下游被动接收。对连续数据处理而言，这种反馈能够把生产与消费连接成受控的链条。\n\nWeb Workers 的消息队列也需要关注排队规模。把处理移出主线程后，如果发送方没有限制，仍然可能累积大量等待处理的数据。\n\n在浏览器流式处理中的对应机制见 [[Streams API]]。\n"
+    },
+    {
+      "id": "observable",
+      "path": "observable.md",
+      "markdown": "# Observable\n\nObservable 描述一段可以持续发出值、报错或结束的数据序列。订阅建立观察关系，取消订阅结束相应的消费生命周期。\n\n## 一次结果与多个事件\n\nPromise 表达一次异步结果，Observable 可以表达随时间到来的多个值。例如输入变化、页面事件或持续的数据更新。\n\n二者也有不同的生命周期习惯：一个 Promise 通常在创建时已经关联到操作；一些 Observable 在订阅时才开始为该订阅者产生数据。具体行为取决于实现与序列类型。\n\n## 调度不是固定属性\n\n一次订阅可以同步收到值，也可以在未来收到异步通知。不要仅凭 Observable 这个名字就推断它一定在其他线程，或一定通过某一种队列执行。\n\n这与 Event Loop 的分析方法一致：应追踪实际的调度点和执行环境。\n\n## 结束观察之后\n\n取消订阅时，应释放监听器、计时器等资源。对于不能真正取消的外部工作，还需要阻止晚到的结果继续更新已经关闭的界面。\n"
+    }
+  ],
+  "semantic": {
+    "descriptor": {
+      "model": "tencent/WeMM-Embedding-2B",
+      "revision": "bbd6cd4bf52cfc6716f752a2df80b2706720bd95",
+      "dimensions": 2048,
+      "normalized": true,
+      "modalities": [
+        "image",
+        "text"
+      ],
+      "maxInputTokens": 1024,
+      "representation": "wemm-embedding-token-v1/transformers-5.2.0/bfloat16/fast-image-pixels-65536",
+      "tokenizer": "wemm-tokenizer:bbd6cd4bf52cfc6716f752a2df80b2706720bd95"
+    },
+    "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+    "signals": [
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "async-await",
+        "rawValue": 0.9287614721878988,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+            "start": 589,
+            "end": 890
+          },
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 1,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.9287614721878988,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+                  "start": 589,
+                  "end": 890
+                },
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:c622d90069987858",
+                "async-await:unit:fa9564272bdd69d9"
+              ],
+              "unitHashes": [
+                "1fffb3064f553fd04e3f13b7d51cf25c38edd449a1ead85ad594d8a880c3c197",
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "event-loop",
+        "rawValue": 0.9264042453257154,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+            "start": 418,
+            "end": 589
+          },
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"一次执行之后\"]:0",
+            "start": 93,
+            "end": 466
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 1,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.9264042453257154,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+                  "start": 418,
+                  "end": 589
+                },
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"一次执行之后\"]:0",
+                  "start": 93,
+                  "end": 466
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:e059f8362a8fba0f",
+                "event-loop:unit:7238b23ec0c92124"
+              ],
+              "unitHashes": [
+                "20a2edd95d10068c3adb1b564669497505d1ff7a82262baf599162edd54f6ce5",
+                "91aa0c32aebdeb516915f33ea96baa11009ee42d27866e488f0bed0c2fee193c"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "microtask",
+        "rawValue": 0.8805729142796972,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+            "start": 418,
+            "end": 589
+          },
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+            "start": 349,
+            "end": 502
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9722470203995676,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8805729142796972,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+                  "start": 418,
+                  "end": 589
+                },
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+                  "start": 349,
+                  "end": 502
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:e059f8362a8fba0f",
+                "microtask:unit:6ac3a67efc05d46f"
+              ],
+              "unitHashes": [
+                "20a2edd95d10068c3adb1b564669497505d1ff7a82262baf599162edd54f6ce5",
+                "217353d532edcc0093087e2575a328eac07dfa41cd7a537d05bc4b5ab954b4aa"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "observable",
+        "rawValue": 0.8462127133480492,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+            "start": 418,
+            "end": 589
+          },
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+            "start": 75,
+            "end": 240
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9231610190686416,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8462127133480492,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+                  "start": 418,
+                  "end": 589
+                },
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+                  "start": 75,
+                  "end": 240
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:e059f8362a8fba0f",
+                "observable:unit:8b9def0cf2c952f5"
+              ],
+              "unitHashes": [
+                "20a2edd95d10068c3adb1b564669497505d1ff7a82262baf599162edd54f6ce5",
+                "8913e67fd1fb37c861451cca27139a25c22e77ed2aa74eb2d43b7b02892b655c"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "fetch",
+        "rawValue": 0.8073920494336727,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+            "start": 589,
+            "end": 890
+          },
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8677029277623896,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8073920494336727,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+                  "start": 589,
+                  "end": 890
+                },
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:c622d90069987858",
+                "fetch:unit:53698657bbccdfad"
+              ],
+              "unitHashes": [
+                "1fffb3064f553fd04e3f13b7d51cf25c38edd449a1ead85ad594d8a880c3c197",
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "web-workers",
+        "rawValue": 0.8208272796566909,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+            "start": 589,
+            "end": 890
+          },
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8868961137952728,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8208272796566909,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+                  "start": 589,
+                  "end": 890
+                },
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:c622d90069987858",
+                "web-workers:unit:bade3f1a918c2305"
+              ],
+              "unitHashes": [
+                "1fffb3064f553fd04e3f13b7d51cf25c38edd449a1ead85ad594d8a880c3c197",
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "abort-controller",
+        "rawValue": 0.7799338840229755,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+            "start": 418,
+            "end": 589
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+            "start": 631,
+            "end": 759
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8284769771756794,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7799338840229755,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"回调为什么不会立刻执行\"]:0",
+                  "start": 418,
+                  "end": 589
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+                  "start": 631,
+                  "end": 759
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:e059f8362a8fba0f",
+                "abort-controller:unit:242f4af817a18a7e"
+              ],
+              "unitHashes": [
+                "20a2edd95d10068c3adb1b564669497505d1ff7a82262baf599162edd54f6ce5",
+                "d79a1899325186c196655cd092c71ef8c7ee311849900acaa85c397234cddd23"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "backpressure",
+        "rawValue": 0.7681153459334622,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+            "start": 589,
+            "end": 890
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8115933513335175,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7681153459334622,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+                  "start": 589,
+                  "end": 890
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:c622d90069987858",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "1fffb3064f553fd04e3f13b7d51cf25c38edd449a1ead85ad594d8a880c3c197",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "promise",
+        "to": "streams-api",
+        "rawValue": 0.7476499187878536,
+        "evidence": [
+          {
+            "documentId": "promise",
+            "revision": 1,
+            "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+            "start": 589,
+            "end": 890
+          },
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.7823570268397909,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7476499187878536,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "promise",
+                  "revision": 1,
+                  "sectionId": "promise:section:[\"Promise\",\"组合与边界\"]:0",
+                  "start": 589,
+                  "end": 890
+                },
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "promise:unit:c622d90069987858",
+                "streams-api:unit:dcd4700448db8a87"
+              ],
+              "unitHashes": [
+                "1fffb3064f553fd04e3f13b7d51cf25c38edd449a1ead85ad594d8a880c3c197",
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "event-loop",
+        "to": "microtask",
+        "rawValue": 0.8968379079137054,
+        "evidence": [
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+            "start": 466,
+            "end": 613
+          },
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+            "start": 349,
+            "end": 502
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9954827255910079,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8968379079137054,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+                  "start": 466,
+                  "end": 613
+                },
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+                  "start": 349,
+                  "end": 502
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "event-loop:unit:0e7e53a3f660fd08",
+                "microtask:unit:6ac3a67efc05d46f"
+              ],
+              "unitHashes": [
+                "cc5d5483a48921e9a107db8546bb28a7954f899e040a939e89acc7577e8ce21d",
+                "217353d532edcc0093087e2575a328eac07dfa41cd7a537d05bc4b5ab954b4aa"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "event-loop",
+        "rawValue": 0.8760116902108332,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+            "start": 466,
+            "end": 613
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9657309860154762,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8760116902108332,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+                  "start": 466,
+                  "end": 613
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "event-loop:unit:0e7e53a3f660fd08"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "cc5d5483a48921e9a107db8546bb28a7954f899e040a939e89acc7577e8ce21d"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "fetch",
+        "to": "event-loop",
+        "rawValue": 0.7982363606967313,
+        "evidence": [
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          },
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+            "start": 466,
+            "end": 613
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.854623372423902,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7982363606967313,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                },
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+                  "start": 466,
+                  "end": 613
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "fetch:unit:53698657bbccdfad",
+                "event-loop:unit:0e7e53a3f660fd08"
+              ],
+              "unitHashes": [
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9",
+                "cc5d5483a48921e9a107db8546bb28a7954f899e040a939e89acc7577e8ce21d"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "event-loop",
+        "to": "web-workers",
+        "rawValue": 0.8284928324646573,
+        "evidence": [
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+            "start": 466,
+            "end": 613
+          },
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.897846903520939,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8284928324646573,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+                  "start": 466,
+                  "end": 613
+                },
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "event-loop:unit:0e7e53a3f660fd08",
+                "web-workers:unit:bade3f1a918c2305"
+              ],
+              "unitHashes": [
+                "cc5d5483a48921e9a107db8546bb28a7954f899e040a939e89acc7577e8ce21d",
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "event-loop",
+        "to": "backpressure",
+        "rawValue": 0.8094897682726617,
+        "evidence": [
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+            "start": 466,
+            "end": 613
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8706996689609453,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8094897682726617,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+                  "start": 466,
+                  "end": 613
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "event-loop:unit:0e7e53a3f660fd08",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "cc5d5483a48921e9a107db8546bb28a7954f899e040a939e89acc7577e8ce21d",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "event-loop",
+        "to": "observable",
+        "rawValue": 0.8023836218016959,
+        "evidence": [
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"一次执行之后\"]:0",
+            "start": 93,
+            "end": 466
+          },
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"调度不是固定属性\"]:0",
+            "start": 240,
+            "end": 364
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8605480311452798,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8023836218016959,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"一次执行之后\"]:0",
+                  "start": 93,
+                  "end": 466
+                },
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"调度不是固定属性\"]:0",
+                  "start": 240,
+                  "end": 364
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "event-loop:unit:7238b23ec0c92124",
+                "observable:unit:50e2061cdb477ba2"
+              ],
+              "unitHashes": [
+                "91aa0c32aebdeb516915f33ea96baa11009ee42d27866e488f0bed0c2fee193c",
+                "69b77f8247ff8cb3192fd7439ef1035f886339937a5c2bb412b7440b34b1c229"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "event-loop",
+        "to": "abort-controller",
+        "rawValue": 0.7545347842928498,
+        "evidence": [
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+            "start": 466,
+            "end": 613
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+            "start": 631,
+            "end": 759
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.7921925489897855,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7545347842928498,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+                  "start": 466,
+                  "end": 613
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+                  "start": 631,
+                  "end": 759
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "event-loop:unit:0e7e53a3f660fd08",
+                "abort-controller:unit:242f4af817a18a7e"
+              ],
+              "unitHashes": [
+                "cc5d5483a48921e9a107db8546bb28a7954f899e040a939e89acc7577e8ce21d",
+                "d79a1899325186c196655cd092c71ef8c7ee311849900acaa85c397234cddd23"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "event-loop",
+        "to": "streams-api",
+        "rawValue": 0.721679683668791,
+        "evidence": [
+          {
+            "documentId": "event-loop",
+            "revision": 1,
+            "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+            "start": 466,
+            "end": 613
+          },
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.7452566909554157,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.721679683668791,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "event-loop",
+                  "revision": 1,
+                  "sectionId": "event-loop:section:[\"Event Loop\",\"把工作交还给浏览器\"]:0",
+                  "start": 466,
+                  "end": 613
+                },
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "event-loop:unit:0e7e53a3f660fd08",
+                "streams-api:unit:dcd4700448db8a87"
+              ],
+              "unitHashes": [
+                "cc5d5483a48921e9a107db8546bb28a7954f899e040a939e89acc7577e8ce21d",
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "web-workers",
+        "to": "microtask",
+        "rawValue": 0.8392133975531413,
+        "evidence": [
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\"]:0",
+            "start": 0,
+            "end": 73
+          },
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+            "start": 349,
+            "end": 502
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9131619965044877,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8392133975531413,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\"]:0",
+                  "start": 0,
+                  "end": 73
+                },
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+                  "start": 349,
+                  "end": 502
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "web-workers:unit:7c98d78af262745b",
+                "microtask:unit:6ac3a67efc05d46f"
+              ],
+              "unitHashes": [
+                "7c025cd2b962e20fb7a37da8f88d1e91fd4f555e844b34be5e78f019355977f0",
+                "217353d532edcc0093087e2575a328eac07dfa41cd7a537d05bc4b5ab954b4aa"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "microtask",
+        "to": "backpressure",
+        "rawValue": 0.8091653567186881,
+        "evidence": [
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+            "start": 349,
+            "end": 502
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8702362238838401,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8091653567186881,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+                  "start": 349,
+                  "end": 502
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "microtask:unit:6ac3a67efc05d46f",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "217353d532edcc0093087e2575a328eac07dfa41cd7a537d05bc4b5ab954b4aa",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "microtask",
+        "to": "observable",
+        "rawValue": 0.8063994703262465,
+        "evidence": [
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"同一轮里收拢变化\"]:0",
+            "start": 77,
+            "end": 349
+          },
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"调度不是固定属性\"]:0",
+            "start": 240,
+            "end": 364
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8662849576089237,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8063994703262465,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"同一轮里收拢变化\"]:0",
+                  "start": 77,
+                  "end": 349
+                },
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"调度不是固定属性\"]:0",
+                  "start": 240,
+                  "end": 364
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "microtask:unit:5290efc63214eb8e",
+                "observable:unit:50e2061cdb477ba2"
+              ],
+              "unitHashes": [
+                "731f173c1291d0b8fb226381dcd3dbd0433170feb1f926e28e0a87077c81b987",
+                "69b77f8247ff8cb3192fd7439ef1035f886339937a5c2bb412b7440b34b1c229"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "microtask",
+        "rawValue": 0.7996630511111653,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+            "start": 349,
+            "end": 502
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8566615015873791,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7996630511111653,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+                  "start": 349,
+                  "end": 502
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "microtask:unit:6ac3a67efc05d46f"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "217353d532edcc0093087e2575a328eac07dfa41cd7a537d05bc4b5ab954b4aa"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "microtask",
+        "to": "abort-controller",
+        "rawValue": 0.7647364803565192,
+        "evidence": [
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"同一轮里收拢变化\"]:0",
+            "start": 77,
+            "end": 349
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+            "start": 631,
+            "end": 759
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8067664005093131,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7647364803565192,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"同一轮里收拢变化\"]:0",
+                  "start": 77,
+                  "end": 349
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+                  "start": 631,
+                  "end": 759
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "microtask:unit:5290efc63214eb8e",
+                "abort-controller:unit:242f4af817a18a7e"
+              ],
+              "unitHashes": [
+                "731f173c1291d0b8fb226381dcd3dbd0433170feb1f926e28e0a87077c81b987",
+                "d79a1899325186c196655cd092c71ef8c7ee311849900acaa85c397234cddd23"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "fetch",
+        "to": "microtask",
+        "rawValue": 0.7633427434303585,
+        "evidence": [
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          },
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+            "start": 349,
+            "end": 502
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8047753477576549,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7633427434303585,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                },
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"不要把队列当成后台线程\"]:0",
+                  "start": 349,
+                  "end": 502
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "fetch:unit:53698657bbccdfad",
+                "microtask:unit:6ac3a67efc05d46f"
+              ],
+              "unitHashes": [
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9",
+                "217353d532edcc0093087e2575a328eac07dfa41cd7a537d05bc4b5ab954b4aa"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "microtask",
+        "to": "streams-api",
+        "rawValue": 0.711770934046819,
+        "evidence": [
+          {
+            "documentId": "microtask",
+            "revision": 1,
+            "sectionId": "microtask:section:[\"Microtask\",\"同一轮里收拢变化\"]:0",
+            "start": 77,
+            "end": 349
+          },
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.7311013343525987,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.711770934046819,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "microtask",
+                  "revision": 1,
+                  "sectionId": "microtask:section:[\"Microtask\",\"同一轮里收拢变化\"]:0",
+                  "start": 77,
+                  "end": 349
+                },
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "microtask:unit:5290efc63214eb8e",
+                "streams-api:unit:dcd4700448db8a87"
+              ],
+              "unitHashes": [
+                "731f173c1291d0b8fb226381dcd3dbd0433170feb1f926e28e0a87077c81b987",
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "observable",
+        "rawValue": 0.8366064452353484,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+            "start": 75,
+            "end": 240
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9094377789076405,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8366064452353484,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+                  "start": 75,
+                  "end": 240
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "observable:unit:8b9def0cf2c952f5"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "8913e67fd1fb37c861451cca27139a25c22e77ed2aa74eb2d43b7b02892b655c"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "fetch",
+        "rawValue": 0.8335416621898721,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9050595174141032,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8335416621898721,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "fetch:unit:53698657bbccdfad"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "web-workers",
+        "rawValue": 0.8266775361965981,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8952536231379974,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8266775361965981,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "web-workers:unit:bade3f1a918c2305"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "abort-controller",
+        "rawValue": 0.8216467027318513,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消与过期是两件事\"]:0",
+            "start": 81,
+            "end": 631
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.888066718188359,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8216467027318513,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消与过期是两件事\"]:0",
+                  "start": 81,
+                  "end": 631
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "abort-controller:unit:34e316a301bbcb45"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "e65143a870e524b0aea8aaa23a420571666256f116e1a9e0bc9710f0f4f364cb"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "streams-api",
+        "rawValue": 0.77470151198201,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8210021599743,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.77470151198201,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "streams-api:unit:dcd4700448db8a87"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "async-await",
+        "to": "backpressure",
+        "rawValue": 0.7602890232058346,
+        "evidence": [
+          {
+            "documentId": "async-await",
+            "revision": 1,
+            "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+            "start": 404,
+            "end": 683
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8004128902940495,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7602890232058346,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "async-await",
+                  "revision": 1,
+                  "sectionId": "async-await:section:[\"Async-Await\",\"顺序与并发由依赖决定\"]:0",
+                  "start": 404,
+                  "end": 683
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "async-await:unit:fa9564272bdd69d9",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "cf141f360e6c380204d09744649ab67e21c45005e8325f56a09031afbb7426f2",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "web-workers",
+        "to": "backpressure",
+        "rawValue": 0.8253129179567132,
+        "evidence": [
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8933041685095903,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8253129179567132,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "web-workers:unit:bade3f1a918c2305",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "fetch",
+        "to": "web-workers",
+        "rawValue": 0.7973182711503332,
+        "evidence": [
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          },
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8533118159290474,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7973182711503332,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                },
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "fetch:unit:53698657bbccdfad",
+                "web-workers:unit:bade3f1a918c2305"
+              ],
+              "unitHashes": [
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9",
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "web-workers",
+        "to": "observable",
+        "rawValue": 0.7850835786454052,
+        "evidence": [
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          },
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+            "start": 75,
+            "end": 240
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8358336837791502,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7850835786454052,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                },
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+                  "start": 75,
+                  "end": 240
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "web-workers:unit:bade3f1a918c2305",
+                "observable:unit:8b9def0cf2c952f5"
+              ],
+              "unitHashes": [
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366",
+                "8913e67fd1fb37c861451cca27139a25c22e77ed2aa74eb2d43b7b02892b655c"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "web-workers",
+        "to": "streams-api",
+        "rawValue": 0.7641558112682373,
+        "evidence": [
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          },
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8059368732403389,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7641558112682373,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                },
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "web-workers:unit:bade3f1a918c2305",
+                "streams-api:unit:dcd4700448db8a87"
+              ],
+              "unitHashes": [
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366",
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "web-workers",
+        "to": "abort-controller",
+        "rawValue": 0.7569110632104807,
+        "evidence": [
+          {
+            "documentId": "web-workers",
+            "revision": 1,
+            "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+            "start": 418,
+            "end": 610
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消与过期是两件事\"]:0",
+            "start": 81,
+            "end": 631
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.7955872331578298,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7569110632104807,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "web-workers",
+                  "revision": 1,
+                  "sectionId": "web-workers:section:[\"Web Workers\",\"结果还需要版本\"]:0",
+                  "start": 418,
+                  "end": 610
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消与过期是两件事\"]:0",
+                  "start": 81,
+                  "end": 631
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "web-workers:unit:bade3f1a918c2305",
+                "abort-controller:unit:34e316a301bbcb45"
+              ],
+              "unitHashes": [
+                "a9fb04a5c421b187d8de56863e65d578c1d0627691fb0652102b2c03c5b21366",
+                "e65143a870e524b0aea8aaa23a420571666256f116e1a9e0bc9710f0f4f364cb"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "fetch",
+        "to": "abort-controller",
+        "rawValue": 0.8242235091219011,
+        "evidence": [
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消与过期是两件事\"]:0",
+            "start": 81,
+            "end": 631
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8917478701741445,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8242235091219011,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消与过期是两件事\"]:0",
+                  "start": 81,
+                  "end": 631
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "fetch:unit:53698657bbccdfad",
+                "abort-controller:unit:34e316a301bbcb45"
+              ],
+              "unitHashes": [
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9",
+                "e65143a870e524b0aea8aaa23a420571666256f116e1a9e0bc9710f0f4f364cb"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "observable",
+        "to": "abort-controller",
+        "rawValue": 0.8155425424224763,
+        "evidence": [
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"结束观察之后\"]:0",
+            "start": 364,
+            "end": 432
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+            "start": 631,
+            "end": 759
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8793464891749662,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8155425424224763,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"结束观察之后\"]:0",
+                  "start": 364,
+                  "end": 432
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+                  "start": 631,
+                  "end": 759
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "observable:unit:5e5813722a87adcc",
+                "abort-controller:unit:242f4af817a18a7e"
+              ],
+              "unitHashes": [
+                "c1a8b6f9eb20b68fc61c759734a78a6c9a87d03d44b79a6f93cf1b0b5c58ce43",
+                "d79a1899325186c196655cd092c71ef8c7ee311849900acaa85c397234cddd23"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "streams-api",
+        "to": "abort-controller",
+        "rawValue": 0.7631504406264957,
+        "evidence": [
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"资源有明确生命周期\"]:0",
+            "start": 297,
+            "end": 422
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+            "start": 631,
+            "end": 759
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8045006294664225,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7631504406264957,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"资源有明确生命周期\"]:0",
+                  "start": 297,
+                  "end": 422
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+                  "start": 631,
+                  "end": 759
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "streams-api:unit:33684765a8fb946d",
+                "abort-controller:unit:242f4af817a18a7e"
+              ],
+              "unitHashes": [
+                "53119ca46cf70e606359c8c2c61fcc3953b9fdf2e1733614a479bf96d95af113",
+                "d79a1899325186c196655cd092c71ef8c7ee311849900acaa85c397234cddd23"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "backpressure",
+        "to": "abort-controller",
+        "rawValue": 0.724674306709425,
+        "evidence": [
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          },
+          {
+            "documentId": "abort-controller",
+            "revision": 1,
+            "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+            "start": 631,
+            "end": 759
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.7495347238706073,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.724674306709425,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                },
+                {
+                  "documentId": "abort-controller",
+                  "revision": 1,
+                  "sectionId": "abort-controller:section:[\"AbortController\",\"取消是一种协作\"]:0",
+                  "start": 631,
+                  "end": 759
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "backpressure:unit:83bedbe869a80a77",
+                "abort-controller:unit:242f4af817a18a7e"
+              ],
+              "unitHashes": [
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0",
+                "d79a1899325186c196655cd092c71ef8c7ee311849900acaa85c397234cddd23"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "fetch",
+        "to": "streams-api",
+        "rawValue": 0.8590316496936288,
+        "evidence": [
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          },
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9414737852766126,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8590316496936288,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                },
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "fetch:unit:53698657bbccdfad",
+                "streams-api:unit:dcd4700448db8a87"
+              ],
+              "unitHashes": [
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9",
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "fetch",
+        "to": "backpressure",
+        "rawValue": 0.8336229525553903,
+        "evidence": [
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9051756465077004,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8336229525553903,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "fetch:unit:53698657bbccdfad",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "fetch",
+        "to": "observable",
+        "rawValue": 0.8021488754832592,
+        "evidence": [
+          {
+            "documentId": "fetch",
+            "revision": 1,
+            "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+            "start": 338,
+            "end": 560
+          },
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+            "start": 75,
+            "end": 240
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8602126792617988,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8021488754832592,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "fetch",
+                  "revision": 1,
+                  "sectionId": "fetch:section:[\"Fetch\",\"正文可以渐进消费\"]:0",
+                  "start": 338,
+                  "end": 560
+                },
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+                  "start": 75,
+                  "end": 240
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "fetch:unit:53698657bbccdfad",
+                "observable:unit:8b9def0cf2c952f5"
+              ],
+              "unitHashes": [
+                "6b12dd1fa740c46b0c7ff2f8641aa3e62de9a2a9e89ac052903c99590e0b8de9",
+                "8913e67fd1fb37c861451cca27139a25c22e77ed2aa74eb2d43b7b02892b655c"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "streams-api",
+        "to": "backpressure",
+        "rawValue": 0.8642210266687441,
+        "evidence": [
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.9488871809553487,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.8642210266687441,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "streams-api:unit:dcd4700448db8a87",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "streams-api",
+        "to": "observable",
+        "rawValue": 0.7846522083491865,
+        "evidence": [
+          {
+            "documentId": "streams-api",
+            "revision": 1,
+            "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+            "start": 78,
+            "end": 297
+          },
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+            "start": 75,
+            "end": 240
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.835217440498838,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7846522083491865,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "streams-api",
+                  "revision": 1,
+                  "sectionId": "streams-api:section:[\"Streams API\",\"生产与消费的节奏\"]:0",
+                  "start": 78,
+                  "end": 297
+                },
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"一次结果与多个事件\"]:0",
+                  "start": 75,
+                  "end": 240
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "streams-api:unit:dcd4700448db8a87",
+                "observable:unit:8b9def0cf2c952f5"
+              ],
+              "unitHashes": [
+                "797f0c1cecda332bc068a10191453807163aab8a5cd504a0401d11971ec1e76f",
+                "8913e67fd1fb37c861451cca27139a25c22e77ed2aa74eb2d43b7b02892b655c"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "kind": "semantic",
+        "from": "observable",
+        "to": "backpressure",
+        "rawValue": 0.7759664173758452,
+        "evidence": [
+          {
+            "documentId": "observable",
+            "revision": 1,
+            "sectionId": "observable:section:[\"Observable\",\"调度不是固定属性\"]:0",
+            "start": 240,
+            "end": 364
+          },
+          {
+            "documentId": "backpressure",
+            "revision": 1,
+            "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+            "start": 238,
+            "end": 413
+          }
+        ],
+        "semantic": {
+          "spaceId": "public-6ed2319d5c7a627fd5cff63e",
+          "strength": 0.8228091676797789,
+          "modalityPair": "text-text",
+          "aggregation": "max",
+          "contributions": [
+            {
+              "cosine": 0.7759664173758452,
+              "modalityPair": "text-text",
+              "evidence": [
+                {
+                  "documentId": "observable",
+                  "revision": 1,
+                  "sectionId": "observable:section:[\"Observable\",\"调度不是固定属性\"]:0",
+                  "start": 240,
+                  "end": 364
+                },
+                {
+                  "documentId": "backpressure",
+                  "revision": 1,
+                  "sectionId": "backpressure:section:[\"Backpressure\",\"把需求反馈给上游\"]:0",
+                  "start": 238,
+                  "end": 413
+                }
+              ],
+              "media": [],
+              "unitIds": [
+                "observable:unit:50e2061cdb477ba2",
+                "backpressure:unit:83bedbe869a80a77"
+              ],
+              "unitHashes": [
+                "69b77f8247ff8cb3192fd7439ef1035f886339937a5c2bb412b7440b34b1c229",
+                "a82ea6c22ebd0a08b44d89af95e7d0dbbd47bb117e2322c07a78bbef3555a2d0"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "omittedChangedDocuments": 0
+  }
+}

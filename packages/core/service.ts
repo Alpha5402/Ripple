@@ -1,3 +1,4 @@
+import { visibleSnapshot } from './visibility.js';
 import { EntityIndex, normalizePath } from './entity.js';
 import { extractReferences, NameMatcher } from './mention.js';
 import { compareRelations, DEFAULT_SCORE_POLICY, generateCandidates, relationKey, scoreCandidate, validateScorePolicy } from './relation.js';
@@ -277,37 +278,18 @@ export class KnowledgeService {
     validateSnapshot(snapshot); validateBudget(visibleBudget); return { ...structuredClone(snapshot), visibleBudget };
   }
   getVisibleRelations(snapshot: Snapshot): VisibleRelations {
-    validateSnapshot(snapshot);
-    const threshold = thresholdFor(snapshot.lensValue, snapshot.lensMapping);
-    const focus = this.documentsById.get(snapshot.focusNode);
-    const reasons: string[] = [];
-    if (!focus || focus.revision !== snapshot.focusRevision) {
-      return { status: 'invalid', reasons: [focus ? 'focus-revision-changed' : 'focus-removed'], threshold, relations: [], eligibleCount: 0, remainingCount: 0, pinnedCount: 0, invalidatedCount: snapshot.candidateSet.length };
-    }
-    if (snapshot.indexRevision !== this.indexRevision) reasons.push('index-revision-changed');
-    if (snapshot.relationScoreVersion !== this.effectiveScoreVersion) reasons.push('score-policy-changed');
-    if (snapshot.embeddingSpaceId !== activeSpace(this.state.embedding)?.space.id) reasons.push('embedding-space-changed');
-    if (snapshot.userPolicyRevision !== this.state.userPolicyRevision) reasons.push('user-declarations-changed');
-    let invalidatedCount = 0;
-    const eligible = snapshot.candidateSet.filter(relation => {
-      if (relation.nodes.some(id => !this.documentsById.has(id)
-        || snapshot.validityEpochs[id] !== this.state.validityEpochs[id])
-        || relation.signals.some(signal => signal.kind === 'semantic' ? !semanticSignalValid(signal, this.state.embedding, this.state.documents, this.semanticUnitHashes)
-          : signal.evidence.some(evidence => !this.validReferences.has(JSON.stringify([signal.kind, signal.from, signal.to, evidence.revision, evidence.start, evidence.end]))))) {
-        invalidatedCount++; return false;
-      }
-      return true;
-    }).map(relation => ({ ...relation, override: { ...this.state.declarations.relations[relation.id] } }))
-      .filter(r => !r.override.hidden && (r.score >= threshold || r.override.pinned));
-    const pinned = eligible.filter(r => r.override.pinned).sort(compareRelations);
-    const regular = eligible.filter(r => !r.override.pinned).sort(compareRelations);
-    // Pins are explicit view exceptions outside the regular page budget.
-    const visible = [...pinned, ...regular.slice(0, snapshot.visibleBudget)].sort(compareRelations);
-    if (invalidatedCount) reasons.push('candidate-evidence-invalidated');
-    return { status: reasons.length ? 'stale' : 'current', reasons, threshold, relations: structuredClone(visible),
-      eligibleCount: eligible.length, remainingCount: regular.length - Math.min(regular.length, snapshot.visibleBudget),
-      pinnedCount: pinned.length, invalidatedCount };
+    return visibleSnapshot(snapshot, {
+      indexRevision: this.indexRevision, relationScoreVersion: this.effectiveScoreVersion,
+      ...(activeSpace(this.state.embedding) ? { embeddingSpaceId: activeSpace(this.state.embedding)!.space.id } : {}),
+      userPolicyRevision: this.state.userPolicyRevision,
+      revision: id => this.documentsById.get(id)?.revision,
+      validityEpoch: id => this.state.validityEpochs[id],
+      override: id => ({ ...this.state.declarations.relations[id] }),
+      signalValid: signal => signal.kind === 'semantic' ? semanticSignalValid(signal, this.state.embedding, this.state.documents, this.semanticUnitHashes)
+        : signal.evidence.every(e => this.validReferences.has(JSON.stringify([signal.kind, signal.from, signal.to, e.revision, e.start, e.end]))),
+    });
   }
+
   private requireNode(id: string): Document {
     const doc = this.documentsById.get(id);
     if (!doc) throw new KernelError('NOT_FOUND', `Unknown document: ${id}`);

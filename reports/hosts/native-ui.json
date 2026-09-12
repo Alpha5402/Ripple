@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-13",
+  "platform": "macOS arm64",
+  "surface": "packaged Electron app; independent QA identity; controlled 12-document vault",
+  "bomCrLfNoEditIdentical": true,
+  "sourceAppendPreservesOriginal": true,
+  "addedText": "完整保留",
+  "dirtyCloseCancelPreservesDraft": true,
+  "richEditPreservesOriginal": true,
+  "nativeEvidenceSelected": "[[Event Loop]]",
+  "nativeRelationScore": 72,
+  "limitations": [
+    "unsigned and not notarized",
+    "no second-machine acceptance",
+    "real iWiki remained read-only",
+    "clipboard automation inserted at the current caret; preservation verified against actual file bytes"
+  ]
+}

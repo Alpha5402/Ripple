@@ -3,10 +3,11 @@ import { validateSnapshot } from '../core/exploration.js';
 import { KnowledgeService } from '../core/service.js';
 
 export interface SessionState { schemaVersion: 1; current: ExplorationHistoryState | null; backStack: ExplorationHistoryState[] }
+export type ExplorationKnowledge = Pick<KnowledgeService, 'createExplorationSnapshot' | 'setLens' | 'setVisibleBudget' | 'getVisibleRelations' | 'getNode'>;
 /** Host-owned view coordinates and reading offsets round-trip without any DOM or graph dependency. */
 export class ExplorationSession {
   private state: SessionState = { schemaVersion: 1, current: null, backStack: [] };
-  constructor(private readonly knowledge: KnowledgeService) {}
+  constructor(private readonly knowledge: ExplorationKnowledge) {}
   focus(nodeId: string, options: { lensValue?: number; visibleBudget?: number } = {}): ExplorationHistoryState {
     const snapshot = this.knowledge.createExplorationSnapshot(nodeId, options);
     if (this.state.current) this.state.backStack.push(structuredClone(this.state.current));

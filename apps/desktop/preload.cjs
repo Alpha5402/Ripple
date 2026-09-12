@@ -1,0 +1,9 @@
+const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('ripple', Object.freeze({
+  // Keep errors as data across contextBridge; custom Error properties are not preserved by Electron.
+  command: (command) => ipcRenderer.invoke('ripple:command', command),
+  chooseFolder: (readOnly) => ipcRenderer.invoke('ripple:choose-folder', readOnly),
+  chooseEmbedding: () => ipcRenderer.invoke('ripple:choose-embedding'),
+  setDirty: (dirty) => ipcRenderer.send('ripple:dirty', !!dirty),
+  subscribe: (listener) => { const wrapped = () => listener(); ipcRenderer.on('ripple:changed', wrapped); return () => ipcRenderer.removeListener('ripple:changed', wrapped); },
+}));

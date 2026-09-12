@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-13",
+  "backend": "Real DSH Cordis, SystemPrompt and ToolRuntime from local 0.1.0-rc.5 sources",
+  "frontend": "Real Cordis Context plus Vue plugin; session-list provider is an explicit test double",
+  "liveModelTurn": false,
+  "observations": {
+    "nativeProposalToolReturnedSuccess": true,
+    "proposalDidNotChangeLens": true,
+    "outsideEvidenceWithheld": true,
+    "humanApprovedLensBefore": 0,
+    "humanApprovedLensAfter": 21,
+    "humanApprovedVisibleBefore": 0,
+    "humanApprovedVisibleAfter": 2,
+    "tieBehavior": "Event Loop and Async-Await share score 79, so both enter the approved threshold",
+    "otherSessionFollowLens": false,
+    "otherSessionLens": 45,
+    "unmountRemovesVueRootAndSubscription": true,
+    "frontendLifecycleCycles": 3,
+    "mountedSubscriptionsPerCycle": 1,
+    "unmountedSubscriptionsPerCycle": 0
+  },
+  "limitations": "This validates the integration with native Harness runtime APIs and browser UI, not a complete authenticated DSH application or an online LLM turn. Follow Lens governs Ripple-provided tools/context and does not revoke other Harness tools or erase prior conversation context."
+}
