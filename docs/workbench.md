@@ -25,6 +25,8 @@ open release/current/Ripple-darwin-arm64/Ripple.app
 
 ## 公开 Web 与 iframe
 
+公开演示：[异步的知识花园](https://alpha5402.github.io/Ripple/)。嵌入地址为 `https://alpha5402.github.io/Ripple/?embed=1`。
+
 ```sh
 npm run build:web
 npm run audit:public

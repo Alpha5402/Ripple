@@ -3,6 +3,8 @@
 已实现设计基线 1.1 的 **K1～K4、K5 评估工具与 K6 内核稳定化**：从 Markdown 构建可追溯的确定性与语义关系，以当前文档为中心进行一跳渐进探索。交付物是 TypeScript Core、SDK、Node/SQLite/HTTP 适配器、两个最小宿主和 WeMM 2B 本地部署脚本。K5 的真实用户有用性标签仍待人工复核。
 
 
+[在线体验](https://alpha5402.github.io/Ripple/) · [嵌入模式](https://alpha5402.github.io/Ripple/?embed=1)
+
 Vue 工作台已加入 Electron 桌面壳、公开 Web/iframe、只读 MCP 和 DeepSeek Harness 集成。运行方法与实际验收边界见 [工作台文档](docs/workbench.md)。
 
 ## 运行

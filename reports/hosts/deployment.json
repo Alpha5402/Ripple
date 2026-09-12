@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-13",
+  "surface": "production static build in Chromium",
+  "graphNodes": 6,
+  "mobileOverflow": false,
+  "embedOverflow": false,
+  "sandboxReset": true,
+  "pageErrors": [],
+  "externalRequests": [],
+  "url": "https://alpha5402.github.io/Ripple/",
+  "commit": "bc01bc788f5e3e69c7403e1b34d954b1aae2c41c",
+  "workflow": "https://github.com/Alpha5402/Ripple/actions/runs/34707046739",
+  "ci": "success",
+  "remoteBrowser": "independent Chrome through existing local network proxy",
+  "localCrossOriginIframe": {
+    "loaded": true,
+    "graphNodes": 6
+  },
+  "inAppBrowser": "direct connection timed out; remote Chrome interaction succeeded"
+}
