@@ -1,15 +1,18 @@
-import { nativeImage, app, BrowserWindow, dialog, ipcMain, Menu, protocol, net, shell } from 'electron';
+import { WorkspaceHistory } from '../../packages/host/workspace-history.js';
+import { safeStorage, nativeImage, app, BrowserWindow, dialog, ipcMain, Menu, protocol, net, shell } from 'electron';
 import { Worker } from 'node:worker_threads';
 import { join, resolve, relative, sep } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir, readFile, realpath, writeFile, rm } from 'node:fs/promises';
 
 protocol.registerSchemesAsPrivileged([{ scheme: 'ripple', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
 app.setName('Ripple');
 const here = fileURLToPath(new URL('.', import.meta.url));
 let window: BrowserWindow;
 let worker: Worker | undefined;
+let history: WorkspaceHistory;
+let activeStateDir: string | undefined;
 let dirty = false, quitting = false, sequence = 0;
 const pending = new Map<number, { resolve: (value: any) => void; reject: (error: Error) => void }>();
 function askWorker(data: unknown, timeoutMs = 30000): Promise<any> {
@@ -28,10 +31,13 @@ async function stopWorker(): Promise<void> {
   await previous.terminate(); worker = undefined;
 }
 async function openFolder(root: string, readOnly: boolean): Promise<void> {
+  root = await realpath(root);
   await stopWorker();
   const stateDir = join(process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'), 'vaults', createHash('sha256').update(resolve(root)).digest('hex').slice(0, 24));
   await mkdir(stateDir, { recursive: true });
-  worker = new Worker(join(here, 'worker.mjs'), { workerData: { root, stateDir, readOnly } });
+  let apiKey = '';
+  if (safeStorage.isEncryptionAvailable()) { try { apiKey = safeStorage.decryptString(await readFile(join(stateDir, 'embedding-secret.bin'))); } catch {} }
+  worker = new Worker(join(here, 'worker.mjs'), { workerData: { root, stateDir, readOnly, apiKey } });
   const currentWorker = worker;
   await new Promise<void>((resolve, reject) => {
     worker!.on('message', message => {
@@ -42,6 +48,9 @@ async function openFolder(root: string, readOnly: boolean): Promise<void> {
     worker!.on('error', error => { reject(error); for (const call of pending.values()) call.reject(error); pending.clear(); });
     worker!.on('exit', () => { for (const call of pending.values()) call.reject(new Error('知识目录服务已关闭')); pending.clear(); if (worker === currentWorker) worker = undefined; });
   });
+  activeStateDir = stateDir;
+  await history.remember(root, readOnly);
+  window.webContents.send('ripple:changed');
   window.setTitle(`Ripple — ${root.split(/[\\/]/).at(-1)}`);
 }
 function isAppUrl(value: string): boolean { const url = new URL(value); return url.protocol === 'ripple:' && url.hostname === 'app'; }
@@ -55,6 +64,8 @@ async function mayLeave(): Promise<boolean> {
 }
 // Do not top-level-await readiness: Electron waits for ESM evaluation before emitting ready.
 void app.whenReady().then(async () => {
+  history = new WorkspaceHistory(process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'));
+  await history.load();
   const appIcon = nativeImage.createFromPath(join(here, 'renderer/brand/ripple-logo.png'));
   if (!appIcon.isEmpty()) app.dock?.setIcon(appIcon);
 const assets = join(here, 'renderer');
@@ -70,9 +81,26 @@ window = new BrowserWindow({ icon: appIcon, width: 1420, height: 920, minWidth: 
 window.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:\/\//.test(url)) void shell.openExternal(url); return { action: 'deny' }; });
 window.webContents.on('will-navigate', (event, url) => { if (!isAppUrl(url)) event.preventDefault(); });
 window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
-ipcMain.handle('ripple:command', (event, command) => {
+ipcMain.handle('ripple:command', async (event, command) => {
   if (!trusted(event)) return { ok: false, error: { code: 'ORIGIN', message: 'Untrusted sender' } };
-  return askWorker({ command }, command?.type === 'configure-embedding' ? 90000 : 30000).catch(() => ({ ok: false, error: { code: 'HOST', message: '目录服务不可用，请重新打开目录' } }));
+  const credentialDir = activeStateDir;
+  const response = await askWorker({ command }, command?.type === 'configure-embedding' ? 90000 : 30000).catch(() => ({ ok: false, error: { code: 'HOST', message: '目录服务不可用，请重新打开目录' } }));
+  if (response.ok && command?.type === 'configure-embedding' && credentialDir) {
+    const secret = join(credentialDir, 'embedding-secret.bin');
+    try {
+      if (command.settings.apiKey && safeStorage.isEncryptionAvailable()) await writeFile(secret, safeStorage.encryptString(command.settings.apiKey), { mode: 0o600 });
+      else await rm(secret, { force: true });
+    } catch { /* Connection remains usable; the next run will request credentials again. */ }
+  }
+  return response;
+});
+ipcMain.handle('ripple:recent-workspaces', event => trusted(event) ? history.list() : []);
+ipcMain.handle('ripple:forget-workspace', async (event, id) => { if (trusted(event) && typeof id === 'string') { await history.forget(id); window.webContents.send('ripple:changed'); } });
+ipcMain.handle('ripple:open-recent', async (event, id) => {
+  if (!trusted(event) || !await mayLeave()) return false;
+  const entry = history.list().find(e => e.id === id); if (!entry) return false;
+  try { await openFolder(entry.location, entry.readOnly); dirty = false; return true; }
+  catch { await dialog.showMessageBox(window, { type: 'error', message: '工作区暂不可用', detail: '目录可能已移动、删除或尚未挂载。你可以重新选择目录，或从最近列表移除。' }); return false; }
 });
 ipcMain.handle('ripple:choose-folder', async (event, readOnly) => {
   if (!trusted(event) || typeof readOnly !== 'boolean' || !await mayLeave()) return false;
@@ -101,5 +129,6 @@ await window.loadURL('ripple://app/');
 window.show();
 const vaultIndex = process.argv.indexOf('--vault');
 if (vaultIndex >= 0 && process.argv[vaultIndex + 1]) await openFolder(process.argv[vaultIndex + 1]!, process.argv.includes('--readonly'));
+else { const last = history.list()[0]; if (last) { try { await openFolder(last.location, last.readOnly); } catch { window.webContents.send('ripple:changed'); } } }
 }).catch(error => { console.error('Ripple startup failed:', error); app.quit(); });
 app.on('window-all-closed', () => app.quit());

@@ -14,6 +14,10 @@ export class HttpEmbeddingProvider implements EmbeddingProvider {
     if (url.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) throw new EmbeddingError('CONFIG', 'Cloud endpoints require HTTPS; use HTTP only for loopback');
     this.baseUrl = url.href.replace(/\/$/, ''); this.requestFetch = options.fetch ?? globalThis.fetch.bind(globalThis);
   }
+  /** Restore a previously verified model identity without a network probe. Every response still validates that identity. */
+  static fromDescriptor(options: HttpEmbeddingOptions & { descriptor: ModelDescriptor }): HttpEmbeddingProvider {
+    return new HttpEmbeddingProvider(structuredClone(options.descriptor), options);
+  }
   static async connect(options: HttpEmbeddingOptions): Promise<HttpEmbeddingProvider> {
     if (options.protocol === 'openai-compatible') {
       if (!options.descriptor || options.descriptor.modalities.join(',') !== 'text') throw new EmbeddingError('CONFIG', 'OpenAI-compatible text endpoints need an explicit text-only model descriptor');

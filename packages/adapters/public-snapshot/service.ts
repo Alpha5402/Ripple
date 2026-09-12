@@ -2,7 +2,7 @@ import { KnowledgeService } from '../../core/service.js';
 import { MemoryStorage } from '../storage-memory/index.js';
 import { RemarkMarkdownParser } from '../parser-markdown/index.js';
 import { KernelError, type DocumentInput, type Relation, type RelationSignal, type Snapshot } from '../../core/model.js';
-import type { IdentityProvider } from '../../core/ports.js';
+import type { KnowledgeStorage, IdentityProvider } from '../../core/ports.js';
 import { scoreCandidate, relationKey, compareRelations } from '../../core/relation.js';
 import { visibleSnapshot } from '../../core/visibility.js';
 import type { PublicBundle } from './model.js';
@@ -14,10 +14,10 @@ export class PublicKnowledgeService {
   private readonly originalHashes: Map<string, string>;
   private readonly semanticSignatures = new Set<string>();
   private readonly bundle: PublicBundle;
-  constructor(bundle: PublicBundle, identity: IdentityProvider) {
+  constructor(bundle: PublicBundle, identity: IdentityProvider, storage?: KnowledgeStorage) {
     if (bundle?.schemaVersion !== 1 || !Array.isArray(bundle.documents) || bundle.documents.length > 1000) throw new KernelError('INVALID_INPUT', 'Invalid public package');
     this.bundle = structuredClone(bundle);
-    this.kernel = new KnowledgeService({ storage: new MemoryStorage(), parser: new RemarkMarkdownParser(), identity }, bundle.scorePolicy);
+    this.kernel = new KnowledgeService({ storage: storage ?? new MemoryStorage(), parser: new RemarkMarkdownParser(), identity }, bundle.scorePolicy);
     this.kernel.ingestDocuments(bundle.documents);
     this.originalHashes = new Map(this.kernel.listDocuments().map(d => [d.id, d.contentHash]));
     for (const signal of bundle.semantic?.signals ?? []) {

@@ -19,6 +19,7 @@ export const commandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('save'), id, expectedHash: z.string().max(200), markdown: z.string().max(4 * 1024 * 1024) }),
   z.object({ type: z.literal('view'), layout: z.record(id, point).optional(), camera: point.extend({ zoom: z.number().min(0.2).max(4) }).optional(), reading: z.object({ documentId: id, offset: z.number().nonnegative().max(10000000) }).nullable().optional() }),
   z.object({ type: z.literal('configure-embedding'), settings: embeddingConnectionSchema }),
+  z.object({ type: z.literal('auto-index'), enabled: z.boolean() }),
   z.object({ type: z.literal('index') }),
   z.object({ type: z.literal('cancel-index') }),
 ]);
@@ -36,14 +37,22 @@ export interface WorkbenchState {
   canBack: boolean;
   coverage: ReturnType<KnowledgeService['getIndexCoverage']>;
   indexing: boolean;
+  workspaceId?: string;
+  autoIndex?: boolean;
+  embeddingNeedsAuth?: boolean;
+  syncStatus?: string;
   embeddingConnection?: SafeEmbeddingConnection | undefined;
   notices: string[];
 }
+export interface RecentWorkspace { id: string; label: string; location: string; lastOpened: number }
 export interface WorkbenchBridge {
   supportsEmbedding?: boolean;
   supportsGlobalGraph?: boolean;
   command(command: HostCommand): Promise<unknown>;
   subscribe(listener: () => void): () => void;
+  recentWorkspaces?(): Promise<RecentWorkspace[]>;
+  openRecent?(id: string): Promise<boolean>;
+  forgetWorkspace?(id: string): Promise<void>;
   chooseFolder?(readOnly: boolean): Promise<boolean>;
   chooseEmbedding?(): Promise<boolean>;
   setDirty?(dirty: boolean): void;

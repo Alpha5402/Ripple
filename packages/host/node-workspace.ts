@@ -1,3 +1,4 @@
+import { restoreEmbedding, type EmbeddingPreferences } from './embedding-preferences.js';
 import { collectGlobalGraph } from './global-graph.js';
 import { connectEmbedding, embeddingErrorMessage, type SafeEmbeddingConnection } from './embedding-connection.js';
 import { watch, type FSWatcher } from 'chokidar';
@@ -26,13 +27,15 @@ export class NodeWorkspace {
   private notices: string[] = [];
   private embeddingConnection?: SafeEmbeddingConnection;
   private autoIndex = false;
+  private preferences?: EmbeddingPreferences;
+  private needsAuth = false;
   private pendingIndex = new Set<string>();
   private fullIndexRequested = false;
   private constructor(readonly root: string, private readonly workspace: Awaited<ReturnType<typeof openSqliteVault>>, readonly readOnly: boolean, private readonly changed: () => void) {
     this.session = new ExplorationSession(workspace.service);
     this.notices = workspace.sources.warnings;
   }
-  static async open(root: string, options: { stateDir: string; readOnly: boolean; watch?: boolean; changed?: () => void }): Promise<NodeWorkspace> {
+  static async open(root: string, options: { stateDir: string; readOnly: boolean; watch?: boolean; apiKey?: string; changed?: () => void }): Promise<NodeWorkspace> {
     const canonical = await realpath(root);
     const workspace = await openSqliteVault(canonical, { stateDir: options.stateDir, allMarkdown: true });
     const host = new NodeWorkspace(canonical, workspace, options.readOnly, options.changed ?? (() => {}));
@@ -46,6 +49,15 @@ export class NodeWorkspace {
       await host.startWatcher(false);
       await host.rescan();
     }
+    try {
+      const preferences = JSON.parse(await readFile(join(workspace.stateDir, 'embedding.json'), 'utf8')) as EmbeddingPreferences;
+      host.service.configureEmbedding(restoreEmbedding(preferences, options.apiKey), preferences.config);
+      host.preferences = preferences; host.embeddingConnection = preferences.settings;
+      host.autoIndex = preferences.autoIndex; host.needsAuth = preferences.requiresAuth && !options.apiKey;
+      if (host.session.current) host.session.refresh();
+      if (host.needsAuth) host.notices.push('已恢复语义索引；请重新输入 API Key 后继续增量更新。');
+      else if (host.autoIndex) host.indexPending();
+    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') host.notices.push('已保留索引缓存，请重新连接模型以恢复语义关联。'); }
     return host;
   }
   get service() { return this.workspace.service; }
@@ -81,8 +93,16 @@ export class NodeWorkspace {
   }
   private async persistSession(): Promise<void> { await atomicJson(join(this.workspace.stateDir, 'session.json'), this.session.exportState()); }
   private focus(id: string): void { const current = this.session.focus(id, { lensValue: this.session.current?.snapshot.lensValue ?? initialLens(this.service.getRelations(id)), visibleBudget: 40 }); this.session.setViewState({ layout: completeLayout(current), reading: { documentId: id, offset: 0 } }); }
+  private async persistPreferences(): Promise<void> {
+    if (this.preferences) { this.preferences.autoIndex = this.autoIndex; await atomicJson(join(this.workspace.stateDir, 'embedding.json'), this.preferences); }
+  }
+  private indexPending(): void {
+    const coverage = this.service.getEmbeddingCoverage();
+    const ids = this.service.listDocuments().filter(d => coverage.documents[d.id]?.status !== 'ready').map(d => d.id);
+    if (ids.length && !this.needsAuth) this.startIndex(ids);
+  }
   state(): WorkbenchState {
-    return { label: basename(this.root), mode: 'desktop', readOnly: this.readOnly,
+    return { workspaceId: this.root, autoIndex: this.autoIndex, embeddingNeedsAuth: this.needsAuth, syncStatus: '自动同步目录变化', label: basename(this.root), mode: 'desktop', readOnly: this.readOnly,
       documents: this.service.listDocuments().map(d => ({ id: d.id, path: d.path, title: d.parsed.title, revision: d.revision })),
       current: this.session.current, visible: this.session.current ? this.session.visible() : null,
       canBack: !!this.session.exportState().backStack.length, coverage: this.service.getIndexCoverage(), indexing: !!this.indexing, embeddingConnection: this.embeddingConnection, notices: [...this.notices] };
@@ -99,15 +119,16 @@ export class NodeWorkspace {
     });
   }
   private startIndex(documentIds?: string[]): void {
-    if (this.closing) return;
+    if (this.closing || this.needsAuth) return;
     if (documentIds === undefined) { this.autoIndex = true; this.fullIndexRequested = true; }
     else for (const id of documentIds) this.pendingIndex.add(id);
     if (this.indexing) return;
-    const ids = this.fullIndexRequested ? undefined : [...this.pendingIndex].filter(id => this.service.getNode(id));
+    const coverage = this.service.getEmbeddingCoverage();
+    const ids = this.fullIndexRequested ? this.service.listDocuments().filter(d => coverage.documents[d.id]?.status !== 'ready').map(d => d.id) : [...this.pendingIndex].filter(id => this.service.getNode(id));
     this.pendingIndex.clear(); this.fullIndexRequested = false;
-    if (ids?.length === 0) return;
+    if (ids.length === 0) { this.notices = [`已复用 ${coverage.readyUnits} 个片段，无需重新编码。`]; this.changed(); return; }
     const progress = setInterval(this.changed, 250);
-    this.indexing = this.service.indexEmbeddings(ids ? { documentIds: ids } : {}).then(report => { this.notices = [`语义索引：编码 ${report.encoded}，复用 ${report.reused}${report.cancelled ? '，已取消' : ''}。`]; })
+    this.indexing = this.service.indexEmbeddings({ documentIds: ids }).then(report => { this.notices = [`语义索引：编码 ${report.encoded}，复用 ${report.reused}${report.cancelled ? '，已取消' : ''}。`]; })
       .catch(() => { this.notices = ['语义索引暂不可用，确定性关系不受影响。']; })
       .finally(() => { clearInterval(progress); this.indexing = undefined; if (!this.closing && this.session.current) { this.session.refresh(); this.session.setViewState({ layout: completeLayout(this.session.current) }); } this.changed(); if (this.autoIndex && (this.pendingIndex.size || this.fullIndexRequested)) this.startIndex([]); });
     this.changed();
@@ -120,6 +141,10 @@ export class NodeWorkspace {
     this.service.removeDocuments(this.service.listDocuments().filter(doc => !paths.has(doc.path)).map(doc => doc.id));
     this.service.ingestDocuments(sources.inputs);
     if (this.service.indexRevision !== before) {
+      if (this.session.current && !this.service.getNode(this.session.current.snapshot.focusNode)) {
+        this.session.importState({ schemaVersion: 1, current: null, backStack: [] });
+        const first = this.service.listDocuments()[0]; if (first) this.focus(first.id);
+      } else if (this.session.current) this.session.refresh();
       if (this.autoIndex) this.startIndex(this.service.listDocuments().filter(d => hashes.get(d.id) !== d.contentHash).map(d => d.id));
       this.changed();
     }
@@ -164,9 +189,12 @@ export class NodeWorkspace {
           try {
             const connected = await connectEmbedding(command.settings);
             this.service.configureEmbedding(connected.provider, connected.config);
-            this.embeddingConnection = connected.settings; this.autoIndex = false; this.pendingIndex.clear(); this.fullIndexRequested = false;
+            this.embeddingConnection = connected.settings; this.needsAuth = false; this.autoIndex = this.autoIndex && !!this.preferences;
+            this.preferences = { settings: connected.settings, descriptor: connected.provider.descriptor, config: connected.config, requiresAuth: !!command.settings.apiKey, autoIndex: this.autoIndex };
+            await this.persistPreferences(); this.pendingIndex.clear(); this.fullIndexRequested = false;
             this.notices = ['模型连接成功，可以开始索引。'];
             if (this.session.current) this.session.refresh();
+            if (this.autoIndex) this.indexPending();
             this.changed(); return this.state();
           } catch (error) { throw new KernelError('INVALID_INPUT', embeddingErrorMessage(error)); }
         }
@@ -183,8 +211,9 @@ export class NodeWorkspace {
           const { type: _type, ...view } = command;
           this.session.setViewState(view as Parameters<ExplorationSession['setViewState']>[0]); break;
         }
-        case 'index': this.startIndex(); return this.state();
-        case 'cancel-index': this.autoIndex = false; this.pendingIndex.clear(); this.fullIndexRequested = false; this.service.cancelEmbeddings(); return this.state();
+        case 'auto-index': this.autoIndex = command.enabled; await this.persistPreferences(); if (this.autoIndex) this.indexPending(); return this.state();
+        case 'index': if (this.needsAuth) throw new KernelError('INVALID_INPUT', '请先重新输入 API Key 并连接模型'); this.autoIndex = true; await this.persistPreferences(); this.startIndex(); return this.state();
+        case 'cancel-index': this.autoIndex = false; this.pendingIndex.clear(); this.fullIndexRequested = false; this.service.cancelEmbeddings(); await this.persistPreferences(); return this.state();
       }
       await this.persistSession(); return this.state();
     });

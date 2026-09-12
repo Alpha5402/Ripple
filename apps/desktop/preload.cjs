@@ -4,6 +4,9 @@ contextBridge.exposeInMainWorld('ripple', Object.freeze({
   supportsGlobalGraph: true,
   // Keep errors as data across contextBridge; custom Error properties are not preserved by Electron.
   command: (command) => ipcRenderer.invoke('ripple:command', command),
+  recentWorkspaces: () => ipcRenderer.invoke('ripple:recent-workspaces'),
+  openRecent: (id) => ipcRenderer.invoke('ripple:open-recent', id),
+  forgetWorkspace: (id) => ipcRenderer.invoke('ripple:forget-workspace', id),
   chooseFolder: (readOnly) => ipcRenderer.invoke('ripple:choose-folder', readOnly),
   chooseEmbedding: () => ipcRenderer.invoke('ripple:choose-embedding'),
   setDirty: (dirty) => ipcRenderer.send('ripple:dirty', !!dirty),

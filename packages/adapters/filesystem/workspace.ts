@@ -1,4 +1,6 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { atomicJson } from './atomic-json.js';
+export { atomicJson } from './atomic-json.js';
+import { mkdir, readFile } from 'node:fs/promises';
 import { resolve, relative, join, isAbsolute, sep } from 'node:path';
 import { KnowledgeService } from '../../core/service.js';
 import { KernelError, type KernelState, type UserDeclarations } from '../../core/model.js';
@@ -24,11 +26,6 @@ interface Manifest {
 async function readJson<T>(path: string): Promise<T | undefined> {
   try { return JSON.parse(await readFile(path, 'utf8')) as T; }
   catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; }
-}
-export async function atomicJson(path: string, value: unknown): Promise<void> {
-  const temporary = `${path}.${new NodeIdentityProvider().newId()}.tmp`;
-  await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 });
-  await rename(temporary, path);
 }
 /** Persists durable identity/intent only; parse and relation indexes are rebuilt from read-only source files. */
 export async function openVault(root: string, options: { stateDir?: string; allMarkdown?: boolean } = {}) {
