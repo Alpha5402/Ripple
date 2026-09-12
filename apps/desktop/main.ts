@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, net, shell } from 'electron';
+import { nativeImage, app, BrowserWindow, dialog, ipcMain, Menu, protocol, net, shell } from 'electron';
 import { Worker } from 'node:worker_threads';
 import { join, resolve, relative, sep } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -55,6 +55,8 @@ async function mayLeave(): Promise<boolean> {
 }
 // Do not top-level-await readiness: Electron waits for ESM evaluation before emitting ready.
 void app.whenReady().then(async () => {
+  const appIcon = nativeImage.createFromPath(join(here, 'renderer/brand/ripple-logo.png'));
+  if (!appIcon.isEmpty()) app.dock?.setIcon(appIcon);
 const assets = join(here, 'renderer');
 protocol.handle('ripple', async request => {
   const url = new URL(request.url);
@@ -64,7 +66,7 @@ protocol.handle('ripple', async request => {
   response.headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'");
   return response;
 });
-window = new BrowserWindow({ width: 1420, height: 920, minWidth: 980, minHeight: 660, show: false, backgroundColor: '#f7f8fa', title: 'Ripple', titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 20, y: 21 }, vibrancy: 'sidebar', webPreferences: { preload: join(here, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
+window = new BrowserWindow({ icon: appIcon, width: 1420, height: 920, minWidth: 980, minHeight: 660, show: false, backgroundColor: '#f7f8fa', title: 'Ripple', titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 20, y: 21 }, vibrancy: 'sidebar', webPreferences: { preload: join(here, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
 window.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:\/\//.test(url)) void shell.openExternal(url); return { action: 'deny' }; });
 window.webContents.on('will-navigate', (event, url) => { if (!isAppUrl(url)) event.preventDefault(); });
 window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));

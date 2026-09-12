@@ -1,3 +1,4 @@
+import { collectGlobalGraph } from '../host/global-graph.js';
 import { connectEmbedding, embeddingErrorMessage, type SafeEmbeddingConnection } from '../host/embedding-connection.js';
 import { PublicKnowledgeService } from '../adapters/public-snapshot/service.js';
 import type { PublicBundle } from '../adapters/public-snapshot/model.js';
@@ -34,10 +35,11 @@ export function createPublicBridge(bundle: PublicBundle): WorkbenchBridge {
   if (first) focus(first.id);
   const state = (): WorkbenchState => ({ label: bundle.title, mode: 'public', readOnly: false, documents: service.listDocuments().map(d => ({ id: d.id, title: d.parsed.title, path: d.path, revision: d.revision })), current: session.current, visible: session.current ? session.visible() : null, canBack: !!session.exportState().backStack.length, coverage: service.getIndexCoverage(), indexing, embeddingConnection: connection,
     notices: [...(notice ? [notice] : []), bundle.semantic ? `语义关联由 ${bundle.semantic.descriptor.model} 预先计算，不进行实时模型查询。` : connection ? `文本索引使用 ${connection.model}。` : '配置 Embedding 后，可发现没有显式链接的语义关联。', '笔记编辑保存在当前页面，不会写回原文件；刷新后需要重新打开目录。'] });
-  return { supportsEmbedding: !bundle.semantic, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }, async command(raw) {
+  return { supportsGlobalGraph: true, supportsEmbedding: !bundle.semantic, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }, async command(raw) {
     const c = commandSchema.parse(raw);
     switch (c.type) {
       case 'state': return state();
+      case 'global-graph': return collectGlobalGraph(service);
       case 'configure-embedding': {
         if (bundle.semantic || indexing) throw new KernelError('INVALID_INPUT', '请等待当前索引完成后再更换模型');
         try { const connected = await connectEmbedding(c.settings); snapshotService.kernel.configureEmbedding(connected.provider, connected.config); connection = connected.settings; notice = '模型连接成功，可以开始索引。'; refresh(); changed(); }
@@ -69,7 +71,7 @@ export async function loadPublicBridge(): Promise<WorkbenchBridge> {
   const changed = () => { for (const listener of listeners) listener(); };
   let unsubscribe = current.subscribe(changed);
   return {
-    supportsEmbedding: true,
+    supportsGlobalGraph: true, supportsEmbedding: true,
     command: command => current.command(command),
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     chooseFolder() {

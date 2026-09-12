@@ -1,3 +1,4 @@
+import { collectGlobalGraph } from './global-graph.js';
 import { connectEmbedding, embeddingErrorMessage, type SafeEmbeddingConnection } from './embedding-connection.js';
 import { watch, type FSWatcher } from 'chokidar';
 import { readFile, realpath, rename, writeFile, rm, stat, lstat, open } from 'node:fs/promises';
@@ -157,6 +158,7 @@ export class NodeWorkspace {
     return this.enqueue(async () => {
       switch (command.type) {
         case 'state': return this.state();
+      case 'global-graph': return collectGlobalGraph(this.service);
         case 'configure-embedding': {
           if (this.indexing) throw new KernelError('INVALID_INPUT', '请先停止索引，再更换模型');
           try {

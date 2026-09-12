@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { embeddingConnectionSchema, type SafeEmbeddingConnection } from './embedding-connection.js';
-import type { Document, EvidenceLocator, ExplorationHistoryState, Mention, WikiLink, VisibleRelations } from '../core/model.js';
+import type { Relation, Document, EvidenceLocator, ExplorationHistoryState, Mention, WikiLink, VisibleRelations } from '../core/model.js';
 import type { KnowledgeService } from '../core/service.js';
 
 const id = z.string().min(1).max(200);
 const point = z.object({ x: z.number().finite().min(-100000).max(100000), y: z.number().finite().min(-100000).max(100000) });
 export const commandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('state') }),
+  z.object({ type: z.literal('global-graph') }),
   z.object({ type: z.literal('focus'), id }),
   z.object({ type: z.literal('read'), id }),
   z.object({ type: z.literal('lens'), value: z.number().min(0).max(100) }),
@@ -23,6 +24,7 @@ export const commandSchema = z.discriminatedUnion('type', [
 ]);
 export type HostCommand = z.infer<typeof commandSchema>;
 export interface DocumentSummary { id: string; path: string; title: string; revision: number }
+export interface GlobalGraph { documents: DocumentSummary[]; relations: Relation[]; indexRevision: number }
 export interface ReadingDocument { document: Document; mentions: Mention[]; links: WikiLink[] }
 export interface WorkbenchState {
   label: string;
@@ -39,6 +41,7 @@ export interface WorkbenchState {
 }
 export interface WorkbenchBridge {
   supportsEmbedding?: boolean;
+  supportsGlobalGraph?: boolean;
   command(command: HostCommand): Promise<unknown>;
   subscribe(listener: () => void): () => void;
   chooseFolder?(readOnly: boolean): Promise<boolean>;
