@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import type { WorkbenchBridge, WorkbenchState } from '../host/contract.js';
 import type { EmbeddingConnection } from '../host/embedding-connection.js';
-const props = defineProps<{ bridge: WorkbenchBridge; state: WorkbenchState }>();
+const props = defineProps<{ bridge: WorkbenchBridge; state: WorkbenchState; embedded?: boolean }>();
 const emit = defineEmits<{ close: []; changed: [] }>();
 const dialog = ref<HTMLDialogElement>();
 const connecting = ref(false), error = ref('');
@@ -14,7 +14,7 @@ const coverage = computed(() => props.state.coverage.semantic);
 const completed = computed(() => Object.values(coverage.value.documents).filter(doc => doc.status === 'ready').length);
 const failures = computed(() => Object.entries(coverage.value.documents).filter(([, doc]) => doc.errors.length).map(([id, doc]) => ({ title: props.state.documents.find(d => d.id === id)?.title ?? id, code: doc.errors[0]?.code ?? doc.status })));
 const status = computed(() => props.state.indexing ? '正在建立语义索引' : ({ 'not-configured': '尚未配置模型', ready: '语义索引已就绪', pending: '模型已连接，等待索引', partial: '部分笔记未完成', stale: '内容已变化，待更新索引', error: '索引失败，可重试', cancelled: '索引已取消', 'limit-exceeded': '输入超限，请减小分块', unsupported: '模型不支持当前输入' })[coverage.value.status]);
-onMounted(() => dialog.value?.showModal());
+onMounted(() => { if (!props.embedded) dialog.value?.showModal(); });
 async function connect() {
   connecting.value = true; error.value = '';
   try { const result = await props.bridge.command({ type: 'configure-embedding', settings: { ...form.value } }) as WorkbenchState; if (result.embeddingConnection) form.value = { ...result.embeddingConnection, apiKey: '' }; else form.value.apiKey = ''; connectedForm.value = JSON.stringify(form.value); emit('changed'); }
@@ -30,8 +30,8 @@ async function setAutoIndex(enabled: boolean) { try { await props.bridge.command
 function close() { if (!connecting.value) emit('close'); }
 </script>
 <template>
-  <dialog ref="dialog" class="embedding-dialog" aria-labelledby="embedding-heading" @cancel.prevent="close" @close="close">
-    <header><div><h2 id="embedding-heading">语义关联</h2><p>连接 Embedding 模型，让内容相近的笔记自然相连。</p></div><button type="button" class="subtle-button" :disabled="connecting" @click="close">关闭</button></header>
+  <component :is="embedded ? 'section' : 'dialog'" ref="dialog" class="embedding-dialog" :class="{ embedded }" aria-labelledby="embedding-heading" @cancel.prevent="close" @close="close">
+    <header><div><h2 id="embedding-heading">语义关联</h2><p>连接 Embedding 模型，让内容相近的笔记自然相连。</p></div><button v-if="!embedded" type="button" class="subtle-button" :disabled="connecting" @click="close">关闭</button></header>
     <form @submit.prevent="connect">
       <fieldset :disabled="connecting || state.indexing">
         <label>服务类型<select v-model="form.protocol"><option value="ripple">本地 WeMM / Ripple 服务</option><option value="openai-compatible">兼容 OpenAI 的 Embedding 服务</option></select></label>
@@ -54,10 +54,11 @@ function close() { if (!connecting.value) emit('close'); }
       <p v-if="state.mode === 'public'" class="embedding-hint">工作区和索引保存在当前浏览器的本地存储；API Key 不写入缓存。目录访问权限失效时需要重新授权。</p>
     </section>
     <p v-if="error" role="alert" class="embedding-error">{{ error }}</p>
-  </dialog>
+  </component>
 </template>
 <style>
 .embedding-dialog{width:min(560px,calc(100vw - 32px));max-height:calc(100svh - 48px);box-sizing:border-box;overflow:auto;border:1px solid var(--border,#dde3ed);border-radius:20px;padding:28px;background:var(--surface,#fff);color:var(--text,#243657);box-shadow:0 20px 80px #18284422}
+.embedding-dialog.embedded{width:100%;max-height:none;padding:0;border:0;border-radius:0;box-shadow:none;overflow:visible}.embedding-fields{flex-wrap:wrap}.embedding-fields label{min-width:150px}
 .embedding-dialog::backdrop{background:#14213d40;backdrop-filter:blur(3px)}.embedding-dialog header{display:flex;justify-content:space-between;gap:20px;align-items:start;margin-bottom:22px}.embedding-dialog h2{margin:0 0 8px;font-size:22px}.embedding-dialog p{font-size:13px;line-height:1.6;margin:8px 0 16px}.embedding-dialog fieldset{border:0;padding:0;margin:0;display:grid;gap:15px;min-width:0}.embedding-dialog label{display:grid;gap:7px;font-size:13px}.embedding-dialog input,.embedding-dialog select{box-sizing:border-box;width:100%;min-width:0;border:1px solid #cbd5e4;border-radius:9px;padding:10px 12px;font:inherit;background:var(--surface,#fff);color:inherit}.embedding-dialog input:focus-visible,.embedding-dialog select:focus-visible{outline:2px solid #698be0;outline-offset:2px}.embedding-dialog .embedding-hint{color:#68778e;font-size:12px;margin:0 0 14px}.embedding-dialog summary{cursor:pointer;font-size:13px;margin-bottom:12px}.embedding-fields{display:flex;gap:12px}.embedding-fields label{flex:1}.embedding-dialog button{cursor:pointer}.embedding-dialog button:disabled{opacity:.5;cursor:wait}.embedding-progress{border-top:1px solid #e1e7f0;margin-top:24px;padding-top:20px}.embedding-progress progress{width:100%;height:8px;accent-color:#6985dc}.embedding-dialog .auto-index-choice{display:flex;align-items:center;gap:8px;margin:16px 0}.embedding-dialog .auto-index-choice input{width:auto}
 .embedding-error{color:#ae3434}.embedding-progress ul{font-size:12px;color:#ae3434;padding-left:18px}
 </style>

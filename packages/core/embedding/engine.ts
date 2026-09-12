@@ -62,6 +62,11 @@ export class EmbeddingEngine {
   invalidateChangedDocuments(): void {
     const documents = new Map(this.documents().map(doc => [doc.id, doc]));
     for (const [id, job] of this.jobs) if (documents.get(id)?.revision !== job.revision) job.controller.abort();
+    // A later publish must not resurrect vectors for removed/excluded documents, in any cached model space.
+    for (const space of Object.values(this.cache.spaces)) {
+      space.records = space.records.filter(record => documents.has(record.unit.documentId));
+      for (const id of Object.keys(space.documents)) if (!documents.has(id)) delete space.documents[id];
+    }
   }
   coverage(): EmbeddingCoverage {
     const stored = this.cache.spaces[this.space.id]!;

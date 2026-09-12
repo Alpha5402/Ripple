@@ -1,3 +1,4 @@
+import { MAX_IGNORE_RULES_LENGTH } from '../ingestion/knowledge-filter.js';
 import { z } from 'zod';
 import { embeddingConnectionSchema, type SafeEmbeddingConnection } from './embedding-connection.js';
 import type { Relation, Document, EvidenceLocator, ExplorationHistoryState, Mention, WikiLink, VisibleRelations } from '../core/model.js';
@@ -7,6 +8,7 @@ const id = z.string().min(1).max(200);
 const point = z.object({ x: z.number().finite().min(-100000).max(100000), y: z.number().finite().min(-100000).max(100000) });
 export const commandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('state') }),
+  z.object({ type: z.literal('configure-knowledge'), ignoreRules: z.string().max(MAX_IGNORE_RULES_LENGTH).refine(value => !value.includes('\0')) }),
   z.object({ type: z.literal('global-graph') }),
   z.object({ type: z.literal('focus'), id }),
   z.object({ type: z.literal('read'), id }),
@@ -38,6 +40,7 @@ export interface WorkbenchState {
   coverage: ReturnType<KnowledgeService['getIndexCoverage']>;
   indexing: boolean;
   workspaceId?: string;
+  knowledgeSettings?: { ignoreRules: string; excludedPaths: string[] };
   autoIndex?: boolean;
   embeddingNeedsAuth?: boolean;
   syncStatus?: string;
@@ -46,6 +49,7 @@ export interface WorkbenchState {
 }
 export interface RecentWorkspace { id: string; label: string; location: string; lastOpened: number }
 export interface WorkbenchBridge {
+  supportsKnowledgeSettings?: boolean;
   supportsEmbedding?: boolean;
   supportsGlobalGraph?: boolean;
   command(command: HostCommand): Promise<unknown>;

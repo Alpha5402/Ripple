@@ -153,6 +153,13 @@ export class KnowledgeService {
     if (!removing.size) return 0;
     const next = { ...this.state, documents: this.state.documents.filter(doc => !removing.has(doc.id)), validityEpochs: { ...this.state.validityEpochs } };
     for (const id of removing) next.validityEpochs[id] = (next.validityEpochs[id] ?? 0) + 1;
+    if (next.embedding) {
+      next.embedding = structuredClone(next.embedding);
+      for (const space of Object.values(next.embedding.spaces)) {
+        space.records = space.records.filter(record => !removing.has(record.unit.documentId));
+        for (const id of removing) delete space.documents[id];
+      }
+    }
     next.indexRevision++; this.commit(next); return removing.size;
   }
   getNode(id: string): Document | undefined { return structuredClone(this.documentsById.get(id)); }

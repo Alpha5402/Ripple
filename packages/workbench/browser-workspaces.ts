@@ -1,9 +1,12 @@
+import { knowledgeFilter } from '../ingestion/knowledge-filter.js';
 import type { KernelState } from '../core/model.js';
 import type { ExplorationSession } from '../sdk/session.js';
 import type { EmbeddingPreferences } from '../host/embedding-preferences.js';
 
 export interface BrowserSnapshot {
   kernel: KernelState;
+  ignoreRules?: string;
+  excludedDocuments?: { id: string; path: string; markdown: string }[];
   session: ReturnType<ExplorationSession['exportState']>;
   preferences?: EmbeddingPreferences;
 }
@@ -55,12 +58,14 @@ export class BrowserWorkspaceStore {
   forget(id: string): Promise<unknown> { return this.run(['workspaces', 'meta'], 'readwrite', tx => { const request = tx.objectStore('workspaces').delete(id); const active = tx.objectStore('meta').get('active'); active.onsuccess = () => { if (active.result === id) tx.objectStore('meta').delete('active'); }; return request; }); }
 }
 
-export async function readDirectory(handle: DirectoryHandle): Promise<{ path: string; markdown: string }[]> {
+export async function readDirectory(handle: DirectoryHandle, ignoreRules = ''): Promise<{ path: string; markdown: string }[]> {
   const documents: { path: string; markdown: string }[] = []; let total = 0;
+  const excluded = knowledgeFilter(ignoreRules);
   async function walk(directory: DirectoryHandle, prefix: string): Promise<void> {
     for await (const child of directory.values()) {
       if (child.name.startsWith('.') || child.name.toLowerCase() === 'agents.md') continue;
       const path = prefix + child.name;
+      if (excluded(path, child.kind === 'directory')) continue;
       if (child.kind === 'directory') await walk(child, `${path}/`);
       else if (/\.(md|markdown)$/i.test(child.name)) {
         const file = await child.getFile(); total += file.size;

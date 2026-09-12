@@ -1,3 +1,4 @@
+import { knowledgeFilter } from '../ingestion/knowledge-filter.js';
 import { restoreEmbedding, type EmbeddingPreferences } from './embedding-preferences.js';
 import { collectGlobalGraph } from './global-graph.js';
 import { connectEmbedding, embeddingErrorMessage, type SafeEmbeddingConnection } from './embedding-connection.js';
@@ -27,6 +28,8 @@ export class NodeWorkspace {
   private notices: string[] = [];
   private embeddingConnection?: SafeEmbeddingConnection;
   private autoIndex = false;
+  private ignoreRules = '';
+  private excludedPaths: string[] = [];
   private preferences?: EmbeddingPreferences;
   private needsAuth = false;
   private pendingIndex = new Set<string>();
@@ -37,8 +40,15 @@ export class NodeWorkspace {
   }
   static async open(root: string, options: { stateDir: string; readOnly: boolean; watch?: boolean; apiKey?: string; changed?: () => void }): Promise<NodeWorkspace> {
     const canonical = await realpath(root);
-    const workspace = await openSqliteVault(canonical, { stateDir: options.stateDir, allMarkdown: true });
+    let ignoreRules = '';
+    try {
+      const settings = JSON.parse(await readFile(join(options.stateDir, 'knowledge-settings.json'), 'utf8'));
+      if (typeof settings.ignoreRules !== 'string') throw new Error('Invalid ignore rules');
+      ignoreRules = settings.ignoreRules; knowledgeFilter(ignoreRules);
+    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw new KernelError('INVALID_INPUT', '无法读取工作区排除规则，请检查 knowledge-settings.json'); }
+    const workspace = await openSqliteVault(canonical, { stateDir: options.stateDir, allMarkdown: true, ignoreRules });
     const host = new NodeWorkspace(canonical, workspace, options.readOnly, options.changed ?? (() => {}));
+    host.ignoreRules = ignoreRules; host.excludedPaths = workspace.sources.excludedPaths;
     try {
       const saved = JSON.parse(await readFile(join(workspace.stateDir, 'session.json'), 'utf8'));
       host.session.importState(saved);
@@ -101,7 +111,7 @@ export class NodeWorkspace {
     if (ids.length && !this.needsAuth) this.startIndex(ids);
   }
   state(): WorkbenchState {
-    return { workspaceId: this.root, autoIndex: this.autoIndex, embeddingNeedsAuth: this.needsAuth, syncStatus: '自动同步目录变化', label: basename(this.root), mode: 'desktop', readOnly: this.readOnly,
+    return { knowledgeSettings: { ignoreRules: this.ignoreRules, excludedPaths: [...this.excludedPaths] }, workspaceId: this.root, autoIndex: this.autoIndex, embeddingNeedsAuth: this.needsAuth, syncStatus: '自动同步目录变化', label: basename(this.root), mode: 'desktop', readOnly: this.readOnly,
       documents: this.service.listDocuments().map(d => ({ id: d.id, path: d.path, title: d.parsed.title, revision: d.revision })),
       current: this.session.current, visible: this.session.current ? this.session.visible() : null,
       canBack: !!this.session.exportState().backStack.length, coverage: this.service.getIndexCoverage(), indexing: !!this.indexing, embeddingConnection: this.embeddingConnection, notices: [...this.notices] };
@@ -132,8 +142,9 @@ export class NodeWorkspace {
       .finally(() => { clearInterval(progress); this.indexing = undefined; this.changed(); if (this.autoIndex && (this.pendingIndex.size || this.fullIndexRequested)) this.startIndex([]); });
     this.changed();
   }
-  async rescan(): Promise<void> {
-    const sources = await readVault(this.root, { allMarkdown: true });
+  async rescan(prepared?: Awaited<ReturnType<typeof readVault>>): Promise<void> {
+    const sources = prepared ?? await readVault(this.root, { allMarkdown: true, ignoreRules: this.ignoreRules });
+    this.excludedPaths = sources.excludedPaths;
     const paths = new Set(sources.inputs.map(input => input.path));
     const before = this.service.indexRevision;
     const hashes = new Map(this.service.listDocuments().map(d => [d.id, d.contentHash]));
@@ -142,8 +153,8 @@ export class NodeWorkspace {
     if (this.service.indexRevision !== before) {
       if (this.session.current && !this.service.getNode(this.session.current.snapshot.focusNode)) {
         this.session.importState({ schemaVersion: 1, current: null, backStack: [] });
-        const first = this.service.listDocuments()[0]; if (first) this.focus(first.id);
       }
+      if (!this.session.current && this.service.listDocuments()[0]) this.focus(this.service.listDocuments()[0]!.id);
       if (this.autoIndex) this.startIndex(this.service.listDocuments().filter(d => hashes.get(d.id) !== d.contentHash).map(d => d.id));
       this.changed();
     }
@@ -181,6 +192,18 @@ export class NodeWorkspace {
     return this.enqueue(async () => {
       switch (command.type) {
         case 'state': return this.state();
+        case 'configure-knowledge': {
+          knowledgeFilter(command.ignoreRules);
+          const sources = await readVault(this.root, { allMarkdown: true, ignoreRules: command.ignoreRules });
+          this.pendingIndex.clear(); this.fullIndexRequested = false;
+          this.service.cancelEmbeddings(); await this.indexing;
+          await atomicJson(join(this.workspace.stateDir, 'knowledge-settings.json'), { ignoreRules: command.ignoreRules });
+          this.ignoreRules = command.ignoreRules;
+          await this.rescan(sources);
+          // An explicit settings change establishes a fresh view; background scans only mark stale.
+          if (this.session.current) this.session.refresh();
+          this.changed(); break;
+        }
       case 'global-graph': return collectGlobalGraph(this.service);
         case 'configure-embedding': {
           if (this.indexing) throw new KernelError('INVALID_INPUT', '请先停止索引，再更换模型');

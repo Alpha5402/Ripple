@@ -28,7 +28,7 @@ async function readJson<T>(path: string): Promise<T | undefined> {
   catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; }
 }
 /** Persists durable identity/intent only; parse and relation indexes are rebuilt from read-only source files. */
-export async function openVault(root: string, options: { stateDir?: string; allMarkdown?: boolean } = {}) {
+export async function openVault(root: string, options: { stateDir?: string; allMarkdown?: boolean; ignoreRules?: string } = {}) {
   const vaultRoot = resolve(root);
   const stateDir = options.stateDir ? resolve(options.stateDir) : undefined;
   if (stateDir) {

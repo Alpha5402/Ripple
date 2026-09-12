@@ -1,3 +1,4 @@
+import { knowledgeFilter } from '../../ingestion/knowledge-filter.js';
 import { readdir, readFile, lstat } from 'node:fs/promises';
 import { resolve, relative, join, sep } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -7,13 +8,15 @@ export interface VaultReadResult {
   inputs: DocumentInput[];
   files: { path: string; hash: string; bytes: number }[];
   warnings: string[];
+  excludedPaths: string[];
 }
 /** Strictly read-only; preserves vault-relative paths used by explicit WikiLinks. */
-export async function readVault(root: string, options: { allMarkdown?: boolean } = {}): Promise<VaultReadResult> {
+export async function readVault(root: string, options: { allMarkdown?: boolean; ignoreRules?: string } = {}): Promise<VaultReadResult> {
   const absoluteRoot = resolve(root);
   const wikiExists = await lstat(join(absoluteRoot, 'Wiki')).then(s => s.isDirectory(), () => false);
   const scanRoot = !options.allMarkdown && wikiExists ? join(absoluteRoot, 'Wiki') : absoluteRoot;
-  const result: VaultReadResult = { inputs: [], files: [], warnings: [] };
+  const result: VaultReadResult = { inputs: [], files: [], warnings: [], excludedPaths: [] };
+  const excluded = knowledgeFilter(options.ignoreRules);
   const walk = async (directory: string): Promise<void> => {
     const entries = (await readdir(directory, { withFileTypes: true })).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
     for (const entry of entries) {
@@ -21,6 +24,7 @@ export async function readVault(root: string, options: { allMarkdown?: boolean }
       const fullPath = join(directory, entry.name);
       const path = relative(absoluteRoot, fullPath).split(sep).join('/');
       if (entry.isSymbolicLink()) { result.warnings.push(`Skipped symlink: ${path}`); continue; }
+      if (excluded(path, entry.isDirectory())) { result.excludedPaths.push(path + (entry.isDirectory() ? '/' : '')); continue; }
       if (entry.isDirectory()) { await walk(fullPath); continue; }
       if (!entry.isFile() || !/\.md$/i.test(entry.name) || entry.name === 'AGENTS.md') continue;
       const bytes = await readFile(fullPath);

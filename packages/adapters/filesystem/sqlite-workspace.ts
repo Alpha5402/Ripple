@@ -15,7 +15,7 @@ async function canonicalDestination(path: string): Promise<string> {
     return join(await canonicalDestination(dirname(path)), basename(path));
   }
 }
-export async function openSqliteVault(root: string, options: { stateDir: string; allMarkdown?: boolean }) {
+export async function openSqliteVault(root: string, options: { stateDir: string; allMarkdown?: boolean; ignoreRules?: string }) {
   const vaultRoot = await realpath(resolve(root)), stateDir = await canonicalDestination(resolve(options.stateDir));
   const inside = relative(vaultRoot, stateDir);
   if (!inside || (!(inside === '..' || inside.startsWith(`..${sep}`)) && !isAbsolute(inside))) throw new KernelError('INVALID_INPUT', 'State directory must be outside the read-only vault');

@@ -8,7 +8,7 @@ import Icon from './Icon.vue';
 import LocalGraph from './LocalGraph.vue';
 import Welcome from './Welcome.vue';
 import WorkspaceSwitcher from './WorkspaceSwitcher.vue';
-import EmbeddingSettings from './EmbeddingSettings.vue';
+import SettingsPage from './SettingsPage.vue';
 const MarkEditor = defineAsyncComponent(() => import('./MarkEditor.vue'));
 
 const props = defineProps<{ bridge: WorkbenchBridge }>();
@@ -23,7 +23,7 @@ const editing = ref(false), draft = ref(''), baseline = ref(''), sourceMode = re
 const sourceLocation = ref<EvidenceLocator>(), sourceArea = ref<HTMLTextAreaElement>();
 const article = ref<HTMLElement>(), searchInput = ref<HTMLInputElement>(), editor = ref<InstanceType<typeof MarkEditor>>();
 const readonlyOpen = ref(true), popup = ref(false), statusExpanded = ref(false);
-const embeddingSettings = ref(false), workspaceSwitcher = ref(false);
+const settingsOpen = ref(false), workspaceSwitcher = ref(false);
 const recentWorkspaces = ref<RecentWorkspace[]>([]);
 async function loadRecents() { try { recentWorkspaces.value = await props.bridge.recentWorkspaces?.() ?? []; } catch {} }
 async function openRecent(id: string) {
@@ -80,6 +80,7 @@ async function loadReading(id: string, offset = 0) {
 }
 async function apply(next: WorkbenchState, restoreReading = false) {
   if (next.workspaceId !== state.value?.workspaceId) { reading.value = undefined; globalGraph.value = undefined; globalView.value = {}; void loadRecents(); }
+  if (!next.documents.some(d => d.id === reading.value?.document.id)) reading.value = undefined;
   state.value = next; lens.value = next.current?.snapshot.lensValue ?? 45;
   const id = next.current?.reading?.documentId ?? next.current?.snapshot.focusNode;
   if (id && (!reading.value || restoreReading || reading.value.document.id !== id || (!editing.value && next.documents.find(d => d.id === id)?.revision !== reading.value.document.revision))) {
@@ -160,6 +161,7 @@ function keyboard(event: KeyboardEvent) {
     }
     return;
   }
+  if (settingsOpen.value) return;
   if (!(event.metaKey || event.ctrlKey)) return;
   if (event.key.toLowerCase() === 'k') { event.preventDefault(); sidebar.value = true; void nextTick(() => searchInput.value?.focus()); }
   if (event.key.toLowerCase() === 's' && editing.value) { event.preventDefault(); void save(); }
@@ -171,7 +173,8 @@ onMounted(() => { void loadRecents(); resized(); sidebar.value = !mobile.value &
 onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(scrollTimer); window.removeEventListener('keydown', keyboard); window.removeEventListener('beforeunload', preventUnload); window.removeEventListener('resize', resized); props.bridge.setDirty?.(false); });
 </script>
 <template>
-  <Welcome v-if="!state?.documents.length" :can-open="!!bridge.chooseFolder" :error="error" :recent-workspaces="recentWorkspaces" @open="chooseFolder" @recent="openRecent"/>
+  <SettingsPage v-if="settingsOpen && state" :bridge="bridge" :state="state" @close="settingsOpen = false" @changed="reload"/>
+  <Welcome v-else-if="!state?.documents.length" :can-open="!!bridge.chooseFolder" :error="error" :recent-workspaces="recentWorkspaces" @open="chooseFolder" @recent="openRecent"/>
   <div v-else class="workbench" :class="{ 'sidebar-hidden': !sidebar, desktop: state?.mode === 'desktop', 'is-exploring': mode !== 'reading' }">
     <aside :inert="draftDialog" class="library-sidebar" aria-label="知识目录" v-show="sidebar">
       <button v-if="mobile" class="icon-button mobile-sidebar-close" aria-label="关闭知识目录" @click="sidebar = false"><Icon name="close" :size="18"/></button>
@@ -182,7 +185,7 @@ onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(sc
         <details v-for="[group, docs] in groups" :key="group" open><summary><Icon name="folder" :size="15"/><span>{{ group }}</span><small>{{ docs.length }}</small></summary><button v-for="doc in docs" :key="doc.id" class="document-link" :class="{ active: state?.current?.snapshot.focusNode === doc.id }" :aria-current="state?.current?.snapshot.focusNode === doc.id ? 'page' : undefined" @click="focus(doc.id)"><Icon name="note" :size="15"/><span>{{ doc.title }}</span><span class="visited-dot" v-if="state?.current?.visited.includes(doc.id)" title="已访问"/></button></details>
         <p class="muted empty-search" v-if="query && !documents.length">没有匹配的笔记</p>
       </nav>
-      <div class="sidebar-bottom"><button class="workspace-status" @click="statusExpanded = !statusExpanded"><span class="status-dot" :class="{ indexing: state?.indexing }"/><span>{{ state?.indexing ? '正在整理语义关联' : '知识库已就绪' }}</span><Icon name="more" :size="16"/></button><template v-if="statusExpanded"><div class="status-details"><p>{{ state?.coverage.deterministic.documents ?? 0 }} 篇笔记 · {{ state?.readOnly ? '只读目录' : state?.mode === 'public' ? '浏览器沙盒' : '可编辑目录' }}</p><p v-for="notice in state?.notices" :key="notice">{{ notice }}</p><p v-if="state?.syncStatus">{{ state.syncStatus }}</p><button v-if="state?.mode === 'public'" @click="navigate(() => command({ type: 'refresh' }))">同步目录</button><p v-if="state?.autoIndex">自动增量索引已开启</p><p>语义索引：{{ state?.indexing ? '正在索引' : state?.coverage.semantic.status === 'not-configured' ? '尚未配置' : state?.coverage.semantic.status === 'ready' ? '已就绪' : '待更新 / 部分完成' }} · {{ state?.coverage.semantic.readyUnits ?? 0 }} 个片段</p><button v-if="bridge.chooseEmbedding && !bridge.supportsEmbedding" @click="bridge.chooseEmbedding?.().then(reload)">连接模型…</button><button v-if="!bridge.supportsEmbedding && state?.mode === 'desktop' && state?.coverage.semantic.status !== 'not-configured'" @click="command({ type: state?.indexing ? 'cancel-index' : 'index' })">{{ state?.indexing ? '取消索引' : '增量索引' }}</button></div></template><button v-if="bridge.recentWorkspaces" class="open-folder" @click="loadRecents(); workspaceSwitcher = true">最近工作区…</button><button v-if="bridge.supportsEmbedding" class="open-folder" @click="embeddingSettings = true">语义关联设置…</button><template v-if="bridge.chooseFolder"><label v-if="state?.mode === 'desktop'" class="readonly-choice"><input type="checkbox" v-model="readonlyOpen"/>只读打开新目录</label><button class="open-folder" @click="chooseFolder"><Icon name="folder" :size="16"/>打开工作区…</button></template><span v-else class="public-footnote">{{ state?.mode === 'harness' ? 'Harness · 只读知识工作台' : '本地知识 · 浏览器沙盒' }}</span></div>
+      <div class="sidebar-bottom"><button class="workspace-status" @click="statusExpanded = !statusExpanded"><span class="status-dot" :class="{ indexing: state?.indexing }"/><span>{{ state?.indexing ? '正在整理语义关联' : '知识库已就绪' }}</span><Icon name="more" :size="16"/></button><template v-if="statusExpanded"><div class="status-details"><p>{{ state?.coverage.deterministic.documents ?? 0 }} 篇笔记 · {{ state?.readOnly ? '只读目录' : state?.mode === 'public' ? '浏览器沙盒' : '可编辑目录' }}</p><p v-for="notice in state?.notices" :key="notice">{{ notice }}</p><p v-if="state?.syncStatus">{{ state.syncStatus }}</p><button v-if="state?.mode === 'public'" @click="navigate(() => command({ type: 'refresh' }))">同步目录</button><p v-if="state?.autoIndex">自动增量索引已开启</p><p>语义索引：{{ state?.indexing ? '正在索引' : state?.coverage.semantic.status === 'not-configured' ? '尚未配置' : state?.coverage.semantic.status === 'ready' ? '已就绪' : '待更新 / 部分完成' }} · {{ state?.coverage.semantic.readyUnits ?? 0 }} 个片段</p><button v-if="bridge.chooseEmbedding && !bridge.supportsEmbedding" @click="bridge.chooseEmbedding?.().then(reload)">连接模型…</button><button v-if="!bridge.supportsEmbedding && state?.mode === 'desktop' && state?.coverage.semantic.status !== 'not-configured'" @click="command({ type: state?.indexing ? 'cancel-index' : 'index' })">{{ state?.indexing ? '取消索引' : '增量索引' }}</button></div></template><button v-if="bridge.recentWorkspaces" class="open-folder" @click="loadRecents(); workspaceSwitcher = true">最近工作区…</button><button v-if="bridge.supportsEmbedding || bridge.supportsKnowledgeSettings" class="open-folder" @click="navigate(async () => { settingsOpen = true; })">设置…</button><template v-if="bridge.chooseFolder"><label v-if="state?.mode === 'desktop'" class="readonly-choice"><input type="checkbox" v-model="readonlyOpen"/>只读打开新目录</label><button class="open-folder" @click="chooseFolder"><Icon name="folder" :size="16"/>打开工作区…</button></template><span v-else class="public-footnote">{{ state?.mode === 'harness' ? 'Harness · 只读知识工作台' : '本地知识 · 浏览器沙盒' }}</span></div>
     </aside>
     <main :inert="draftDialog" class="main-space">
       <header class="toolbar"><div class="toolbar-leading"><button class="icon-button" :aria-label="sidebar ? '收起目录' : '展开目录'" @click="sidebar = !sidebar"><Icon name="sidebar"/></button><button class="icon-button" aria-label="返回上一个探索中心" :disabled="!state?.canBack || busy" @click="navigate(() => command({ type: 'back' }, true))"><Icon name="back"/></button><span class="toolbar-divider"/><div class="breadcrumb"><span>知识空间</span><Icon name="back" :size="12" class="breadcrumb-chevron"/><strong>{{ currentTitle }}</strong></div></div><div class="view-switch" role="group" aria-label="工作台视图"><button :class="{ active: mode === 'reading' }" :aria-pressed="mode === 'reading'" @click="mode = 'reading'"><Icon name="book" :size="15"/>阅读</button><button :class="{ active: mode === 'explore' }" :aria-pressed="mode === 'explore'" @click="navigate(async () => { mode = 'explore'; })"><Icon name="graph" :size="15"/>探索</button><button v-if="bridge.supportsGlobalGraph" :class="{ active: mode === 'global' }" :aria-pressed="mode === 'global'" @click="navigate(async () => { mode = 'global'; })"><Icon name="graph" :size="15"/>全局</button></div><div class="toolbar-trailing"><button v-if="mobile" class="icon-button" aria-label="显示或关闭关联面板" @click="contextOpen = !contextOpen"><Icon name="evidence"/></button><span class="readonly-badge" v-if="state?.readOnly">只读</span><button class="icon-button" aria-label="重新扫描并刷新关系" @click="navigate(() => command({ type: 'refresh' }, true))"><Icon name="refresh"/></button><button v-if="reading && !state?.readOnly && !editing" class="subtle-button" @click="startEdit"><Icon name="edit" :size="15"/>编辑</button></div></header>
@@ -216,7 +219,7 @@ onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(sc
     </main>
     <div v-if="popup && preview" class="mention-popover" role="dialog" aria-label="自然提及预览"><div class="panel-heading"><span class="eyebrow">自然提及</span><button class="icon-button" aria-label="关闭提及预览" @click="popup = false; preview = undefined"><Icon name="close" :size="16"/></button></div><h3>{{ preview.document.parsed.title }}</h3><p>{{ preview.document.markdown.slice(preview.document.parsed.contentStart ?? 0).replace(/^#.+\n/, '').slice(0, 170) }}…</p><button class="panel-action" @click="focus(preview.document.id)">阅读并探索 <Icon name="arrow" :size="14"/></button></div>
     <WorkspaceSwitcher v-if="workspaceSwitcher" :workspaces="recentWorkspaces" :active="state?.workspaceId" :busy="busy" @close="workspaceSwitcher = false" @open="openRecent" @forget="forgetWorkspace" @choose="chooseFolder"/>
-    <EmbeddingSettings v-if="embeddingSettings && state" :bridge="bridge" :state="state" @close="embeddingSettings = false" @changed="reload"/>
     <div v-if="draftDialog" class="modal-backdrop"><section class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="draft-title"><h2 id="draft-title">这篇笔记还有未保存的编辑</h2><p>保存后继续，或返回检查你的草稿。</p><div><button autofocus @click="resolveDraft('cancel')">返回编辑</button><button @click="resolveDraft('discard')">丢弃编辑</button><button class="primary-button" @click="resolveDraft('save')">保存并继续</button></div></section></div>
   </div>
+  <button v-if="!settingsOpen && !state?.documents.length && state?.workspaceId && bridge.supportsKnowledgeSettings" class="subtle-button empty-workspace-settings" @click="settingsOpen = true">设置知识范围</button>
 </template>
