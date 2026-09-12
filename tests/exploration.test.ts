@@ -29,7 +29,7 @@ test('property: all 101 lens values monotonically expand across many candidate s
 test('equal-score nodes cross together; visible cap paginates without replacing existing neighbors', () => {
   const service = kernel(document('center', '# Center'), ...['aa', 'bb', 'cc', 'dd'].map(id => document(id, `# ${id}\nCenter`)));
   const snapshot = service.createExplorationSnapshot('center', { lensValue: 49, visibleBudget: 2 });
-  assert.equal(service.getVisibleRelations(snapshot).eligibleCount, 0);
+  assert.equal(service.getVisibleRelations(snapshot).eligibleCount, 4);
   const expanded = service.setLens(snapshot, 50);
   const view = service.getVisibleRelations(expanded);
   assert.equal(view.eligibleCount, 4); assert.equal(view.relations.length, 2); assert.equal(view.remainingCount, 2);
@@ -39,12 +39,12 @@ test('equal-score nodes cross together; visible cap paginates without replacing 
 });
 
 test('decimal threshold boundaries include exact ties without a one-step delay', () => {
-  const service = kernel(document('a', '# Alpha\n[[Beta|目标]]'), document('b', '# Beta'));
-  const snapshot = service.createExplorationSnapshot('a', { lensValue: 70 });
+  const service = kernel(document('a', '# Alpha\n[[Beta|目标]] Gamma'), document('b', '# Beta'), document('c', '# Gamma'));
+  const snapshot = service.createExplorationSnapshot('a', { lensValue: 100 });
   const view = service.getVisibleRelations(snapshot);
   assert.equal(view.threshold, 0.3);
-  assert.equal(view.relations.length, 1);
-  assert.equal(service.getVisibleRelations(service.setLens(snapshot, 69.999)).relations.length, 0);
+  assert.equal(view.relations.length, 2);
+  assert.equal(service.getVisibleRelations(service.setLens(snapshot, 99.999)).relations.length, 1);
 });
 
 test('default focus shows fewer than three qualified neighbors without lowering the quality floor', () => {

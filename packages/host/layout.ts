@@ -1,11 +1,8 @@
 import type { ExplorationHistoryState } from '../core/model.js';
 import type { Relation } from '../core/model.js';
 
-/** Start with about five qualified neighbors without lowering the default quality floor. Ties stay together. */
-export function initialLens(relations: Relation[], maximum = 45): number {
-  const qualified = relations.filter(r => !r.override.hidden && r.score >= 1 - maximum / 100).sort((a, b) => b.score - a.score);
-  return qualified.length > 6 ? Math.min(maximum, Math.ceil((1 - qualified[4]!.score) * 100)) : maximum;
-}
+/** A local-range position, independent of candidate count. */
+export function initialLens(_relations: Relation[], position = 50): number { return position; }
 
 /** Place the complete candidate set once. Filtering never moves surviving nodes. */
 export function completeLayout(state: ExplorationHistoryState): ExplorationHistoryState['layout'] {

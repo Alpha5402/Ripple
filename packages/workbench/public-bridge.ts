@@ -45,7 +45,7 @@ export function createPublicBridge(bundle: PublicBundle, options: { initial?: Br
     indexJob = snapshotService.kernel.indexEmbeddings({ documentIds }).then(report => {
       const failed = Object.values(report.documents).filter(doc => doc.errors.length).length;
       notice = report.cancelled ? '索引已取消，可继续建立索引。' : failed ? `${failed} 篇笔记索引未完成，请检查模型服务后重试。` : `索引完成：新增 ${report.encoded} 个片段，复用 ${report.reused} 个片段。`;
-    }).catch(error => { notice = embeddingErrorMessage(error); }).finally(async () => { clearInterval(progress); refresh(); try { await persist(); } catch { notice = '索引已完成，但浏览器未能保存缓存；请检查存储空间。'; } indexing = false; changed(); if (rerun && autoIndex && !disposed) { rerun = false; startIndex(); } });
+    }).catch(error => { notice = embeddingErrorMessage(error); }).finally(async () => { clearInterval(progress); try { await persist(); } catch { notice = '索引已完成，但浏览器未能保存缓存；请检查存储空间。'; } indexing = false; changed(); if (rerun && autoIndex && !disposed) { rerun = false; startIndex(); } });
   };
   const session = new ExplorationSession(service);
   const query = new URLSearchParams(typeof location === 'undefined' ? '' : location.search);
@@ -55,7 +55,6 @@ export function createPublicBridge(bundle: PublicBundle, options: { initial?: Br
   const focus = (id: string) => { const current = session.focus(id, { lensValue: session.current?.snapshot.lensValue ?? defaultLens }); session.setViewState({ layout: completeLayout(current), reading: { documentId: id, offset: 0 } }); };
   if (options.initial?.session) { try { session.importState(options.initial.session); if (session.current && !service.getNode(session.current.snapshot.focusNode)) session.importState({ schemaVersion: 1, current: null, backStack: [] }); } catch {} }
   if (!session.current && first) focus(first.id);
-  if (session.current && preferences) session.refresh();
   if (autoIndex && !needsAuth && service.getIndexCoverage().semantic.status !== 'ready') queueMicrotask(startIndex);
   const state = (): WorkbenchState => ({ autoIndex, embeddingNeedsAuth: needsAuth, label: bundle.title, mode: 'public', readOnly: false, documents: service.listDocuments().map(d => ({ id: d.id, title: d.parsed.title, path: d.path, revision: d.revision })), current: session.current, visible: session.current ? session.visible() : null, canBack: !!session.exportState().backStack.length, coverage: service.getIndexCoverage(), indexing, embeddingConnection: connection,
     notices: [...(notice ? [notice] : []), bundle.semantic ? `语义关联由 ${bundle.semantic.descriptor.model} 预先计算，不进行实时模型查询。` : connection ? `文本索引使用 ${connection.model}。` : '配置 Embedding 后，可发现没有显式链接的语义关联。', options.save ? '工作区与索引保存在本机浏览器；编辑保存在本地副本，不会写回源文件。' : '笔记编辑仅保存在当前页面，不会写回原文件。'] });
@@ -69,7 +68,6 @@ export function createPublicBridge(bundle: PublicBundle, options: { initial?: Br
       kernel.ingestDocuments(documents.map(d => ({ ...d, id: byPath.get(d.path)?.id ?? crypto.randomUUID() })));
       if (before === kernel.indexRevision) return;
       if (session.current && !kernel.getNode(session.current.snapshot.focusNode)) { session.importState({ schemaVersion: 1, current: null, backStack: [] }); if (kernel.listDocuments()[0]) focus(kernel.listDocuments()[0]!.id); }
-      else refresh();
       await persist(); changed(); if (autoIndex && !needsAuth) startIndex();
     },
     supportsGlobalGraph: true, supportsEmbedding: !bundle.semantic, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }, async command(raw) {
@@ -95,7 +93,7 @@ export function createPublicBridge(bundle: PublicBundle, options: { initial?: Br
       case 'view': { const { type: _type, ...view } = c; session.setViewState(view as Parameters<ExplorationSession['setViewState']>[0]); break; }
       case 'evidence': return service.getEvidence(c.locator);
       case 'search': return service.listDocuments().filter(d => (d.parsed.title + d.markdown).toLocaleLowerCase().includes(c.query.toLocaleLowerCase())).map(d => ({ documentId: d.id }));
-      case 'save': { const doc = service.getNode(c.id); if (!doc || doc.contentHash !== c.expectedHash) throw new KernelError('CONFLICT', '内容版本已变化'); service.ingestDocument({ id: doc.id, path: doc.path, markdown: c.markdown, expectedRevision: doc.revision }); session.refresh(); if (autoIndex && !needsAuth) startIndex(); break; }
+      case 'save': { const doc = service.getNode(c.id); if (!doc || doc.contentHash !== c.expectedHash) throw new KernelError('CONFLICT', '内容版本已变化'); service.ingestDocument({ id: doc.id, path: doc.path, markdown: c.markdown, expectedRevision: doc.revision }); if (autoIndex && !needsAuth) startIndex(); break; }
       default: throw new KernelError('INVALID_INPUT', '浏览器模式不连接模型服务');
     }
     await persist(); return state();

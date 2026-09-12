@@ -12,7 +12,7 @@ test('real fixture CLI completes focus → progressive expansion → evidence �
   const child = spawnSync(process.execPath, ['--import', 'tsx', 'apps/playground-cli/main.ts', '--vault', 'fixtures/vault', '--commands', 'fixtures/demo.txt', '--ephemeral'], { encoding: 'utf8' });
   assert.equal(child.status, 0, child.stderr + child.stdout);
   assert.match(child.stdout, /Microtask \| 0\.700/);
-  assert.match(child.stdout, /Async-Await \| 0\.300/);
+  assert.match(child.stdout, /Web Workers \| 0\.500/);
   assert.match(child.stdout, /Promise → Microtask/);
   assert.match(child.stdout, /UTF-16/);
   assert.match(child.stdout, /> back\nFocus: Promise \| Lens: 70\.0/);
@@ -24,7 +24,7 @@ test('CLI reports errors instead of silently choosing ambiguous nodes; all refer
   const playground = new Playground(service);
   assert.throws(() => playground.execute('focus Cache'), /ambiguous/);
   playground.execute('focus Promise'); playground.execute('lens 0');
-  assert.match(playground.execute('relations').output, /Visible: 0/);
+  assert.match(playground.execute('relations').output, /Visible: 1/);
   assert.match(playground.execute('relations all').output, /All deterministic relations: 4/);
   assert.throws(() => playground.execute('lens'), /0\.\.100/);
 });
@@ -47,8 +47,8 @@ test('CLI process restart restores the earlier focus and frozen Lens through dur
       const child = spawnSync(process.execPath, ['--import', 'tsx', 'apps/playground-cli/main.ts', '--vault', 'fixtures/vault', '--state-dir', join(directory, 'state'), '--commands', commands], { encoding: 'utf8' });
       assert.equal(child.status, 0, child.stderr + child.stdout);
       if (commands === secondCommands) {
-        assert.match(child.stdout, /Focus: Promise \| Lens: 70\.0 \| threshold: 0\.300 \| current/);
-        assert.match(child.stdout, /Visible: 4/);
+        assert.match(child.stdout, /Focus: Promise \| Lens: 70\.0 \| threshold: 0\.420 \| current/);
+        assert.match(child.stdout, /Visible: 3/);
       }
     }
   } finally { await rm(directory, { recursive: true, force: true }); }

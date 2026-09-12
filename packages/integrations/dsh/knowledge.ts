@@ -1,3 +1,4 @@
+import { localScore } from '../../core/exploration/lens.js';
 import { randomUUID } from 'node:crypto';
 import { ExplorationSession } from '../../sdk/session.js';
 import { KernelError, type EvidenceLocator } from '../../core/model.js';
@@ -61,7 +62,7 @@ export class HarnessKnowledge {
       if (!proposal || proposal.basis !== this.version(session)) throw new KernelError('STALE_INDEX', 'The view changed; ask for a fresh proposal');
       session.proposals = session.proposals.filter(p => p.id !== proposal.id);
       if (request.approve) {
-        session.exploration.setLens(Math.max(session.exploration.current!.snapshot.lensValue, Math.min(100, Math.ceil((1 - proposal.score) * 100))));
+        session.exploration.setLens(Math.max(session.exploration.current!.snapshot.lensValue, Math.min(100, Math.ceil((1 - localScore(proposal.score, session.exploration.current!.snapshot.lensMapping)) * 100))));
         while (!session.exploration.visible().relations.some(r => r.nodes.includes(proposal.documentId)) && session.exploration.visible().remainingCount > 0) session.exploration.loadMore();
         if (!session.exploration.visible().relations.some(r => r.nodes.includes(proposal.documentId))) throw new KernelError('STALE_INDEX', 'Candidate is no longer available');
       }

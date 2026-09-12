@@ -79,11 +79,15 @@ export interface ScorePolicy {
 }
 export interface LensMapping { kind: 'linear'; minThreshold: number; maxThreshold: number }
 export interface Snapshot {
-  schemaVersion: 1;
+  schemaVersion: 2;
   id: string;
   focusNode: DocumentId;
   focusRevision: number;
   candidateSet: Relation[];
+  semanticCandidatePool: import('./relation/semantic-candidate.js').SemanticCandidatePool;
+  validSemanticNeighborhood: DocumentId[];
+  relationBoundary: import('./relation/relation-boundary.js').RelationBoundary;
+  neighborhoodRelations: Relation[];
   candidateRevisions: Record<DocumentId, number>;
   candidateVersion: string;
   candidateBudget: { deterministic: 'all'; semantic: number };
@@ -102,6 +106,7 @@ export interface VisibleRelations {
   reasons: string[];
   threshold: number;
   relations: Relation[];
+  graphRelations: Relation[];
   eligibleCount: number;
   remainingCount: number;
   pinnedCount: number;

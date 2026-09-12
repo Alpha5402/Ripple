@@ -22,7 +22,7 @@ test('real MCP stdio handshake, all tools, lens-independent references, evidence
     const ambiguous = await invoke('ripple_resolve', { name: 'Cache' }); assert.equal(ambiguous.data.status, 'ambiguous');
     const docs = await invoke('ripple_documents', { limit: 2 }); assert.equal(docs.data.documents.length, 2); assert.equal(docs.data.nextOffset, 2);
     const before = await invoke('ripple_mentions', { targetDocumentId: id });
-    const focus = await invoke('ripple_explore', { documentId: id, lens: 0 }); assert.equal(focus.data.visible.relations.length, 0);
+    const focus = await invoke('ripple_explore', { documentId: id, lens: 0 }); assert.equal(focus.data.visible.relations.length, 1);
     const after = await invoke('ripple_mentions', { targetDocumentId: id }); assert.deepEqual(after, before); assert.ok(before.data.total > 0);
     const relations = await invoke('ripple_relations', { documentId: id }); assert.ok(relations.data.relations.length > 0);
     const evidence = await invoke('ripple_evidence', { locator: before.data.references[0].evidence }); assert.equal(evidence.data.status, 'valid'); assert.match(evidence.data.text, /Promise/);

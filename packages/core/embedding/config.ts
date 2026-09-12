@@ -1,3 +1,4 @@
+import { validateBoundaryConfig } from '../relation/relation-boundary.js';
 import type { IdentityProvider } from '../ports.js';
 import { EmbeddingError, type EmbeddingConfig, type EmbeddingSpace, type ModelDescriptor } from './model.js';
 
@@ -26,6 +27,7 @@ export function validateEmbeddingConfig(config: EmbeddingConfig, descriptor: Mod
     || !Number.isFinite(config.execution.retryDelayMs) || config.execution.retryDelayMs < 0 || config.execution.retryDelayMs > 60_000
     || !config.chunking.version || !config.retrieval.version || !['max', 'top-mean'].includes(config.retrieval.aggregation))
     throw new EmbeddingError('CONFIG', 'Invalid chunk, candidate or execution budget');
+  if (config.retrieval.boundary) { try { validateBoundaryConfig(config.retrieval.boundary); } catch { throw new EmbeddingError('CONFIG', 'Invalid relation boundary configuration'); } }
   for (const pair of ['text-text', 'text-image', 'image-image'] as const) {
     const mapping = config.retrieval.mappings[pair];
     if (!mapping || !Number.isFinite(mapping.min) || !Number.isFinite(mapping.max) || mapping.min < -1 || mapping.max > 1 || mapping.min >= mapping.max)

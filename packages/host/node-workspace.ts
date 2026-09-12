@@ -54,7 +54,6 @@ export class NodeWorkspace {
       host.service.configureEmbedding(restoreEmbedding(preferences, options.apiKey), preferences.config);
       host.preferences = preferences; host.embeddingConnection = preferences.settings;
       host.autoIndex = preferences.autoIndex; host.needsAuth = preferences.requiresAuth && !options.apiKey;
-      if (host.session.current) host.session.refresh();
       if (host.needsAuth) host.notices.push('已恢复语义索引；请重新输入 API Key 后继续增量更新。');
       else if (host.autoIndex) host.indexPending();
     } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') host.notices.push('已保留索引缓存，请重新连接模型以恢复语义关联。'); }
@@ -92,7 +91,7 @@ export class NodeWorkspace {
     this.tail = task.catch(() => {}); return task;
   }
   private async persistSession(): Promise<void> { await atomicJson(join(this.workspace.stateDir, 'session.json'), this.session.exportState()); }
-  private focus(id: string): void { const current = this.session.focus(id, { lensValue: this.session.current?.snapshot.lensValue ?? initialLens(this.service.getRelations(id)), visibleBudget: 40 }); this.session.setViewState({ layout: completeLayout(current), reading: { documentId: id, offset: 0 } }); }
+  private focus(id: string): void { const current = this.session.focus(id, { lensValue: this.session.current?.snapshot.lensValue ?? initialLens(this.service.getRelations(id)), visibleBudget: Math.max(1, this.service.listDocuments().length) }); this.session.setViewState({ layout: completeLayout(current), reading: { documentId: id, offset: 0 } }); }
   private async persistPreferences(): Promise<void> {
     if (this.preferences) { this.preferences.autoIndex = this.autoIndex; await atomicJson(join(this.workspace.stateDir, 'embedding.json'), this.preferences); }
   }
@@ -130,7 +129,7 @@ export class NodeWorkspace {
     const progress = setInterval(this.changed, 250);
     this.indexing = this.service.indexEmbeddings({ documentIds: ids }).then(report => { this.notices = [`语义索引：编码 ${report.encoded}，复用 ${report.reused}${report.cancelled ? '，已取消' : ''}。`]; })
       .catch(() => { this.notices = ['语义索引暂不可用，确定性关系不受影响。']; })
-      .finally(() => { clearInterval(progress); this.indexing = undefined; if (!this.closing && this.session.current) { this.session.refresh(); this.session.setViewState({ layout: completeLayout(this.session.current) }); } this.changed(); if (this.autoIndex && (this.pendingIndex.size || this.fullIndexRequested)) this.startIndex([]); });
+      .finally(() => { clearInterval(progress); this.indexing = undefined; this.changed(); if (this.autoIndex && (this.pendingIndex.size || this.fullIndexRequested)) this.startIndex([]); });
     this.changed();
   }
   async rescan(): Promise<void> {
@@ -144,7 +143,7 @@ export class NodeWorkspace {
       if (this.session.current && !this.service.getNode(this.session.current.snapshot.focusNode)) {
         this.session.importState({ schemaVersion: 1, current: null, backStack: [] });
         const first = this.service.listDocuments()[0]; if (first) this.focus(first.id);
-      } else if (this.session.current) this.session.refresh();
+      }
       if (this.autoIndex) this.startIndex(this.service.listDocuments().filter(d => hashes.get(d.id) !== d.contentHash).map(d => d.id));
       this.changed();
     }
@@ -172,7 +171,6 @@ export class NodeWorkspace {
     } finally { await rm(temp, { force: true }); }
     try { this.service.ingestDocument({ id: doc.id, path: doc.path, markdown: command.markdown, expectedRevision: doc.revision }); }
     catch { this.notices = ['正文已保存，但索引更新失败；请刷新以重新同步。']; this.changed(); throw new KernelError('STORAGE', '正文已保存，索引需要刷新'); }
-    if (this.session.current?.snapshot.focusNode === doc.id) this.session.refresh();
     if (this.autoIndex) this.startIndex([doc.id]);
     this.changed();
   }

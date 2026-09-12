@@ -1,0 +1,311 @@
+{
+  "description": "Recorded WeMM cosine distribution from a 77-document cache. Non-target titles are anonymized; no note content or identity is included. This regression checks filtering, not a human relevance gold set.",
+  "model": "tencent/WeMM-Embedding-2B",
+  "focus": "SSRF",
+  "candidates": [
+    {
+      "label": "CSRF",
+      "similarity": 0.8413777335718284
+    },
+    {
+      "label": "XSS",
+      "similarity": 0.8162728484273686
+    },
+    {
+      "label": "candidate-3",
+      "similarity": 0.7830676408414884
+    },
+    {
+      "label": "candidate-4",
+      "similarity": 0.7699279000079253
+    },
+    {
+      "label": "candidate-5",
+      "similarity": 0.7682541434526053
+    },
+    {
+      "label": "candidate-6",
+      "similarity": 0.76777103304854
+    },
+    {
+      "label": "candidate-7",
+      "similarity": 0.7665758598609099
+    },
+    {
+      "label": "candidate-8",
+      "similarity": 0.7472062717039706
+    },
+    {
+      "label": "candidate-9",
+      "similarity": 0.737781160619882
+    },
+    {
+      "label": "candidate-10",
+      "similarity": 0.7342728997576724
+    },
+    {
+      "label": "candidate-11",
+      "similarity": 0.7308903753636408
+    },
+    {
+      "label": "candidate-12",
+      "similarity": 0.7308312250138491
+    },
+    {
+      "label": "candidate-13",
+      "similarity": 0.7203200092421627
+    },
+    {
+      "label": "candidate-14",
+      "similarity": 0.7109987681458224
+    },
+    {
+      "label": "candidate-15",
+      "similarity": 0.706193964360517
+    },
+    {
+      "label": "candidate-16",
+      "similarity": 0.7052089687320232
+    },
+    {
+      "label": "candidate-17",
+      "similarity": 0.7046193806811585
+    },
+    {
+      "label": "candidate-18",
+      "similarity": 0.7004356017720846
+    },
+    {
+      "label": "Web Storage",
+      "similarity": 0.7004144858967849
+    },
+    {
+      "label": "candidate-20",
+      "similarity": 0.6968081947121374
+    },
+    {
+      "label": "candidate-21",
+      "similarity": 0.6861937885303102
+    },
+    {
+      "label": "candidate-22",
+      "similarity": 0.6787440632618617
+    },
+    {
+      "label": "candidate-23",
+      "similarity": 0.6760650023525039
+    },
+    {
+      "label": "candidate-24",
+      "similarity": 0.6739673845376337
+    },
+    {
+      "label": "candidate-25",
+      "similarity": 0.6735283755065913
+    },
+    {
+      "label": "candidate-26",
+      "similarity": 0.6648318658136024
+    },
+    {
+      "label": "candidate-27",
+      "similarity": 0.66116929222437
+    },
+    {
+      "label": "candidate-28",
+      "similarity": 0.6580959950942306
+    },
+    {
+      "label": "candidate-29",
+      "similarity": 0.649492442577718
+    },
+    {
+      "label": "Vite",
+      "similarity": 0.6466669570032588
+    },
+    {
+      "label": "candidate-31",
+      "similarity": 0.6436738695994811
+    },
+    {
+      "label": "Source Map",
+      "similarity": 0.6409957426471848
+    },
+    {
+      "label": "candidate-33",
+      "similarity": 0.6382201099662903
+    },
+    {
+      "label": "candidate-34",
+      "similarity": 0.6347185304456445
+    },
+    {
+      "label": "candidate-35",
+      "similarity": 0.6312010802590584
+    },
+    {
+      "label": "candidate-36",
+      "similarity": 0.6300530566399161
+    },
+    {
+      "label": "candidate-37",
+      "similarity": 0.6295281989891569
+    },
+    {
+      "label": "candidate-38",
+      "similarity": 0.6290971759436909
+    },
+    {
+      "label": "candidate-39",
+      "similarity": 0.6257283913987182
+    },
+    {
+      "label": "candidate-40",
+      "similarity": 0.624473191683407
+    },
+    {
+      "label": "candidate-41",
+      "similarity": 0.6198875650795507
+    },
+    {
+      "label": "candidate-42",
+      "similarity": 0.6180538100862326
+    },
+    {
+      "label": "candidate-43",
+      "similarity": 0.6114003795364807
+    },
+    {
+      "label": "candidate-44",
+      "similarity": 0.6107513867344109
+    },
+    {
+      "label": "candidate-45",
+      "similarity": 0.6106275578675147
+    },
+    {
+      "label": "candidate-46",
+      "similarity": 0.6098038277818661
+    },
+    {
+      "label": "candidate-47",
+      "similarity": 0.608371419153738
+    },
+    {
+      "label": "candidate-48",
+      "similarity": 0.6081596489302038
+    },
+    {
+      "label": "candidate-49",
+      "similarity": 0.6045982038542365
+    },
+    {
+      "label": "candidate-50",
+      "similarity": 0.6033307401558993
+    },
+    {
+      "label": "candidate-51",
+      "similarity": 0.6008717183889543
+    },
+    {
+      "label": "candidate-52",
+      "similarity": 0.5980550692581942
+    },
+    {
+      "label": "candidate-53",
+      "similarity": 0.5938487287977342
+    },
+    {
+      "label": "candidate-54",
+      "similarity": 0.5927886491944839
+    },
+    {
+      "label": "candidate-55",
+      "similarity": 0.5902470077241154
+    },
+    {
+      "label": "candidate-56",
+      "similarity": 0.5881931666111382
+    },
+    {
+      "label": "candidate-57",
+      "similarity": 0.5880847431559988
+    },
+    {
+      "label": "candidate-58",
+      "similarity": 0.5866214787370256
+    },
+    {
+      "label": "candidate-59",
+      "similarity": 0.5855920087997534
+    },
+    {
+      "label": "candidate-60",
+      "similarity": 0.5855260980752641
+    },
+    {
+      "label": "candidate-61",
+      "similarity": 0.5824587951565325
+    },
+    {
+      "label": "candidate-62",
+      "similarity": 0.5772168235751987
+    },
+    {
+      "label": "candidate-63",
+      "similarity": 0.5748499256126149
+    },
+    {
+      "label": "candidate-64",
+      "similarity": 0.5723040245861997
+    },
+    {
+      "label": "candidate-65",
+      "similarity": 0.5701918195564595
+    },
+    {
+      "label": "candidate-66",
+      "similarity": 0.5686337684879594
+    },
+    {
+      "label": "candidate-67",
+      "similarity": 0.565420752822809
+    },
+    {
+      "label": "candidate-68",
+      "similarity": 0.5585022163007551
+    },
+    {
+      "label": "candidate-69",
+      "similarity": 0.5577969228471144
+    },
+    {
+      "label": "candidate-70",
+      "similarity": 0.556700049097231
+    },
+    {
+      "label": "candidate-71",
+      "similarity": 0.5553188717321063
+    },
+    {
+      "label": "candidate-72",
+      "similarity": 0.5545430881387975
+    },
+    {
+      "label": "candidate-73",
+      "similarity": 0.5541689038233344
+    },
+    {
+      "label": "candidate-74",
+      "similarity": 0.5532901612770533
+    },
+    {
+      "label": "candidate-75",
+      "similarity": 0.550688776087186
+    },
+    {
+      "label": "candidate-76",
+      "similarity": 0.5462577234678174
+    }
+  ]
+}

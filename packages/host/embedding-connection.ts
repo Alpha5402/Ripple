@@ -1,3 +1,4 @@
+import { defaultBoundaryConfig } from '../core/relation/relation-boundary.js';
 import { z } from 'zod';
 import { HttpEmbeddingProvider } from '../adapters/embedding-http/index.js';
 import { DEFAULT_EMBEDDING_CONFIG } from '../core/embedding/config.js';
@@ -11,6 +12,7 @@ export const embeddingConnectionSchema = z.object({
   revision: z.string().max(256).default('default'),
   maxInputTokens: z.number().int().min(64).max(1048576).default(8192),
   chunkTokens: z.number().int().min(64).max(8192).default(512),
+  qualityFloor: z.number().min(-1).max(1).optional(),
   batchSize: z.number().int().min(1).max(8).default(1),
 });
 export type EmbeddingConnection = z.infer<typeof embeddingConnectionSchema>;
@@ -37,6 +39,8 @@ export async function connectEmbedding(raw: EmbeddingConnection) {
   const config: EmbeddingConfig = structuredClone(DEFAULT_EMBEDDING_CONFIG);
   config.chunking.maxTokens = Math.min(settings.chunkTokens, provider.descriptor.maxInputTokens);
   config.execution.batchSize = settings.batchSize;
+  config.retrieval.boundary = defaultBoundaryConfig(provider.descriptor.model);
+  if (settings.qualityFloor !== undefined) config.retrieval.boundary.qualityFloor = settings.qualityFloor;
   const { apiKey: _key, ...safe } = settings;
   return { provider, config, settings: { ...safe, baseUrl, model: provider.descriptor.model, maxInputTokens: provider.descriptor.maxInputTokens } };
 }

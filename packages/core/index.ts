@@ -9,3 +9,6 @@ export * from './embedding/config.js';
 export * from './embedding/chunk.js';
 export * from './errors.js';
 export * from './visibility.js';
+export * from './relation/semantic-candidate.js';
+export * from './relation/gap-detector.js';
+export * from './relation/relation-boundary.js';

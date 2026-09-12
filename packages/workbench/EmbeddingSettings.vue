@@ -6,7 +6,7 @@ const props = defineProps<{ bridge: WorkbenchBridge; state: WorkbenchState }>();
 const emit = defineEmits<{ close: []; changed: [] }>();
 const dialog = ref<HTMLDialogElement>();
 const connecting = ref(false), error = ref('');
-const form = ref<EmbeddingConnection>({ protocol: 'ripple', baseUrl: 'http://127.0.0.1:8787', model: '', revision: 'default', maxInputTokens: 8192, chunkTokens: 512, batchSize: 1, ...props.state.embeddingConnection, apiKey: '' });
+const form = ref<EmbeddingConnection>({ protocol: 'ripple', baseUrl: 'http://127.0.0.1:8787', model: '', revision: 'default', maxInputTokens: 8192, chunkTokens: 512, batchSize: 1, qualityFloor: 0.55, ...props.state.embeddingConnection, apiKey: '' });
 const connectedForm = ref(JSON.stringify(form.value));
 const settingsChanged = computed(() => JSON.stringify(form.value) !== connectedForm.value);
 const configured = computed(() => props.state.coverage.semantic.status !== 'not-configured');
@@ -39,7 +39,7 @@ function close() { if (!connecting.value) emit('close'); }
         <p class="embedding-hint">填写服务根地址或以 /v1 结尾的地址。{{ form.protocol === 'ripple' ? '请先启动本地 WeMM 服务。' : '模型名称应与服务提供方的 Embedding 模型名称一致。' }}</p>
         <label v-if="form.protocol === 'openai-compatible'">模型名称<input v-model.trim="form.model" required placeholder="填写 Embedding 模型名称"/></label>
         <label>API Key（无认证的本地服务可留空）<input v-model="form.apiKey" type="password" autocomplete="off" spellcheck="false" :placeholder="state.mode === 'desktop' ? '通过系统加密保存' : '仅在本次会话中使用'"/></label>
-        <details><summary>索引参数</summary><div class="embedding-fields"><label v-if="form.protocol === 'openai-compatible'">模型输入上限<input v-model.number="form.maxInputTokens" type="number" min="64" max="1048576" required/></label><label>每段最大 Token<input v-model.number="form.chunkTokens" type="number" min="64" max="8192" required/></label><label>每批片段数<input v-model.number="form.batchSize" type="number" min="1" max="8" required/></label></div></details>
+        <details><summary>索引参数</summary><div class="embedding-fields"><label v-if="form.protocol === 'openai-compatible'">模型输入上限<input v-model.number="form.maxInputTokens" type="number" min="64" max="1048576" required/></label><label>每段最大 Token<input v-model.number="form.chunkTokens" type="number" min="64" max="8192" required/></label><label>每批片段数<input v-model.number="form.batchSize" type="number" min="1" max="8" required/></label><label>语义质量下限<input v-model.number="form.qualityFloor" type="number" min="-1" max="1" step="0.01" required/><small>按模型调整，作为弱关系兜底，不决定邻域数量。</small></label></div></details>
       </fieldset>
       <p class="embedding-hint">测试连接只发送一小段固定测试文本。点击「开始索引」后，笔记文本会发送到你配置的服务；当前为纯文本索引，不发送图片。</p>
       <button type="submit" class="primary-button" :disabled="connecting || state.indexing">{{ connecting ? '正在测试连接…' : configured ? '测试并更新连接' : '测试并连接' }}</button>

@@ -42,6 +42,12 @@ test('browser connection probes real HTTP, indexes notes, publishes semantic evi
     assert.ok(!JSON.stringify(await state()).includes('test-secret'));
     await bridge.command({ type: 'index' });
     await until(async () => !(await state()).indexing);
+    const frozen = await state();
+    assert.equal(frozen.visible?.status, 'stale');
+    const frozenIds = frozen.current!.snapshot.candidateSet.map(r => r.id);
+    await bridge.command({ type: 'lens', value: 100 });
+    assert.deepEqual((await state()).current!.snapshot.candidateSet.map(r => r.id), frozenIds);
+    await bridge.command({ type: 'refresh' });
     const ready = await state();
     assert.equal(ready.coverage.semantic.status, 'ready');
     assert.equal(ready.coverage.semantic.readyUnits, 2);

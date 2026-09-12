@@ -19,7 +19,7 @@ export function visibleSnapshot(snapshot: Snapshot, context: SnapshotContext): V
   const focusRevision = context.revision(snapshot.focusNode);
   const reasons: string[] = [];
   if (!focusRevision || focusRevision !== snapshot.focusRevision) {
-    return { status: 'invalid', reasons: [focusRevision ? 'focus-revision-changed' : 'focus-removed'], threshold, relations: [], eligibleCount: 0, remainingCount: 0, pinnedCount: 0, invalidatedCount: snapshot.candidateSet.length };
+    return { status: 'invalid', reasons: [focusRevision ? 'focus-revision-changed' : 'focus-removed'], threshold, relations: [], graphRelations: [], eligibleCount: 0, remainingCount: 0, pinnedCount: 0, invalidatedCount: snapshot.candidateSet.length };
   }
   if (snapshot.indexRevision !== context.indexRevision) reasons.push('index-revision-changed');
   if (snapshot.relationScoreVersion !== context.relationScoreVersion) reasons.push('score-policy-changed');
@@ -34,7 +34,13 @@ export function visibleSnapshot(snapshot: Snapshot, context: SnapshotContext): V
   const pinned = eligible.filter(r => r.override.pinned).sort(compareRelations);
   const regular = eligible.filter(r => !r.override.pinned).sort(compareRelations);
   const visible = [...pinned, ...regular.slice(0, snapshot.visibleBudget)].sort(compareRelations);
+  const visibleNodes = new Set([snapshot.focusNode, ...visible.flatMap(r => r.nodes)]);
+  const cross = snapshot.neighborhoodRelations.filter(relation => {
+    if (!relation.nodes.every(id => visibleNodes.has(id))) return false;
+    if (relation.nodes.some(id => !context.revision(id) || snapshot.validityEpochs[id] !== context.validityEpoch(id)) || relation.signals.some(signal => !context.signalValid(signal))) { invalidatedCount++; return false; }
+    return !context.override(relation.id).hidden;
+  });
   if (invalidatedCount) reasons.push('candidate-evidence-invalidated');
-  return { status: reasons.length ? 'stale' : 'current', reasons, threshold, relations: structuredClone(visible), eligibleCount: eligible.length,
+  return { status: reasons.length ? 'stale' : 'current', reasons, threshold, relations: structuredClone(visible), graphRelations: structuredClone([...visible, ...cross].sort(compareRelations)), eligibleCount: eligible.length,
     remainingCount: regular.length - Math.min(regular.length, snapshot.visibleBudget), pinnedCount: pinned.length, invalidatedCount };
 }

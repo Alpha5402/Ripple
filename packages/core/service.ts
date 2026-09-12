@@ -1,12 +1,14 @@
+import { retrieveSemanticCandidates, acceptedSemanticSignal, type SemanticCandidatePool } from './relation/semantic-candidate.js';
+import { applyRelationBoundary, defaultBoundaryConfig, adaptiveGapStrategy, type RelationBoundary, type RelationBoundaryStrategy } from './relation/relation-boundary.js';
 import { visibleSnapshot } from './visibility.js';
 import { EntityIndex, normalizePath } from './entity.js';
 import { extractReferences, NameMatcher } from './mention.js';
 import { compareRelations, DEFAULT_SCORE_POLICY, generateCandidates, relationKey, scoreCandidate, validateScorePolicy } from './relation.js';
-import { DEFAULT_LENS_MAPPING, thresholdFor, validateBudget, validateLens, validateSnapshot } from './exploration.js';
+import { DEFAULT_LENS_MAPPING, localLensMapping, thresholdFor, validateBudget, validateLens, validateSnapshot } from './exploration.js';
 import { validateDeclarations } from './declarations.js';
 import { EmbeddingEngine } from './embedding/engine.js';
 import { DEFAULT_EMBEDDING_CONFIG, stableStringify } from './embedding/config.js';
-import { activeSpace, generateSemanticCandidates, semanticPairState, semanticSignalValid, validRecords } from './embedding/relations.js';
+import { activeSpace, semanticPairState, semanticSignalValid, validRecords } from './embedding/relations.js';
 import { EmbeddingError, type EmbeddingCache, type EmbeddingConfig, type EmbeddingCoverage, type EmbeddingProvider, type EmbeddingRunReport, type KnowledgeUnit, type MediaResolver } from './embedding/model.js';
 import type { IdentityProvider, KnowledgeSearch, KnowledgeStorage, MarkdownParser, SearchOptions, SearchHit } from './ports.js';
 import {
@@ -21,7 +23,7 @@ export class KnowledgeService {
   private mentions: Mention[] = [];
   private wikiLinks: WikiLink[] = [];
   private relationsByNode = new Map<string, Relation[]>();
-  private relationQueryCache = new Map<string, Relation[]>();
+  private relationQueryCache = new Map<string, { relations: Relation[]; pool: SemanticCandidatePool; boundary: RelationBoundary }>();
   private referenceCache = new Map<string, { revision: number; refs: ReturnType<typeof extractReferences> }>();
   private entitySignature = '';
   private matcher!: NameMatcher;
@@ -31,7 +33,7 @@ export class KnowledgeService {
   private policy: ScorePolicy;
   private embeddingEngine: EmbeddingEngine | undefined;
   private embeddingGeneration = 0;
-  constructor(private readonly dependencies: { storage: KnowledgeStorage; parser: MarkdownParser; identity: IdentityProvider; search?: KnowledgeSearch }, policy?: ScorePolicy) {
+  constructor(private readonly dependencies: { storage: KnowledgeStorage; parser: MarkdownParser; identity: IdentityProvider; search?: KnowledgeSearch; relationBoundaryStrategy?: RelationBoundaryStrategy; semanticRetriever?: typeof retrieveSemanticCandidates }, policy?: ScorePolicy) {
     this.state = dependencies.storage.load();
     this.policy = structuredClone(policy ?? this.state.scorePolicy ?? DEFAULT_SCORE_POLICY);
     validateScorePolicy(this.policy);
@@ -63,7 +65,7 @@ export class KnowledgeService {
   exportState(): KernelState { return structuredClone({ ...this.state, scorePolicy: this.policy }); }
   private get effectiveScoreVersion(): string {
     const space = activeSpace(this.state.embedding);
-    return space ? `${this.policy.version}+${space.config.retrieval.version}:${this.dependencies.identity.hash(stableStringify(space.config.retrieval)).slice(0, 16)}` : this.policy.version;
+    return space ? `${this.policy.version}+${space.config.retrieval.version}:${this.dependencies.identity.hash(stableStringify([space.config.retrieval, this.boundaryConfig, this.boundaryStrategy.id, this.boundaryStrategy.version])).slice(0, 16)}` : `${this.policy.version}+boundary-v1`;
   }
   private rebuild(): void {
     this.documentsById = new Map(this.state.documents.map(doc => [doc.id, doc]));
@@ -164,28 +166,35 @@ export class KnowledgeService {
     return structuredClone(this.wikiLinks.filter(l => (!query.sourceDocumentId || l.sourceDocumentId === query.sourceDocumentId)
       && (!query.targetDocumentId || (l.resolution.status === 'resolved' && l.resolution.candidates.some(t => t.documentId === query.targetDocumentId)))));
   }
-  getRelations(nodeId: string, options: { includeHidden?: boolean } = {}): Relation[] {
+  private get boundaryStrategy(): RelationBoundaryStrategy { return this.dependencies.relationBoundaryStrategy ?? adaptiveGapStrategy; }
+  private get boundaryConfig() { const space = activeSpace(this.state.embedding); return space?.config.retrieval.boundary ?? { ...defaultBoundaryConfig(space?.space.descriptor.model ?? ''), strategy: this.boundaryStrategy.id }; }
+  private neighborhood(nodeId: string) {
     this.requireNode(nodeId);
-    const budget = activeSpace(this.state.embedding)?.config.retrieval.candidateBudget ?? 0;
-    let relations = this.relationQueryCache.get(nodeId);
-    if (!relations) {
+    let result = this.relationQueryCache.get(nodeId);
+    if (!result) {
+      const pool = (this.dependencies.semanticRetriever ?? retrieveSemanticCandidates)(this.state.embedding, this.state.documents, nodeId);
+      const boundary = applyRelationBoundary(pool, this.boundaryConfig, this.boundaryStrategy);
+      const accepted = new Set(boundary.decisions.filter(d => d.accepted).map(d => d.id));
       const candidates = new Map((this.relationsByNode.get(nodeId) ?? []).map(r => [r.id, { id: r.id, nodes: r.nodes, signals: [...r.signals] }]));
-      for (const semantic of generateSemanticCandidates(this.state.embedding, this.state.documents, nodeId)) {
-        const existing = candidates.get(semantic.id);
-        if (existing) existing.signals.push(...semantic.signals); else candidates.set(semantic.id, semantic);
+      for (const candidate of pool.candidates) {
+        if (!accepted.has(candidate.id)) continue;
+        const existing = candidates.get(candidate.id);
+        const signal = acceptedSemanticSignal(candidate, activeSpace(this.state.embedding)!.config.retrieval.mappings);
+        if (existing) existing.signals.push(signal); else candidates.set(candidate.id, { id: candidate.id, nodes: candidate.nodes, signals: [signal] });
       }
       const policy = { ...this.policy, version: this.effectiveScoreVersion };
-      relations = [...candidates.values()].map(c => scoreCandidate(c, policy, this.state.declarations,
-        semanticPairState(this.state.embedding, c.nodes, this.documentsById))).sort(compareRelations);
-      const semanticIds = new Set(relations.filter(r => r.signals.some(s => s.kind === 'semantic'))
-        .sort((a, b) => ('strength' in b.components.semantic ? b.components.semantic.strength ?? 0 : 0)
-          - ('strength' in a.components.semantic ? a.components.semantic.strength ?? 0 : 0) || compareRelations(a, b)).slice(0, budget).map(r => r.id));
-      relations = relations.filter(r => semanticIds.has(r.id) || r.signals.some(s => s.kind !== 'semantic'));
-      // Bound cached centers; each exact retrieval still scans all current units.
-      if (this.relationQueryCache.size >= 32) this.relationQueryCache.delete(this.relationQueryCache.keys().next().value!);
-      this.relationQueryCache.set(nodeId, relations);
+      const relations = [...candidates.values()].map(c => scoreCandidate(c, policy, this.state.declarations, semanticPairState(this.state.embedding, c.nodes, this.documentsById))).sort(compareRelations);
+      result = { relations, pool, boundary };
+      if (this.relationQueryCache.size >= 128) this.relationQueryCache.delete(this.relationQueryCache.keys().next().value!);
+      this.relationQueryCache.set(nodeId, result);
     }
-    return structuredClone(relations.filter(r => options.includeHidden || !r.override.hidden));
+    return result;
+  }
+  getRelations(nodeId: string, options: { includeHidden?: boolean } = {}): Relation[] {
+    return structuredClone(this.neighborhood(nodeId).relations.filter(r => options.includeHidden || !r.override.hidden));
+  }
+  getSemanticNeighborhood(nodeId: string): { pool: SemanticCandidatePool; boundary: RelationBoundary } {
+    const { pool, boundary } = this.neighborhood(nodeId); return structuredClone({ pool, boundary });
   }
   configureEmbedding(provider: EmbeddingProvider, config: EmbeddingConfig = structuredClone(DEFAULT_EMBEDDING_CONFIG), resolver?: MediaResolver): void {
     const generation = this.embeddingGeneration + 1;
@@ -252,21 +261,31 @@ export class KnowledgeService {
   }
   createExplorationSnapshot(focusNode: string, options: { lensValue?: number; visibleBudget?: number } = {}): Snapshot {
     const focus = this.requireNode(focusNode);
-    const candidateSet = this.getRelations(focusNode, { includeHidden: true });
-    const ranked = candidateSet.filter(r => !r.override.hidden);
-    // Default targets roughly 3–6 eligible neighbors; ties and weak-only centers can differ.
-    const threshold = Math.max(0.5, ranked[2]?.score ?? ranked.at(-1)?.score ?? 0.5);
-    const lensValue = options.lensValue ?? (1 - threshold) * 100;
-    const visibleBudget = options.visibleBudget ?? 40;
+    const neighborhood = this.neighborhood(focusNode);
+    const candidateSet = structuredClone(neighborhood.relations);
+    const lensValue = options.lensValue ?? 50;
+    const visibleBudget = options.visibleBudget ?? Math.max(1, candidateSet.length);
+    const neighborIds = [...new Set(candidateSet.filter(r => !r.override.hidden).flatMap(r => r.nodes).filter(id => id !== focusNode))];
+    const neighborSet = new Set(neighborIds), cross = new Map<string, Relation>();
+    // Only already-gated relations, confirmed at both endpoints; no pair synthesis for visual density.
+    for (const id of neighborIds) for (const relation of this.neighborhood(id).relations) {
+      if (relation.override.hidden || relation.nodes.includes(focusNode) || !relation.nodes.every(node => neighborSet.has(node))) continue;
+      const other = relation.nodes.find(node => node !== id)!;
+      const reciprocal = this.neighborhood(other).relations.find(r => r.id === relation.id && !r.override.hidden);
+      if (reciprocal) cross.set(relation.id, { ...structuredClone(relation), score: Math.min(relation.score, reciprocal.score) });
+    }
+    const neighborhoodRelations = [...cross.values()].sort(compareRelations);
     validateLens(lensValue); validateBudget(visibleBudget);
     const ids = new Set([focusNode, ...candidateSet.flatMap(r => r.nodes)]);
     return {
-      schemaVersion: 1, id: this.dependencies.identity.newId(), focusNode, focusRevision: focus.revision,
-      candidateSet, candidateRevisions: Object.fromEntries([...ids].map(id => [id, this.requireNode(id).revision])),
-      candidateVersion: this.dependencies.identity.hash(JSON.stringify([this.indexRevision, this.policy.version, candidateSet])),
+      schemaVersion: 2, id: this.dependencies.identity.newId(), focusNode, focusRevision: focus.revision,
+      candidateSet, semanticCandidatePool: structuredClone(neighborhood.pool), relationBoundary: structuredClone(neighborhood.boundary),
+      validSemanticNeighborhood: neighborhood.pool.candidates.filter(c => neighborhood.boundary.decisions.some(d => d.id === c.id && d.accepted)).map(c => c.nodes.find(id => id !== focusNode)!),
+      neighborhoodRelations, candidateRevisions: Object.fromEntries([...ids].map(id => [id, this.requireNode(id).revision])),
+      candidateVersion: this.dependencies.identity.hash(JSON.stringify([this.indexRevision, this.effectiveScoreVersion, candidateSet, neighborhood.boundary, neighborhoodRelations])),
       candidateBudget: { deterministic: 'all', semantic: activeSpace(this.state.embedding)?.config.retrieval.candidateBudget ?? 0 }, relationScoreVersion: this.effectiveScoreVersion,
       ...(activeSpace(this.state.embedding) ? { embeddingSpaceId: activeSpace(this.state.embedding)!.space.id } : {}),
-      indexRevision: this.indexRevision, lensValue, lensMapping: { ...DEFAULT_LENS_MAPPING }, visibleBudget,
+      indexRevision: this.indexRevision, lensValue, lensMapping: localLensMapping(candidateSet), visibleBudget,
       userOverrides: structuredClone(this.state.declarations.relations),
       validityEpochs: Object.fromEntries([...ids].map(id => [id, this.state.validityEpochs[id]!])), userPolicyRevision: this.state.userPolicyRevision,
     };

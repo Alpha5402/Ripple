@@ -7,5 +7,5 @@ export interface PublicBundle {
   generatedAt: string;
   documents: { id: string; path: string; markdown: string }[];
   scorePolicy: ScorePolicy;
-  semantic?: { descriptor: ModelDescriptor; spaceId: string; signals: RelationSignal[]; omittedChangedDocuments: number };
+  semantic?: { descriptor: ModelDescriptor; spaceId: string; signals: RelationSignal[]; omittedChangedDocuments: number; retrieval?: import('../../core/embedding/model.js').EmbeddingConfig['retrieval'] };
 }

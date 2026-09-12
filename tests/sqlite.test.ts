@@ -10,7 +10,8 @@ import type { EmbeddingProvider } from '../packages/core/embedding/model.js';
 import { SqliteStorage, NodeIdentityProvider, RemarkMarkdownParser, openSqliteVault } from '../packages/adapters/node/index.js';
 import { openVault } from '../packages/adapters/filesystem/workspace.js';
 import { KernelHttpHandler } from '../apps/http-kernel/handler.js';
-import { generateSemanticCandidates } from '../packages/core/embedding/relations.js';
+import { retrieveSemanticCandidates } from '../packages/core/relation/semantic-candidate.js';
+import { applyRelationBoundary, defaultBoundaryConfig } from '../packages/core/relation/relation-boundary.js';
 
 const create = (storage: SqliteStorage, parser = new RemarkMarkdownParser()) => new KnowledgeService({ storage, search: storage, parser, identity: new NodeIdentityProvider() });
 const provider: EmbeddingProvider = { descriptor: { model: 'fixture', revision: '1', dimensions: 3, normalized: true, modalities: ['text'], maxInputTokens: 512, representation: 'fixture', tokenizer: 'characters' }, countTokens: async inputs => inputs.map(i => i.text.length), embed: async inputs => inputs.map(i => i.text.includes('island') ? [0, 1, 0] : [1, 0, 0]) };
@@ -75,9 +76,10 @@ test('body-only edits reuse other reference projections; lazy semantic retrieval
   const service = new KnowledgeService({ storage, parser: { version: parser.version, parse: (...args) => { parses++; return parser.parse(...args); } }, identity: new NodeIdentityProvider() });
   service.ingestDocuments(Array.from({ length: 8 }, (_, i) => ({ id: String(i), path: `Topic${i}.md`, markdown: `# Topic${i}\n${i === 7 ? 'island' : 'related'} body.` })));
   assert.equal(parses, 8); service.configureEmbedding(provider, DEFAULT_EMBEDDING_CONFIG); await service.indexEmbeddings();
-  const exhaustive = generateSemanticCandidates(service.exportEmbeddingCache(), service.listDocuments());
   for (const doc of service.listDocuments()) {
-    assert.deepEqual(service.getRelations(doc.id).map(r => r.id).sort(), exhaustive.filter(c => c.nodes.includes(doc.id)).map(r => r.id).sort());
+    const pool = retrieveSemanticCandidates(service.exportEmbeddingCache(), service.listDocuments(), doc.id);
+    const boundary = applyRelationBoundary(pool, defaultBoundaryConfig(provider.descriptor.model));
+    assert.deepEqual(service.getRelations(doc.id).map(r => r.id).sort(), boundary.decisions.filter(d => d.accepted).map(d => d.id).sort());
   }
   service.ingestDocument({ id: '0', path: 'Topic0.md', markdown: '# Topic0\nEdited body references Topic1.' });
   assert.equal(parses, 9); assert.equal(service.findMentions({ sourceDocumentId: '0', targetDocumentId: '1' }).length, 1); storage.close();

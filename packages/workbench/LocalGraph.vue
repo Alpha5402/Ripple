@@ -11,7 +11,7 @@ const layout = ref<Record<string, { x: number; y: number }>>({});
 const hoveredEdge = ref<string>(), hoveredNode = ref<string>();
 const names = computed(() => new Map(props.state.documents.map(doc => [doc.id, doc.title])));
 const focusId = computed(() => props.state.current?.snapshot.focusNode ?? '');
-const relations = computed(() => props.globalGraph?.relations ?? props.state.visible?.relations ?? []);
+const relations = computed(() => props.globalGraph?.relations ?? props.state.visible?.graphRelations ?? props.state.visible?.relations ?? []);
 const nodes = computed(() => props.globalGraph ? props.globalGraph.documents.map(d => d.id) : [...new Set([focusId.value, ...relations.value.flatMap(r => r.nodes)].filter(Boolean))]);
 const links = computed(() => relations.value.map(r => ({ source: r.nodes[0], target: r.nodes[1], score: r.score })));
 const pos = (id: string) => layout.value[id] ?? { x: 0, y: 0 };
@@ -101,7 +101,7 @@ function resetCamera() {
     <div class="graph-caption"><span class="eyebrow">{{ globalGraph ? 'GLOBAL KNOWLEDGE' : 'LOCAL EXPLORATION' }}</span><h2>{{ globalGraph ? '看见知识的全貌。' : '从这里，发现关联。' }}</h2><p>拖动节点 · 点击预览 · 双击探索</p></div>
     <svg ref="canvas" class="local-graph" viewBox="0 0 1000 720" :aria-label="globalGraph ? '全局知识网络' : '当前笔记的局部知识图'" @pointerdown="down($event)" @pointermove="move" @pointerup="up" @pointercancel="up" @wheel.prevent="zoom($event.deltaY > 0 ? -.12 : .12)">
       <g :transform="`translate(${500 + camera.x} ${365 + camera.y}) scale(${camera.zoom})`">
-        <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected, 'edge-active': hoveredEdge === relation.id || (hoveredNode && relation.nodes.includes(hoveredNode)) }" role="button" tabindex="0" :aria-label="`查看与 ${names.get(relation.nodes.find(id => id !== focusId)!)} 的关系证据，权重 ${Math.round(relation.score * 100)}`" @pointerenter="hoveredEdge = relation.id" @pointerleave="hoveredEdge = undefined" @focus="hoveredEdge = relation.id" @blur="hoveredEdge = undefined" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)" @keydown.space.prevent="emit('evidence', relation.id)">
+        <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected, 'edge-active': hoveredEdge === relation.id || (hoveredNode && relation.nodes.includes(hoveredNode)) }" role="button" tabindex="0" :aria-label="`查看 ${relation.nodes.map(id => names.get(id)).join(' 与 ')} 的关系证据，权重 ${Math.round(relation.score * 100)}`" @pointerenter="hoveredEdge = relation.id" @pointerleave="hoveredEdge = undefined" @focus="hoveredEdge = relation.id" @blur="hoveredEdge = undefined" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)" @keydown.space.prevent="emit('evidence', relation.id)">
           <line class="edge-stroke" :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y" :style="{ opacity: .25 + relation.score * .4 }"/>
           <line class="edge-hit" :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y"/>
           <text class="edge-weight" text-anchor="middle" :x="(pos(relation.nodes[0]).x + pos(relation.nodes[1]).x) / 2" :y="(pos(relation.nodes[0]).y + pos(relation.nodes[1]).y) / 2 - 9">{{ Math.round(relation.score * 100) }}</text>

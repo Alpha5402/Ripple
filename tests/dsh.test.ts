@@ -9,13 +9,13 @@ test('DSH Follow Lens isolates human sessions, rejects outside evidence and stal
   const k = make(); action(k, { type: 'focus', id: 'a' }); action(k, { type: 'lens', value: 0 });
   assert.equal(k.promptContext('human'), ''); assert.throws(() => k.context('human'), /Enable Follow/);
   k.human({ type: 'follow', sessionId: 'human', enabled: true });
-  const original = k.context('human'); assert.equal(original.relations.length, 0); assert.match(original.center.text, /Promise/);
-  assert.throws(() => k.document('human', original.version, 'b'), /outside/);
+  const original = k.context('human'); assert.equal(original.relations.length, 1); assert.match(original.center.text, /Promise/);
+  assert.throws(() => k.document('human', original.version, 'c'), /outside/);
   assert.equal(k.document('human', original.version, 'a', 0, 5).nextOffset, 5);
   const pending = k.propose('human', original.version, '检查任务调度与微任务的关系', 2);
-  assert.equal(pending.proposals.length, 2); assert.equal(k.context('human').relations.length, 0);
+  assert.equal(pending.proposals.length, 1); assert.equal(k.context('human').relations.length, 1);
   assert.equal(JSON.stringify(pending).includes('Scheduling'), false);
-  const outside = k.service.getRelations('a')[0]!.signals[0]!.evidence[0]!;
+  const outside = k.service.getRelations('a').find(r => r.nodes.includes('c'))!.signals[0]!.evidence[0]!;
   assert.throws(() => k.evidence('human', original.version, outside), /outside/);
   k.human({ type: 'decision', sessionId: 'human', proposalId: pending.proposals[0]!.id, approve: true });
   const expanded = k.context('human'); assert.ok(expanded.relations.length > 0);

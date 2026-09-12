@@ -25,6 +25,7 @@ export interface EmbeddingConfig {
   retrieval: {
     version: string; candidateBudget: number; aggregation: 'max' | 'top-mean'; topMatches: number;
     mappings: Record<ModalityPair, { min: number; max: number }>;
+    boundary?: import('../relation/relation-boundary.js').RelationBoundaryConfig;
   };
   execution: { batchSize: number; maxRetries: number; retryDelayMs: number };
 }

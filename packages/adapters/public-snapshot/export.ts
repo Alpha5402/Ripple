@@ -74,7 +74,7 @@ export function exportPublicBundle(source: KnowledgeService, options: { title: s
       }
     }
     const descriptor = space.space.descriptor;
-    bundle.semantic = { descriptor: { model: descriptor.model, revision: descriptor.revision, dimensions: descriptor.dimensions, normalized: descriptor.normalized, modalities: [...descriptor.modalities], maxInputTokens: descriptor.maxInputTokens, representation: descriptor.representation, tokenizer: descriptor.tokenizer }, spaceId, signals, omittedChangedDocuments: [...input.values()].filter(d => d.markdown !== d.source.markdown).length };
+    bundle.semantic = { descriptor: { model: descriptor.model, revision: descriptor.revision, dimensions: descriptor.dimensions, normalized: descriptor.normalized, modalities: [...descriptor.modalities], maxInputTokens: descriptor.maxInputTokens, representation: descriptor.representation, tokenizer: descriptor.tokenizer }, spaceId, signals, retrieval: structuredClone(space.config.retrieval), omittedChangedDocuments: [...input.values()].filter(d => d.markdown !== d.source.markdown).length };
     // Model descriptors are metadata, never endpoints or provider credentials.
     checkText(JSON.stringify(bundle.semantic.descriptor));
   }
