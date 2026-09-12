@@ -25,7 +25,7 @@ open release/current/Ripple-darwin-arm64/Ripple.app
 
 ## 公开 Web 与 iframe
 
-Web 入口：[Ripple](https://alpha5402.github.io/Ripple/)。默认显示欢迎页，不内置演示笔记。标题与两行英文使用 HTML 文本，轨道插画与 Logo 使用提供的原始品牌素材。
+Web 入口：[Ripple](https://alpha5402.github.io/Ripple/)。默认显示欢迎页，不内置演示笔记。欢迎页使用 R 字形 Logo，保留两行英文 HTML 文本，不再重复展示大号名称。
 
 ```sh
 npm run build:web
@@ -33,7 +33,7 @@ npm run audit:public
 npm run preview:web
 ```
 
-点击「打开知识目录」选择本地 Markdown 文件夹，浏览器会建立名称提及和显式链接关系。文件仅在当前页面内处理，不上传；编辑不会写回原文件，刷新后需要重新选择目录。需要持久保存、文件监听和模型索引时使用桌面版。
+点击「打开工作区」选择本地 Markdown 文件夹，浏览器会建立名称提及和显式链接关系。文件仅在当前页面内处理，不上传；编辑不会写回原文件，刷新后需要重新选择目录。需要持久保存、文件监听和模型索引时使用桌面版。
 
 浏览器导入忽略隐藏目录和 AGENTS.md，限制 1000 篇笔记、单文件 4 MiB、总计 32 MiB。空目录或超限会显示错误并保留此前打开的内容。切换目录前会保护尚未保存的编辑。
 
