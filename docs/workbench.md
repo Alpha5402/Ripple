@@ -53,11 +53,13 @@ MCP 客户端可将 command 配置为 `node`，args 为 `--import`, `tsx`, `/abs
 
 ## DeepSeek Harness
 
+实际 DSH Web 演示：`npm run demo:dsh`。完整步骤和版本边界见 [DSH 演示](dsh-demo.md)。
+
 ```sh
 npm run build:dsh
 ```
 
-产物位于 `dist/dsh`，后端入口是 `entry.mjs`，客户端入口是 `client.mjs`。后端插件注入 Harness 的 `tools` 与 `systemPrompt`，配置项包括 `vault`、`stateDir`、可选 `embedding` 和 `panel`。客户端提供 Vue Knowledge Workspace，具体注册契约见 `packages/integrations/dsh` 和 `packages/workbench/dsh-client.ts`；当前对照本地 DSH 0.1.0-rc.5 API 验证。
+产物位于 `dist/dsh`，后端入口是 `entry.mjs`，客户端入口是 DSH 模块工厂 `client.js`（另保留独立验收用的 `client.mjs`）。后端插件注入 Harness 的 `tools` 与 `systemPrompt`，配置项包括 `vault`、`stateDir`、可选 `embedding` 和 `panel`。客户端提供 Vue Knowledge Workspace，具体注册契约见 `packages/integrations/dsh` 和 `packages/workbench/dsh-client.ts`；当前对照本地 DSH 0.1.0-rc.5 API 验证。
 
 Follow Lens 只向 Ripple 的工具和上下文提供当前可见证据。Explore Beyond Lens 返回候选提案，由人确认后才改变该会话的可见范围；不同会话隔离，卸载清理工具、上下文和 UI 订阅。它不撤销 Harness 的其他工具，也不删除历史对话中已经出现的内容。
 

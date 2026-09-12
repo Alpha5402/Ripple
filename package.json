@@ -50,7 +50,8 @@
     "build:dsh": "npm run build:web && node --import tsx scripts/build-dsh.ts",
     "validate:dsh": "node --import tsx scripts/validate-dsh-native.ts",
     "benchmark:graph": "vite build --config apps/graph-benchmark/vite.config.mts && vite preview --config apps/graph-benchmark/vite.config.mts --host 127.0.0.1 --port 47324",
-    "audit:public": "node --import tsx scripts/audit-public.ts"
+    "audit:public": "node --import tsx scripts/audit-public.ts",
+    "demo:dsh": "npm run build:dsh && node --import tsx scripts/demo-dsh.ts"
   },
   "engines": {
     "node": ">=22.16"

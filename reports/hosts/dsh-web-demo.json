@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-13",
+  "versions": {
+    "dsh": "0.1.5-rc.1",
+    "cordis": "4.0.2",
+    "dsh-tools": "0.1.5-rc.2",
+    "dsh-system-prompt": "0.1.5-rc.2",
+    "dsh-api-session-controller": "0.1.5-rc.2",
+    "dsh-client-modules": "0.1.5-rc.2"
+  },
+  "surface": "full npm DSH Web application",
+  "observed": {
+    "pluginFactoryRegistered": true,
+    "realSessionBinding": true,
+    "workspaceDirectorySelected": true,
+    "iframeDocumentRendered": true
+  },
+  "liveModelTurn": false,
+  "modelBlocker": "MISSING_CREDENTIAL",
+  "isolatedDefaultProfile": true
+}
