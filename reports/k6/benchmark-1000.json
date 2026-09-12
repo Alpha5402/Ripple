@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-09-11T18:41:59.417Z",
+  "documents": 1000,
+  "dimensions": 2048,
+  "profile": "Synthetic Markdown and seeded normalized vectors; measures kernel/SQLite, never model inference or retrieval quality",
+  "runtime": {
+    "node": "v24.15.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "memoryGiB": 16
+  },
+  "textBytes": 369890,
+  "importMs": 420.6519169999999,
+  "deterministicSnapshot": {
+    "samples": 20,
+    "p50Ms": 0.05966699999999037,
+    "p95Ms": 0.11150000000009186,
+    "maxMs": 0.8782500000000937
+  },
+  "deterministicLens": {
+    "samples": 101,
+    "p50Ms": 0.038708000000042375,
+    "p95Ms": 0.07383300000003601,
+    "maxMs": 0.3368749999999636
+  },
+  "search": {
+    "samples": 20,
+    "p50Ms": 2.079291000000012,
+    "p95Ms": 2.36099999999999,
+    "maxMs": 2.863458000000037
+  },
+  "exactSearch": {
+    "samples": 20,
+    "p50Ms": 7.812999999999988,
+    "p95Ms": 8.63074999999992,
+    "maxMs": 9.132957999999917
+  },
+  "deterministicIncremental": {
+    "samples": 8,
+    "p50Ms": 18.282749999999965,
+    "p95Ms": 21.785041999999976,
+    "maxMs": 21.785041999999976
+  },
+  "restartMs": 51.654042000000004,
+  "syntheticVectorPersistMs": 111.84795899999995,
+  "vectorRestartMs": 147.50379099999986,
+  "vectorActivationMs": 398.328209,
+  "semanticSnapshotColdCenters": {
+    "samples": 20,
+    "p50Ms": 10.30070899999987,
+    "p95Ms": 16.112666999999874,
+    "maxMs": 16.239750000000186
+  },
+  "semanticSnapshotCachedCenter": {
+    "samples": 20,
+    "p50Ms": 1.2978339999999662,
+    "p95Ms": 1.4068340000003445,
+    "maxMs": 1.675959000000148
+  },
+  "snapshotBytes": 135308,
+  "candidates": 102,
+  "semanticLens": {
+    "samples": 101,
+    "p50Ms": 1.1407920000001468,
+    "p95Ms": 1.2927920000001905,
+    "maxMs": 2.4429999999997563
+  },
+  "incrementalWithVectorCache": {
+    "samples": 5,
+    "p50Ms": 17.61391700000013,
+    "p95Ms": 20.371541999999863,
+    "maxMs": 20.371541999999863
+  },
+  "coverageAfterEdits": {
+    "status": "partial",
+    "readyUnits": 995
+  },
+  "memoryMiB": {
+    "rss": 475.5625,
+    "heapTotal": 312.421875,
+    "heapUsed": 189.56861877441406,
+    "external": 7.452552795410156,
+    "arrayBuffers": 5.199885368347168
+  },
+  "databaseMiB": 22.99609375
+}

@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "at": "2026-09-11T18:34:04.234Z",
+  "base": "http://127.0.0.1:49597",
+  "capabilities": {
+    "protocolVersion": 1,
+    "deterministicRelations": true,
+    "semantic": "not-configured",
+    "storage": {
+      "kind": "sqlite",
+      "persistent": true,
+      "concurrency": "optimistic"
+    },
+    "search": {
+      "engine": "sqlite-fts5/intl-zh+trigram-v1",
+      "modes": [
+        "text",
+        "literal",
+        "exact"
+      ]
+    }
+  },
+  "documents": 11,
+  "focus": "CSRF",
+  "visibleRelations": 1,
+  "exactSearchHits": 1,
+  "evidenceValid": true,
+  "historyRestored": true,
+  "crossOriginRejected": true,
+  "hostRejected": true
+}

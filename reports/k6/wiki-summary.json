@@ -1,0 +1,15 @@
+{
+  "at": "2026-09-11T18:35:20.522Z",
+  "documents": 77,
+  "units": 386,
+  "status": "ready",
+  "sourceBytesUnchanged": true,
+  "semanticOnlyPairs": 2812,
+  "reviewCandidates": 40,
+  "humanJudgment": "pending",
+  "restart": {
+    "encoded": 0,
+    "reused": 386
+  },
+  "privateEvidence": "reports/local/wiki-eval/review-queue.json; reports/local/k6-wiki-cli.log"
+}

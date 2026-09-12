@@ -67,7 +67,7 @@ export interface EmbeddingRunReport {
   documents: Record<string, EmbeddingDocumentState>;
 }
 export interface EmbeddingCoverage {
-  status: 'not-configured' | 'ready' | 'partial' | 'pending' | 'error'; spaceId?: string;
+  status: 'not-configured' | DocumentEmbeddingStatus; spaceId?: string;
   documents: Record<string, EmbeddingDocumentState>; readyUnits: number; totalUnits: number;
 }
 export class EmbeddingError extends Error {

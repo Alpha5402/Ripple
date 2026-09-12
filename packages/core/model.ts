@@ -123,9 +123,12 @@ export interface KernelState {
   userPolicyRevision: number;
   declarations: UserDeclarations;
   embedding?: EmbeddingCache;
+  scorePolicy?: ScorePolicy;
 }
+export const KERNEL_ERROR_CODES = ['NOT_FOUND', 'CONFLICT', 'INVALID_INPUT', 'INVALID_SNAPSHOT', 'STORAGE', 'STORAGE_CONFLICT', 'STORAGE_SCHEMA', 'CLOSED', 'SEARCH_UNAVAILABLE', 'STALE_INDEX'] as const;
+export type KernelErrorCode = typeof KERNEL_ERROR_CODES[number];
 export class KernelError extends Error {
-  constructor(public readonly code: 'NOT_FOUND' | 'CONFLICT' | 'INVALID_INPUT' | 'INVALID_SNAPSHOT', message: string) {
+  constructor(public readonly code: KernelErrorCode, message: string) {
     super(message); this.name = 'KernelError';
   }
 }

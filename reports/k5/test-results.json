@@ -1,0 +1,4220 @@
+{
+  "generatedAt": "2026-09-11T18:29:58.665Z",
+  "datasetHash": "13a27e0f1dfbead190a9c6d37ebd58a2bdd561c9b70b53e3bd6fa46c6ad116aa",
+  "lockedPolicyHash": "676c8ab9433094a23ddbfac2cfa4f1bdbb11eb13371ec3aa9f625a21bd0c226f",
+  "labelProtocol": {
+    "grades": {
+      "0": "无关",
+      "1": "弱相关",
+      "2": "值得一起读",
+      "3": "核心关联"
+    },
+    "relevantAt": 2,
+    "source": "assistant-authored-synthetic-reference",
+    "humanReviewed": false,
+    "limitations": "短篇教学样本；设备型号场景为虚构；不能代表真实用户知识库分布。开发和测试文档及候选池互不重叠，最终测试标签不参与调参。"
+  },
+  "model": {
+    "model": "tencent/WeMM-Embedding-2B",
+    "revision": "bbd6cd4bf52cfc6716f752a2df80b2706720bd95",
+    "dimensions": 2048,
+    "normalized": true,
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "maxInputTokens": 1024,
+    "representation": "wemm-embedding-token-v1/transformers-5.2.0/bfloat16/fast-image-pixels-65536",
+    "tokenizer": "wemm-tokenizer:bbd6cd4bf52cfc6716f752a2df80b2706720bd95"
+  },
+  "method": "Disjoint test document cohort; every center scores the same 15 fully judged candidates; grade >=2 relevant; macro P@3/nDCG@3 over queries with relevant answers; zero-answer centers evaluated separately; equal-score ties by pair ID",
+  "baseline": [
+    {
+      "method": "mention-explicit",
+      "k": 3,
+      "threshold": 0.5,
+      "candidateBudget": 15,
+      "queries": 16,
+      "gradedPairs": 120,
+      "scoredQueries": 12,
+      "zeroRelevantQueries": 4,
+      "precisionAtK": 0.4444444444444444,
+      "oraclePrecisionAtK": 0.6666666666666666,
+      "ndcgAtK": 0.7834531753544242,
+      "hardNegativeVisibleRate": 0.08333333333333333,
+      "irrelevantVisibleRate": 0.009433962264150943,
+      "zeroRelevantQueryFalsePositiveRate": 0.25,
+      "perQuery": [
+        {
+          "center": "test-apple-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7452525342261976,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.6131471927654584,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-compressor-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 3,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.95583058934618,
+          "visible": 2,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.5,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7871546029909718,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.6131471927654584,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 1,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 1,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.5,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-durability-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7871546029909718,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.5562983930884396,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-rust-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7871546029909718,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.5562983930884396,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        }
+      ],
+      "failures": [
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0.5,
+          "explicit": 0,
+          "cosine": 0.6902944192945225,
+          "score": 0.5
+        }
+      ],
+      "missedUseful": [
+        {
+          "nodes": [
+            "test-rust-0",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.8532181030298008,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-rust-1",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.8189122361738902,
+          "score": 0
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.7561926615207205,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-durability-1",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6672147242785272,
+          "score": 0
+        },
+        {
+          "nodes": [
+            "test-apple-0",
+            "test-apple-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.6680197353598353,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-apple-1",
+            "test-apple-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.7188878073006737,
+          "score": 0
+        },
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.5691980055390745,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-compressor-1",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5963333163058122,
+          "score": 0
+        }
+      ]
+    },
+    {
+      "method": "semantic",
+      "k": 3,
+      "threshold": 0.5,
+      "candidateBudget": 15,
+      "queries": 16,
+      "gradedPairs": 120,
+      "scoredQueries": 12,
+      "zeroRelevantQueries": 4,
+      "precisionAtK": 0.6666666666666666,
+      "oraclePrecisionAtK": 0.6666666666666666,
+      "ndcgAtK": 0.9451778952768356,
+      "hardNegativeVisibleRate": 0.3333333333333333,
+      "irrelevantVisibleRate": 0.14150943396226415,
+      "zeroRelevantQueryFalsePositiveRate": 0.5,
+      "perQuery": [
+        {
+          "center": "test-apple-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.6758117304871134,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.6685996219426219,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-rust-2"
+              ],
+              "score": 0.44794650228717375,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8428282648809379,
+          "visible": 5,
+          "irrelevantVisible": 2,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.7412682961438197,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.6758117304871134,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.589343657253904,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 4,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.7412682961438197,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.6685996219426219,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-rust-2"
+              ],
+              "score": 0.569124231193713,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 13,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-3"
+              ],
+              "score": 0.311309095626381,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-apple-3",
+                "test-rust-3"
+              ],
+              "score": 0.1814966974367986,
+              "grade": 0,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-apple-3"
+              ],
+              "score": 0.13596684900396316,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.6653152460429406,
+          "visible": 3,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.700420598992175,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5577335379579181,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.5274257221986779,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 14,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8339912323981488,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.566190451865446,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5577335379579181,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-1"
+              ],
+              "score": 0.42717736234586184,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.566190451865446,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.5274257221986779,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-2"
+              ],
+              "score": 0.4497223073459921,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 15,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 1,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.700420598992175,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-2",
+                "test-compressor-3"
+              ],
+              "score": 0.22409619783263385,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-3"
+              ],
+              "score": 0.16669452706569562,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 14,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 4,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.8714014740415276,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.7945609450296007,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-rust-2"
+              ],
+              "score": 0.5730945312582556,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.8714014740415276,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.6674496061121818,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-rust-2"
+              ],
+              "score": 0.49626761172668127,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 3,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.7945609450296007,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.6674496061121818,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-2",
+                "test-rust-2"
+              ],
+              "score": 0.5838569324510205,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 15,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-3"
+              ],
+              "score": 0.34565793749334595,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-durability-3"
+              ],
+              "score": 0.30322906199680405,
+              "grade": 0,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-3"
+              ],
+              "score": 0.2967731140134198,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 4,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.9331687186140012,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.6137969250552993,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 7,
+          "irrelevantVisible": 5,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.8841603373912716,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.5827340264230274,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 7,
+          "irrelevantVisible": 3,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.9331687186140012,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.8841603373912716,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.589343657253904,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 15,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 3,
+          "irrelevantVisible": 3,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.6137969250552993,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.5827340264230274,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-2",
+                "test-rust-3"
+              ],
+              "score": 0.5438584370774828,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        }
+      ],
+      "failures": [
+        {
+          "nodes": [
+            "test-rust-0",
+            "test-rust-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6296578475387095,
+          "score": 0.6137969250552993
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-rust-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5585732851481945,
+          "score": 0.5122475502117064
+        },
+        {
+          "nodes": [
+            "test-durability-2",
+            "test-rust-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5616278482713133,
+          "score": 0.5166112118161619
+        },
+        {
+          "nodes": [
+            "test-apple-1",
+            "test-rust-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5727065017190746,
+          "score": 0.532437859598678
+        },
+        {
+          "nodes": [
+            "test-rust-1",
+            "test-rust-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6079138184961191,
+          "score": 0.5827340264230274
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5811825043656372,
+          "score": 0.5445464348080532
+        },
+        {
+          "nodes": [
+            "test-durability-2",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5734941248338518,
+          "score": 0.5335630354769311
+        },
+        {
+          "nodes": [
+            "test-apple-1",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5800393695588819,
+          "score": 0.542913385084117
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5639282332850333,
+          "score": 0.5198974761214761
+        },
+        {
+          "nodes": [
+            "test-rust-2",
+            "test-rust-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.580700905954238,
+          "score": 0.5438584370774828
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6011661718807789,
+          "score": 0.5730945312582556
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5983869618355991,
+          "score": 0.569124231193713
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-durability-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5517966501855524,
+          "score": 0.5025666431222177
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5759839533310608,
+          "score": 0.5371199333300869
+        },
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0.5,
+          "explicit": 0,
+          "cosine": 0.6902944192945225,
+          "score": 0.700420598992175
+        }
+      ],
+      "missedUseful": []
+    },
+    {
+      "method": "hybrid",
+      "k": 3,
+      "threshold": 0.5,
+      "candidateBudget": 15,
+      "queries": 16,
+      "gradedPairs": 120,
+      "scoredQueries": 12,
+      "zeroRelevantQueries": 4,
+      "precisionAtK": 0.6666666666666666,
+      "oraclePrecisionAtK": 0.6666666666666666,
+      "ndcgAtK": 0.9264361190151457,
+      "hardNegativeVisibleRate": 0.3333333333333333,
+      "irrelevantVisibleRate": 0.14150943396226415,
+      "zeroRelevantQueryFalsePositiveRate": 0.5,
+      "perQuery": [
+        {
+          "center": "test-apple-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8339912323981488,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.76801973536,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.675811730487,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-rust-2"
+              ],
+              "score": 0.447946502287,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8428282648809379,
+          "visible": 5,
+          "irrelevantVisible": 2,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.741268296144,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.675811730487,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.589343657254,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 4,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.76801973536,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.741268296144,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-rust-2"
+              ],
+              "score": 0.569124231194,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 13,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-3"
+              ],
+              "score": 0.311309095626,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-apple-3",
+                "test-rust-3"
+              ],
+              "score": 0.181496697437,
+              "grade": 0,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-apple-3"
+              ],
+              "score": 0.135966849004,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.606422698504514,
+          "visible": 3,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.700420598992,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.669198005539,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.557733537958,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 14,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8339912323981488,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.566190451865,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.557733537958,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-1"
+              ],
+              "score": 0.427177362346,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.669198005539,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.566190451865,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-2"
+              ],
+              "score": 0.449722307346,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 15,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 1,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.700420598992,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-2",
+                "test-compressor-3"
+              ],
+              "score": 0.224096197833,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-3"
+              ],
+              "score": 0.166694527066,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 14,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 4,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.871401474042,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.856192661521,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-rust-2"
+              ],
+              "score": 0.573094531258,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.871401474042,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.667449606112,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-rust-2"
+              ],
+              "score": 0.496267611727,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 3,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.856192661521,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.667449606112,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-2",
+                "test-rust-2"
+              ],
+              "score": 0.583856932451,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 15,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-3"
+              ],
+              "score": 0.345657937493,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-durability-3"
+              ],
+              "score": 0.303229061997,
+              "grade": 0,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-3"
+              ],
+              "score": 0.296773114013,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 6,
+          "irrelevantVisible": 4,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.95321810303,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.613796925055,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 7,
+          "irrelevantVisible": 5,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.884160337391,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.582734026423,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 15,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 7,
+          "irrelevantVisible": 3,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.95321810303,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.884160337391,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.589343657254,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 15,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 3,
+          "irrelevantVisible": 3,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.613796925055,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.582734026423,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-2",
+                "test-rust-3"
+              ],
+              "score": 0.543858437077,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        }
+      ],
+      "failures": [
+        {
+          "nodes": [
+            "test-rust-0",
+            "test-rust-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6296578475387095,
+          "score": 0.613796925055
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-rust-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5585732851481945,
+          "score": 0.512247550212
+        },
+        {
+          "nodes": [
+            "test-durability-2",
+            "test-rust-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5616278482713133,
+          "score": 0.516611211816
+        },
+        {
+          "nodes": [
+            "test-apple-1",
+            "test-rust-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5727065017190746,
+          "score": 0.532437859599
+        },
+        {
+          "nodes": [
+            "test-rust-1",
+            "test-rust-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6079138184961191,
+          "score": 0.582734026423
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5811825043656372,
+          "score": 0.544546434808
+        },
+        {
+          "nodes": [
+            "test-durability-2",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5734941248338518,
+          "score": 0.533563035477
+        },
+        {
+          "nodes": [
+            "test-apple-1",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5800393695588819,
+          "score": 0.542913385084
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-rust-1"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5639282332850333,
+          "score": 0.519897476121
+        },
+        {
+          "nodes": [
+            "test-rust-2",
+            "test-rust-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.580700905954238,
+          "score": 0.543858437077
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6011661718807789,
+          "score": 0.573094531258
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5983869618355991,
+          "score": 0.569124231194
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-durability-0"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5517966501855524,
+          "score": 0.502566643122
+        },
+        {
+          "nodes": [
+            "test-apple-2",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": false,
+          "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5759839533310608,
+          "score": 0.53711993333
+        },
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0.5,
+          "explicit": 0,
+          "cosine": 0.6902944192945225,
+          "score": 0.700420598992
+        }
+      ],
+      "missedUseful": []
+    }
+  ],
+  "calibrated": [
+    {
+      "method": "mention-explicit",
+      "k": 3,
+      "threshold": 0.5,
+      "candidateBudget": 15,
+      "queries": 16,
+      "gradedPairs": 120,
+      "scoredQueries": 12,
+      "zeroRelevantQueries": 4,
+      "precisionAtK": 0.4444444444444444,
+      "oraclePrecisionAtK": 0.6666666666666666,
+      "ndcgAtK": 0.7834531753544242,
+      "hardNegativeVisibleRate": 0.08333333333333333,
+      "irrelevantVisibleRate": 0.009433962264150943,
+      "zeroRelevantQueryFalsePositiveRate": 0.25,
+      "perQuery": [
+        {
+          "center": "test-apple-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7452525342261976,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.6131471927654584,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-compressor-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 3,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.95583058934618,
+          "visible": 2,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.5,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7871546029909718,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.6131471927654584,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 1,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 1,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.5,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-durability-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7871546029909718,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.5562983930884396,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-rust-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.7871546029909718,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 1,
+          "precisionAtK": 0.3333333333333333,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.5562983930884396,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.3,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        }
+      ],
+      "failures": [
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0.5,
+          "explicit": 0,
+          "cosine": 0.6902944192945225,
+          "score": 0.5
+        }
+      ],
+      "missedUseful": [
+        {
+          "nodes": [
+            "test-rust-0",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.8532181030298008,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-rust-1",
+            "test-rust-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.8189122361738902,
+          "score": 0
+        },
+        {
+          "nodes": [
+            "test-durability-0",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.7561926615207205,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-durability-1",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6672147242785272,
+          "score": 0
+        },
+        {
+          "nodes": [
+            "test-apple-0",
+            "test-apple-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.6680197353598353,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-apple-1",
+            "test-apple-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.7188878073006737,
+          "score": 0
+        },
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.5691980055390745,
+          "score": 0.3
+        },
+        {
+          "nodes": [
+            "test-compressor-1",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5963333163058122,
+          "score": 0
+        }
+      ]
+    },
+    {
+      "method": "semantic",
+      "k": 3,
+      "threshold": 0.5,
+      "candidateBudget": 15,
+      "queries": 16,
+      "gradedPairs": 120,
+      "scoredQueries": 12,
+      "zeroRelevantQueries": 4,
+      "precisionAtK": 0.6666666666666666,
+      "oraclePrecisionAtK": 0.6666666666666666,
+      "ndcgAtK": 0.9451778952768356,
+      "hardNegativeVisibleRate": 0,
+      "irrelevantVisibleRate": 0,
+      "zeroRelevantQueryFalsePositiveRate": 0,
+      "perQuery": [
+        {
+          "center": "test-apple-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 3,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.43267052835244846,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.4200493383995882,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-rust-2"
+              ],
+              "score": 0.033906379002554,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 7,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8428282648809379,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.5472195182516842,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.43267052835244846,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.2813514001943321,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 9,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.5472195182516842,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.4200493383995882,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-rust-2"
+              ],
+              "score": 0.24596740458899785,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-compressor-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 3,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.6653152460429406,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.4757360482363063,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.22603369142635665,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.17299501384768629,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8339912323981488,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.24083329076453053,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.22603369142635665,
+              "grade": 3,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 4,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.24083329076453053,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.17299501384768629,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-2"
+              ],
+              "score": 0.03701403785548618,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 1,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.4757360482363063,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-durability-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 8,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.7749525795726733,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.6404816538018012,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-rust-2"
+              ],
+              "score": 0.2529154297019473,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 5,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.7749525795726733,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.4180368106963181,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-rust-2"
+              ],
+              "score": 0.11846832052169215,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 7,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.6404816538018012,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.4180368106963181,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-2",
+                "test-rust-2"
+              ],
+              "score": 0.2717496317892859,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-rust-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 7,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.883045257574502,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.32414461884677365,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 8,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.7972805904347254,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.26978454624029785,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 9,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.883045257574502,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.7972805904347254,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.2813514001943321,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 5,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.32414461884677365,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.26978454624029785,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-2",
+                "test-rust-3"
+              ],
+              "score": 0.2017522648855949,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        }
+      ],
+      "failures": [],
+      "missedUseful": [
+        {
+          "nodes": [
+            "test-durability-1",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6672147242785272,
+          "score": 0.4180368106963181
+        },
+        {
+          "nodes": [
+            "test-apple-0",
+            "test-apple-1"
+          ],
+          "split": "test",
+          "grade": 3,
+          "hardNegative": false,
+          "rationale": "同一机制的概念与直接解释，是核心关联。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0.5,
+          "explicit": 0,
+          "cosine": 0.6730682113409794,
+          "score": 0.43267052835244846
+        },
+        {
+          "nodes": [
+            "test-apple-0",
+            "test-apple-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.6680197353598353,
+          "score": 0.4200493383995882
+        },
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-1"
+          ],
+          "split": "test",
+          "grade": 3,
+          "hardNegative": false,
+          "rationale": "同一机制的概念与直接解释，是核心关联。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0.5,
+          "explicit": 0,
+          "cosine": 0.5904134765705427,
+          "score": 0.22603369142635665
+        },
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.5691980055390745,
+          "score": 0.17299501384768629
+        },
+        {
+          "nodes": [
+            "test-compressor-1",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5963333163058122,
+          "score": 0.24083329076453053
+        }
+      ]
+    },
+    {
+      "method": "hybrid",
+      "k": 3,
+      "threshold": 0.5,
+      "candidateBudget": 15,
+      "queries": 16,
+      "gradedPairs": 120,
+      "scoredQueries": 12,
+      "zeroRelevantQueries": 4,
+      "precisionAtK": 0.6666666666666666,
+      "oraclePrecisionAtK": 0.6666666666666666,
+      "ndcgAtK": 0.9693875072187722,
+      "hardNegativeVisibleRate": 0.08333333333333333,
+      "irrelevantVisibleRate": 0.009433962264150943,
+      "zeroRelevantQueryFalsePositiveRate": 0.25,
+      "perQuery": [
+        {
+          "center": "test-apple-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 3,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8339912323981488,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.59403453688,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-rust-2"
+              ],
+              "score": 0.033906379003,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 7,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.8428282648809379,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.547219518252,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.281351400194,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 9,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-apple-0",
+                "test-apple-2"
+              ],
+              "score": 0.59403453688,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-apple-2"
+              ],
+              "score": 0.547219518252,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-rust-2"
+              ],
+              "score": 0.245967404589,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-apple-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-compressor-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 3,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 0.95583058934618,
+          "visible": 2,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.5,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.421096509693,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 2,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-1"
+              ],
+              "score": 0.5,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.240833290765,
+              "grade": 2,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 4,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-2"
+              ],
+              "score": 0.421096509693,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-compressor-1",
+                "test-compressor-2"
+              ],
+              "score": 0.240833290765,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-2",
+                "test-compressor-2"
+              ],
+              "score": 0.037014037855,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-compressor-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 1,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 1,
+          "irrelevantVisible": 1,
+          "top": [
+            {
+              "nodes": [
+                "test-compressor-0",
+                "test-compressor-3"
+              ],
+              "score": 0.5,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-durability-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 8,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.774952579573,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.748337157661,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-rust-2"
+              ],
+              "score": 0.252915429702,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 5,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-1"
+              ],
+              "score": 0.774952579573,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.418036810696,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-rust-2"
+              ],
+              "score": 0.118468320522,
+              "grade": 0,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 7,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 1,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-durability-0",
+                "test-durability-2"
+              ],
+              "score": 0.748337157661,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-1",
+                "test-durability-2"
+              ],
+              "score": 0.418036810696,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-durability-2",
+                "test-rust-2"
+              ],
+              "score": 0.271749631789,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-durability-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 0,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": []
+        },
+        {
+          "center": "test-rust-0",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 7,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.918131680302,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.324144618847,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-1",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 8,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-1"
+              ],
+              "score": 1,
+              "grade": 3,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.797280590435,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.26978454624,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        },
+        {
+          "center": "test-rust-2",
+          "candidates": 15,
+          "relevant": 2,
+          "returned": 9,
+          "precisionAtK": 0.6666666666666666,
+          "oraclePrecisionAtK": 0.6666666666666666,
+          "ndcgAtK": 1,
+          "visible": 2,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-2"
+              ],
+              "score": 0.918131680302,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-2"
+              ],
+              "score": 0.797280590435,
+              "grade": 2,
+              "hardNegative": false
+            },
+            {
+              "nodes": [
+                "test-apple-1",
+                "test-rust-2"
+              ],
+              "score": 0.281351400194,
+              "grade": 1,
+              "hardNegative": false
+            }
+          ]
+        },
+        {
+          "center": "test-rust-3",
+          "candidates": 15,
+          "relevant": 0,
+          "returned": 5,
+          "precisionAtK": 0,
+          "oraclePrecisionAtK": 0,
+          "ndcgAtK": null,
+          "visible": 0,
+          "irrelevantVisible": 0,
+          "top": [
+            {
+              "nodes": [
+                "test-rust-0",
+                "test-rust-3"
+              ],
+              "score": 0.324144618847,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-1",
+                "test-rust-3"
+              ],
+              "score": 0.26978454624,
+              "grade": 0,
+              "hardNegative": true
+            },
+            {
+              "nodes": [
+                "test-rust-2",
+                "test-rust-3"
+              ],
+              "score": 0.201752264886,
+              "grade": 0,
+              "hardNegative": true
+            }
+          ]
+        }
+      ],
+      "failures": [
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-3"
+          ],
+          "split": "test",
+          "grade": 0,
+          "hardNegative": true,
+          "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0.5,
+          "explicit": 0,
+          "cosine": 0.6902944192945225,
+          "score": 0.5
+        }
+      ],
+      "missedUseful": [
+        {
+          "nodes": [
+            "test-durability-1",
+            "test-durability-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.6672147242785272,
+          "score": 0.418036810696
+        },
+        {
+          "nodes": [
+            "test-compressor-0",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 1,
+          "cosine": 0.5691980055390745,
+          "score": 0.421096509693
+        },
+        {
+          "nodes": [
+            "test-compressor-1",
+            "test-compressor-2"
+          ],
+          "split": "test",
+          "grade": 2,
+          "hardNegative": false,
+          "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+          "labelSource": "assistant-authored-synthetic-reference",
+          "reviewStatus": "unreviewed",
+          "mention": 0,
+          "explicit": 0,
+          "cosine": 0.5963333163058122,
+          "score": 0.240833290765
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import type { KnowledgeStorage } from '../../core/ports.js';
 import type { KernelState } from '../../core/model.js';
 
 export class MemoryStorage implements KnowledgeStorage {
+  readonly storageCapabilities = { kind: 'memory', persistent: false, concurrency: 'single-instance' as const };
   private state: KernelState;
   constructor(initial?: KernelState) {
     this.state = structuredClone(initial ?? {

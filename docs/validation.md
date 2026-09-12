@@ -61,8 +61,8 @@ npm run validate:embedding -- --vault /Users/alpha/Documents/ChatGPT/iWiki
 
 首次文本请求约 8.54 秒，首次图片请求约 10.01 秒；本次后续单个文本请求约 0.17～1.56 秒。它们包含 HTTP 和推理的冷/热状态差异，是这次小样本的观测，不能当作吞吐或长期性能承诺。未安装 CUDA 专用线性注意力加速库，MPS 使用 PyTorch 实现。
 
-## 保留的失败样本与未完成的评估
+## K4 保留的失败样本
 
 异步调度与鲸鱼主题虽然明显无关，默认映射仍给出 **0.3288**，在 Lens=70（阈值 0.3）时会出现。这一失败样本保留在报告的 `failureSamples` 中；此次没有用同一冒烟样本调参来制造“验证通过”。K4 证明模型调用、索引和证据链能工作，不证明默认语义分数已经适合最终展示。
 
-K5 的人工关系标注、hard negatives、P@K/nDCG 和映射校准，K6 的 SQLite/ANN 与大库性能，以及 Desktop/Web 图交互和用户实验尚未完成。CUDA、CPU 推理、视频和 PDF 导入也未经此次运行验收。
+后续 K5 已完成参考集、hard negatives、P@3/nDCG 和开发集锁定映射，见[关系评估](relation-eval.md)；K6 已完成 SQLite、FTS、独立 HTTP Host 和 1k/5k/10k 测量，见[稳定化验证](kernel-stability.md)。真实用户有用性标签、ANN、Desktop/Web 图交互和用户实验仍未完成。CUDA、CPU 推理、视频和 PDF 导入未新增运行验收。

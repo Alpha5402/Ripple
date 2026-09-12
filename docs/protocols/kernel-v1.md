@@ -1,4 +1,4 @@
-# Knowledge Service / K1–K4 协议
+# Knowledge Service / K1–K6 协议
 
 协议版本 `schemaVersion: 1`。本阶段不承诺公开发布后的长期兼容性；序列化结构变更需要显式迁移或拒绝，不静默把旧数据解释成新语义。
 
@@ -54,8 +54,10 @@ Lens 0～100 映射到 `[1, 0]` 的下降阈值；判断条件为 `score >= thre
 
 ## 索引与持久化
 
-源变化采用同步批量事务。未变 Markdown 复用解析结果；实体索引、提及和关系在变更后重建。源文迟到写入必须带 `expectedRevision`，由服务拒绝。Embedding 为独立异步任务，按模型 generation、文档 revision、任务 sequence 检查提交资格，支持取消与有限重试。详情见 [Embedding 协议与运行](../embedding.md)。
+源变化采用同步批量事务。未变 Markdown 复用解析结果；实体目标不变时复用其他文档的提及投影；目标改变时重新解析引用。确定关系重建邻接索引，语义关系按中心按需计算。源文迟到写入必须带 `expectedRevision`，由服务拒绝。Embedding 为独立异步任务，按模型 generation、文档 revision、任务 sequence 检查提交资格，支持取消与有限重试。详情见 [Embedding 协议与运行](../embedding.md)。
 
-`KnowledgeStorage` 的 load/save 均需隔离对象引用，save 应原子成功或抛错。MemoryStorage 是当前实现。Node 文件宿主保存 `manifest.json` 的身份、版本和策略签名，以及单独 `user-relations.json` 的用户声明；启动从原文重建派生数据，无需缓存即可恢复整理成果。`session.json` 单独保存探索历史。文件宿主当前按单进程使用设计。
+`KnowledgeStorage` 的 load/save 均需隔离对象引用，save 应原子成功或抛错。实现包括 MemoryStorage 与 SQLiteStorage；SQLite 保存解析投影、版本、声明、评分策略和向量，FTS 与文档同事务提交，并用 generation 检测并发冲突。Node 文件宿主保存 `manifest.json` 的身份、版本和策略签名，以及单独 `user-relations.json` 的用户声明；启动从原文重建派生数据，无需缓存即可恢复整理成果。`session.json` 单独保存探索历史。文件宿主当前按单进程使用设计。
 
-错误码：`NOT_FOUND`、`CONFLICT`、`INVALID_INPUT`、`INVALID_SNAPSHOT`。Embedding 使用独立 `EmbeddingError`，区分 `CONFIG`、`CAPABILITY`、`LIMIT`、`AUTH`、`NETWORK`、`CANCELLED`、`SPACE_MISMATCH` 和 `INVALID_RESPONSE` 等。语义能力通过 `getEmbeddingCoverage()` 和 `capabilities.semantic` 暴露；缓存可单独删除，不影响源笔记和用户声明。
+KernelErrorCode 包括 `NOT_FOUND`、`CONFLICT`、`INVALID_INPUT`、`INVALID_SNAPSHOT`、`STORAGE`、`STORAGE_CONFLICT`、`STORAGE_SCHEMA`、`CLOSED`、`SEARCH_UNAVAILABLE` 和 `STALE_INDEX`。Embedding 使用独立 `EmbeddingError`，区分 `CONFIG`、`CAPABILITY`、`LIMIT`、`AUTH`、`NETWORK`、`CANCELLED`、`SPACE_MISMATCH` 和 `INVALID_RESPONSE` 等。语义能力通过 `getEmbeddingCoverage()` 和 `capabilities.semantic` 暴露；缓存可单独删除，不影响源笔记和用户声明。
+
+K6 增加了 `KnowledgeSearch`、存储 capability、`getIndexCoverage()` 与标准错误序列化。SQLite 生命周期、完整 API 和第二个 HTTP Host 见 [Kernel API](../kernel-api.md)。Snapshot schema 仍为 1，validityEpochs 只要求记录本快照涉及的文档。

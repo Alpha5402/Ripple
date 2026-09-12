@@ -3,19 +3,21 @@ import { relationKey } from '../relation.js';
 import type { EmbeddingCache, EmbeddingSpaceCache, ModalityPair, SemanticContribution, SemanticState, VectorRecord } from './model.js';
 
 export function activeSpace(cache: EmbeddingCache | undefined): EmbeddingSpaceCache | undefined { return cache?.activeSpaceId ? cache.spaces[cache.activeSpaceId] : undefined; }
-function validRecords(space: EmbeddingSpaceCache, documents: Document[]): VectorRecord[] {
+export function validRecords(space: EmbeddingSpaceCache, documents: Document[]): VectorRecord[] {
   const revisions = new Map(documents.map(doc => [doc.id, doc.revision]));
   return space.records.filter(record => revisions.get(record.unit.documentId) === record.unit.revision);
 }
 const modalityPair = (a: VectorRecord, b: VectorRecord): ModalityPair => a.unit.kind === 'text' && b.unit.kind === 'text' ? 'text-text'
   : a.unit.kind !== 'text' && b.unit.kind !== 'text' ? 'image-image' : 'text-image';
-export function generateSemanticCandidates(cache: EmbeddingCache | undefined, documents: Document[]): RelationCandidate[] {
+export function generateSemanticCandidates(cache: EmbeddingCache | undefined, documents: Document[], focusId?: string): RelationCandidate[] {
   const space = activeSpace(cache);
   if (!space) return [];
   const records = validRecords(space, documents);
   const pairs = new Map<string, { nodes: [string, string]; matches: { contribution: SemanticContribution; pair: ModalityPair; strength: number }[] }>();
-  for (let i = 0; i < records.length; i++) for (let j = i + 1; j < records.length; j++) {
-    let left = records[i]!, right = records[j]!;
+  const leftRecords = focusId ? records.filter(r => r.unit.documentId === focusId) : records;
+  const rightRecords = focusId ? records.filter(r => r.unit.documentId !== focusId) : records;
+  for (let i = 0; i < leftRecords.length; i++) for (let j = focusId ? 0 : i + 1; j < rightRecords.length; j++) {
+    let left = leftRecords[i]!, right = rightRecords[j]!;
     if (left.unit.documentId === right.unit.documentId) continue;
     if (left.unit.documentId > right.unit.documentId) [left, right] = [right, left];
     let cosine = 0;
@@ -51,20 +53,20 @@ export function generateSemanticCandidates(cache: EmbeddingCache | undefined, do
     return { id, nodes: pair.nodes, signals: [signal] };
   });
 }
-export function semanticPairState(cache: EmbeddingCache | undefined, nodes: [string, string], documents: Document[]): SemanticState {
+export function semanticPairState(cache: EmbeddingCache | undefined, nodes: [string, string], documents: Document[] | Map<string, Document>): SemanticState {
   const space = activeSpace(cache);
   if (!space) return { status: 'not-configured' };
-  const revisions = new Map(documents.map(doc => [doc.id, doc.revision]));
+  const revisions = documents instanceof Map ? documents : new Map(documents.map(doc => [doc.id, doc]));
   const statuses = nodes.map(id => space.documents[id]);
   const context = { spaceId: space.space.id };
   if (statuses.some(status => !status)) return { ...context, status: 'pending' };
-  if (nodes.some((id, i) => statuses[i]!.revision !== revisions.get(id))) return { ...context, status: 'stale' };
+  if (nodes.some((id, i) => statuses[i]!.revision !== revisions.get(id)?.revision)) return { ...context, status: 'stale' };
   const bad = statuses.find(status => status!.status !== 'ready');
   return { ...context, status: bad?.status ?? 'not-recalled' };
 }
-export function semanticSignalValid(signal: RelationSignal, cache: EmbeddingCache | undefined, documents: Document[]): boolean {
+export function semanticSignalValid(signal: RelationSignal, cache: EmbeddingCache | undefined, documents: Document[], unitHashes?: Map<string, string>): boolean {
   const space = activeSpace(cache);
   if (!signal.semantic || !space || signal.semantic.spaceId !== space.space.id) return false;
-  const records = new Map(validRecords(space, documents).map(record => [record.unit.id, record]));
-  return signal.semantic.contributions.every(match => match.unitIds.every((id, i) => records.get(id)?.unit.contentHash === match.unitHashes[i]));
+  const hashes = unitHashes ?? new Map(validRecords(space, documents).map(record => [record.unit.id, record.unit.contentHash]));
+  return signal.semantic.contributions.every(match => match.unitIds.every((id, i) => hashes.get(id) === match.unitHashes[i]));
 }

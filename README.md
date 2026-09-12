@@ -1,10 +1,10 @@
 # Ripple Knowledge Kernel
 
-已实现设计基线 1.1 的 **K1～K4**：从 Markdown 构建可追溯的确定性与语义关系，以当前文档为中心进行一跳渐进探索。交付物是 TypeScript Core、SDK、Node/HTTP 适配器、CLI 和 WeMM 2B 本地部署脚本。
+已实现设计基线 1.1 的 **K1～K4、K5 评估工具与 K6 内核稳定化**：从 Markdown 构建可追溯的确定性与语义关系，以当前文档为中心进行一跳渐进探索。交付物是 TypeScript Core、SDK、Node/SQLite/HTTP 适配器、两个最小宿主和 WeMM 2B 本地部署脚本。K5 的真实用户有用性标签仍待人工复核。
 
 ## 运行
 
-需要 Node.js 22 或更新版本。
+需要 Node.js 22.16 或更新版本；本轮验证使用 24.15.0。
 
 ```sh
 npm ci
@@ -20,7 +20,7 @@ npm run cli -- --vault /Users/alpha/Documents/ChatGPT/iWiki
 
 存在 `Wiki/` 时默认只导入该目录中的 Markdown，路径仍相对整个 vault，能解析 `[[Wiki/Frontend/...]]`。使用 `--all-markdown` 可显式纳入其他目录；隐藏目录、符号链接和 AGENTS.md 不作为知识内容导入。
 
-CLI 默认将文档身份、用户声明和探索历史保存到**当前工作目录**的 `.ripple/<vault标识>/`，不写回源知识库。可使用 `--state-dir <目录>` 指定位置；`--ephemeral` 完全使用内存。状态目录必须位于源知识库外部。当前文件适配器按单个 CLI 进程使用设计，不提供多个写入进程的并发协调。
+CLI 默认使用 SQLite，将文档索引、身份、用户声明和向量保存到**当前工作目录**的 `.ripple/<vault标识>/kernel.sqlite`，探索历史另存 `session.json`，不写回源知识库。`--state-dir <目录>` 指定位置；`--ephemeral` 使用内存。状态目录必须位于源知识库外部。第一次使用 SQLite 会迁移同目录旧 JSON 状态；后续应继续使用 SQLite，避免修改遗留副本。`--storage json` 保留旧宿主。SQLite 通过事务和 generation 拒绝并发覆盖，冲突后重新打开内核。
 
 ```text
 focus Event Loop
@@ -35,7 +35,7 @@ relations all
 quit
 ```
 
-`evidence` 可接可见行号或目标名称。其他命令包括 `read`、`nodes`、`more`、`refresh`、`hide`、`unhide`、`pin`、`unpin`、`status` 和 `help`。`relations all` 查询当前全部已召回关系，不受 Lens 裁剪；被用户隐藏的关系仍保持隐藏。
+`evidence` 可接可见行号或目标名称。其他命令包括 `read`、`nodes`、`more`、`refresh`、`hide`、`unhide`、`pin`、`unpin`、`status`、`help`，以及 SQLite 下的 `search`、`search-literal`、`search-exact`。`relations all` 查询当前全部已召回关系，不受 Lens 裁剪；被用户隐藏的关系仍保持隐藏。
 
 可选启用真实 Embedding，在一个终端启动模型，另一个终端索引：
 
@@ -52,6 +52,8 @@ npm run cli -- --vault fixtures/embedding --embedding configs/embedding.wemm-loc
 - **K2 / Relation Engine**：候选生成与评分分离、双向发现、保留信号原始方向、重复提及饱和、章节覆盖增量、显式链接增强、用户隐藏/固定/备注及声明导入导出。
 - **K3 / Exploration Engine**：冻结候选与分数的 Snapshot、0～100 Lens、单调展开、候选与显示预算分离、明确分页、过期和失效状态、序列化会话及历史恢复。
 - **K4 / Embedding**：可替换 Provider、默认文本/可选图文策略、按章节与 token 预算切分、两端贡献片段、文档去重召回、增量缓存、取消/重试/迟到结果隔离；本地 WeMM 与云端 HTTP 适配。
+- **K5 / Relation Eval**：240 对四级参考标签、分离开发/测试集、相同候选预算、真实 WeMM、P@3/nDCG、难负例、锁定校准与真实 Wiki 人工复核队列；标签来源和质量边界见[评估报告](docs/relation-eval.md)。
+- **K6 / 稳定化**：SQLite 事务/冲突检测/旧状态迁移，中文及符号/型号 FTS，按中心语义检索，1k/5k/10k 实测，覆盖和错误协议，独立 HTTP Host；见[Kernel API](docs/kernel-api.md)和[规模验证](docs/kernel-stability.md)。
 
 一篇文档就是一个图节点。章节用于实体目标、证据和评分聚合，不自动成为全局概念节点。原 Markdown 原样保留，阅读装饰由宿主依据 Mention 提供，不插入链接或改写段落。
 
@@ -103,8 +105,10 @@ const savedSession = JSON.stringify(session.exportState());
 ```text
 packages/core/          模型、端口、实体解析、提及、关系和探索
 packages/sdk/           跨宿主探索会话与公开导出
-packages/adapters/      Markdown、内存、Node 身份和只读文件导入
+packages/adapters/      Markdown、内存、SQLite/FTS、HTTP 与只读文件导入
 apps/playground-cli/   CLI 宿主
+apps/http-kernel/      最小 HTTP 宿主
+packages/eval/        关系指标和人工发现标注协议
 fixtures/              可提交的合成回归样本
 tests/                 解析、评分、探索性质、持久化和实际 CLI 测试
 scripts/               独立 SDK 验收入口
@@ -115,9 +119,9 @@ docs/                  计划、协议、架构决策与验证说明
 
 ## 当前边界
 
-此次未实现 SQLite/FTS/ANN、正式桌面/网页、布局算法、Mark-it、MCP 或 Agent。坐标、相机和阅读位置由宿主提供，SDK 负责保存与恢复。K4 当前是小库精确余弦实现；推荐质量与大库性能留待 K5/K6 验证。
+尚未实现 ANN、正式桌面/网页界面、布局算法、Mark-it、MCP 或 Agent。坐标、相机和阅读位置由宿主提供，SDK 负责恢复。当前语义按中心精确扫描，万篇规模使用每篇一个合成 2048 维单元测试，不能等同于万篇长文的模型编码或完整 App 性能。
 
-增量导入跳过完全未变文档的 Markdown 解析；发生变更时，先完整解析该文档，再重建全库实体提及和关系，保证跨文档别名依赖正确。尚未做 K6 的千级/万级压力测试或细粒度依赖优化。外部文件改名不会依据相同内容强行认定身份；已知改名可由 SDK 传入原 ID 更新路径。
+未变文档复用 AST；正文变化但实体目标不变时，其他文档的引用投影也复用。影响名称、路径、章节目标或用户别名时重新解析引用。已知文件改名由 SDK 传入原 ID；不会依据相同内容强行认定身份。K5 校准只基于合成参考标签，默认语义映射保持原值，真实“意外但有用”的关系仍待用户标注。
 
 目前在 AST 的可链接文本片段内匹配原始名称，不跨加粗等格式节点拼接名称，也不将 HTML 实体编码还原后匹配。Obsidian 图片嵌入可用于 MultiModal 单元；笔记嵌入、块 ID 和其他自定义 Markdown 扩展未作为独立关系类型实现。
 
@@ -128,3 +132,13 @@ npm run validate:vault -- /Users/alpha/Documents/ChatGPT/iWiki
 ```
 
 验收只读取输入文件；编辑与过期测试在内存副本上执行。报告输出至被忽略的 `reports/local/iwiki-validation.json`，包含关系/证据检查、展开曲线、历史恢复和导入前后文件哈希比较。此工具验证 K1～K3 的运行正确性，不输出推荐质量、语义效果或学习收益结论。
+
+## 评估与第二个宿主
+
+```sh
+npm run eval:relations -- --stage replay
+npm run benchmark:kernel -- --documents 10000
+npm run host:http -- --vault fixtures/vault --port 4318
+```
+
+前者可离线复算固定评估结果；规模测试不调用模型；HTTP Host 只绑定本机回环地址。API、生命周期、错误与搜索模式见[接入文档](docs/kernel-api.md)。

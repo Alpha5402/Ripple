@@ -1,0 +1,2180 @@
+{
+  "datasetHash": "13a27e0f1dfbead190a9c6d37ebd58a2bdd561c9b70b53e3bd6fa46c6ad116aa",
+  "model": {
+    "model": "tencent/WeMM-Embedding-2B",
+    "revision": "bbd6cd4bf52cfc6716f752a2df80b2706720bd95",
+    "dimensions": 2048,
+    "normalized": true,
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "maxInputTokens": 1024,
+    "representation": "wemm-embedding-token-v1/transformers-5.2.0/bfloat16/fast-image-pixels-65536",
+    "tokenizer": "wemm-tokenizer:bbd6cd4bf52cfc6716f752a2df80b2706720bd95"
+  },
+  "representation": "embedding:04b5b6472451b0dafd7305678da95cabc0775e8a3ebbb8caddf896f91bda5b42",
+  "elapsedMs": 17391.730875,
+  "features": [
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-async-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.7732307717071487
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-async-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.7696097121100208
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-async-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5045930959965249
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5627875391571471
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5204696635021341
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5448618684947902
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4687037392304104
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6872297280549317
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6611177766383027
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6786304447196868
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.29442249367229706
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2383098330340726
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4445631819418572
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.43907173006774464
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2883525509029808
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-async-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.7465946456975613
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-async-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3839616965959049
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5461296330030934
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4768430181117166
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5233179637558352
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.48886636668224875
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6764045260863633
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6648534074334932
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.656608351471402
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.33539687329937945
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.24846834625151243
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4461970825539236
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4500704795712269
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.29162852364912706
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-async-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.33070705052352617
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5685043945424744
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5322415261664168
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5841459569174483
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4487510299921789
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.7232317494197474
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.7418874021089539
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.8091960554197852
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.33605032745579727
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.27685237024367787
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4345180250397791
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.48457221586647947
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3164423042022
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3269883493931395
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.29636149213287377
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3179111063206756
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3272557421338115
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.31074525072636683
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.28831969873127034
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.295228362400941
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2708071494336878
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23326954714615178
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.28629052100021113
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.25536297717001116
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23066815490002138
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-auth-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.7918183803678732
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-auth-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.7530366055811651
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-auth-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5427931282984961
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5298951998844663
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5339366785592354
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5518145666103457
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.235802101583364
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23235546716488184
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.40724085869936355
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.44251534864149555
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3089855772758888
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-auth-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6607418420184076
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-auth-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5049467800022336
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.49886768417224636
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5054515625569682
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5243292146400629
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.19175356661160636
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23854281851008158
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4154425737016462
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.42475953270431327
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3359370648256996
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-auth-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5612896442658935
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5021167360010722
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5265698205335927
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5803409585490331
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2298076555844924
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2669854970991359
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3607444052382304
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4648310003545856
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3324486707112369
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.42803371300632903
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4500390143383134
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.45438653328276524
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2601352295327957
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.29097007157774246
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3906029573821555
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.416039686577367
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3385569442736667
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-reactive-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.8166588262476296
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.7240545766283366
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.41891798954055787
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.28404831941804254
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4506893362514578
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4652290498240225
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3180121540636019
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-reactive-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.774485819963972
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.30664069430459473
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2957574099895406
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.46376510110434993
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.48970631474422044
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2970809128277488
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-reactive-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3382668962634491
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.26450978566843775
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.440759626429192
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4748693220464945
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.301656216426223
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.19269654180471849
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.13049705930426111
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.18016346196853383
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.21731947858726133
+    },
+    {
+      "nodes": [
+        "dev-sensor-0",
+        "dev-sensor-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.5417308693992595
+    },
+    {
+      "nodes": [
+        "dev-sensor-0",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.5961972544795368
+    },
+    {
+      "nodes": [
+        "dev-sensor-0",
+        "dev-sensor-3"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.6742294955057568
+    },
+    {
+      "nodes": [
+        "dev-sensor-1",
+        "dev-sensor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.650158164702052
+    },
+    {
+      "nodes": [
+        "dev-sensor-1",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3757707477961828
+    },
+    {
+      "nodes": [
+        "dev-sensor-2",
+        "dev-sensor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4365984891209697
+    },
+    {
+      "nodes": [
+        "test-rust-0",
+        "test-rust-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.9185810710040888
+    },
+    {
+      "nodes": [
+        "test-rust-0",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.8532181030298008
+    },
+    {
+      "nodes": [
+        "test-rust-0",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6296578475387095
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5585732851481945
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4801088980704823
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5616278482713133
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3095508188403124
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4929587669168146
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5727065017190746
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.533737829190511
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23920556725413192
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.24525673589567354
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.34938695252113106
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.42101277472732507
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.22449557897639308
+    },
+    {
+      "nodes": [
+        "test-rust-1",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.8189122361738902
+    },
+    {
+      "nodes": [
+        "test-rust-1",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6079138184961191
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5811825043656372
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5293071258267327
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5734941248338518
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.30674258667852666
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.49895324733379603
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5800393695588819
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5639282332850333
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.25206530827776097
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2576189731510041
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3697199655373044
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.40859743670849374
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2364648662046466
+    },
+    {
+      "nodes": [
+        "test-rust-2",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.580700905954238
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6011661718807789
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5473873282086769
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6086998527157144
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.35789715782850534
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5135625516010216
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6125405600777328
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5983869618355991
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2593277116234559
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2650420851590843
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.39913063645155517
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.44299479131544955
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23673232471242647
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5031175502091019
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.42210836913791805
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4681391872128393
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.36995490261695124
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.40615616235831004
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4225035823943372
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.44231859837877957
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.327047688205759
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2845792159825591
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3766706400525795
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5112868323402009
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2491325666647504
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-durability-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.8099810318290693
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.7561926615207205
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4077411798093939
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.45102844423451
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5159446591154786
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5517966501855524
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.18776139842516537
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.27809684034833393
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4034882620292225
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4440762162152084
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.27598640993930734
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.6672147242785272
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.44196055624534214
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3991373631532926
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4423494516228466
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5267160247300756
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.20185281607579472
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.25412426140046795
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.36681095730562396
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.33766747615324366
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23682171778845984
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3455264223173348
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.45344680985385705
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5091682672091675
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5759839533310608
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.23089185770252782
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2747654735444839
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.40856508248812434
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4692020298695531
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.28888084928168667
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.41226034339776285
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.30248775413245355
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.37686952303968396
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2538889801897655
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.21513595573769248
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2747029721188721
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.29877650207363293
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2265740028173883
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-apple-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.6730682113409794
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-apple-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.6680197353598353
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-apple-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4179163669384667
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.30054639655618476
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.33195368129187147
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3941601528031506
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.31485662711560364
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-apple-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.7188878073006737
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-apple-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.20963221338737706
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3157474169238967
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3858395710410975
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4174586806045175
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2882355703992538
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-apple-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2951767943027742
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.377981054467758
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.4990241536421033
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5148056151421945
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.31668616894598695
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-0"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.21440379185324762
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-1"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.19994282260131652
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.2427233302836145
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.21795204438124757
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-compressor-1"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.5904134765705427
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-compressor-2"
+      ],
+      "mention": 0,
+      "explicit": 1,
+      "cosine": 0.5691980055390745
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-compressor-3"
+      ],
+      "mention": 0.5,
+      "explicit": 0,
+      "cosine": 0.6902944192945225
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-compressor-2"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.5963333163058122
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-compressor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.31657032710471705
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-compressor-3"
+      ],
+      "mention": 0,
+      "explicit": 0,
+      "cosine": 0.3568673384828437
+    }
+  ]
+}

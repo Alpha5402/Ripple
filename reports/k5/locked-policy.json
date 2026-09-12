@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-09-11T18:29:58.472Z",
+  "datasetHash": "13a27e0f1dfbead190a9c6d37ebd58a2bdd561c9b70b53e3bd6fa46c6ad116aa",
+  "model": {
+    "model": "tencent/WeMM-Embedding-2B",
+    "revision": "bbd6cd4bf52cfc6716f752a2df80b2706720bd95",
+    "dimensions": 2048,
+    "normalized": true,
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "maxInputTokens": 1024,
+    "representation": "wemm-embedding-token-v1/transformers-5.2.0/bfloat16/fast-image-pixels-65536",
+    "tokenizer": "wemm-tokenizer:bbd6cd4bf52cfc6716f752a2df80b2706720bd95"
+  },
+  "developmentLabelHash": "409dcee2a929c398b9be8e499b12a857500f6147cb85b9c7e6a0042d0ced6879",
+  "selectedUsing": "dev labels only; 120 graded pairs",
+  "calibration": {
+    "selected": {
+      "min": 0.5,
+      "max": 0.9
+    },
+    "objective": "nDCG@3 + 0.5 P@3 - 0.5 hardNegativeVisibleRate - 0.25 zeroRelevantQueryFalsePositiveRate",
+    "grid": [
+      {
+        "mapping": {
+          "min": 0.5,
+          "max": 0.9
+        },
+        "objective": 1.163212680613306,
+        "metrics": {
+          "ndcgAt3": 0.9340460139466394,
+          "precisionAt3": 0.6666666666666666,
+          "hardNegativeVisibleRate": 0.08333333333333333,
+          "zeroRelevantQueryFalsePositiveRate": 0.25
+        }
+      },
+      {
+        "mapping": {
+          "min": 0.65,
+          "max": 0.9
+        },
+        "objective": 1.163212680613306,
+        "metrics": {
+          "ndcgAt3": 0.9340460139466394,
+          "precisionAt3": 0.6666666666666666,
+          "hardNegativeVisibleRate": 0.08333333333333333,
+          "zeroRelevantQueryFalsePositiveRate": 0.25
+        }
+      },
+      {
+        "mapping": {
+          "min": 0.35,
+          "max": 0.9
+        },
+        "objective": 1.1306368403847953,
+        "metrics": {
+          "ndcgAt3": 0.9014701737181287,
+          "precisionAt3": 0.6666666666666666,
+          "hardNegativeVisibleRate": 0.08333333333333333,
+          "zeroRelevantQueryFalsePositiveRate": 0.25
+        }
+      },
+      {
+        "mapping": {
+          "min": 0.2,
+          "max": 0.9
+        },
+        "objective": 1.0264701737181288,
+        "metrics": {
+          "ndcgAt3": 0.9014701737181287,
+          "precisionAt3": 0.6666666666666666,
+          "hardNegativeVisibleRate": 0.16666666666666666,
+          "zeroRelevantQueryFalsePositiveRate": 0.5
+        }
+      }
+    ]
+  },
+  "scorePolicy": "mention-explicit-v1 unchanged",
+  "releaseStatus": "experimental synthetic-reference calibration; not installed as the production default",
+  "labelProtocol": {
+    "grades": {
+      "0": "无关",
+      "1": "弱相关",
+      "2": "值得一起读",
+      "3": "核心关联"
+    },
+    "relevantAt": 2,
+    "source": "assistant-authored-synthetic-reference",
+    "humanReviewed": false,
+    "limitations": "短篇教学样本；设备型号场景为虚构；不能代表真实用户知识库分布。开发和测试文档及候选池互不重叠，最终测试标签不参与调参。"
+  }
+}

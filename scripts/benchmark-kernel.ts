@@ -1,0 +1,62 @@
+import { mkdtemp, mkdir, writeFile, rm, stat } from 'node:fs/promises';
+import { performance } from 'node:perf_hooks';
+import { tmpdir, cpus, totalmem } from 'node:os';
+import { join, resolve } from 'node:path';
+import { parseArgs } from 'node:util';
+import { KnowledgeService } from '../packages/core/service.js';
+import { SqliteStorage, RemarkMarkdownParser, NodeIdentityProvider } from '../packages/adapters/node/index.js';
+import { DEFAULT_EMBEDDING_CONFIG, createEmbeddingSpace } from '../packages/core/embedding/config.js';
+import type { EmbeddingProvider, VectorRecord, EmbeddingSpaceCache, KnowledgeUnit } from '../packages/core/embedding/model.js';
+const { values } = parseArgs({ options: { documents: { type: 'string', default: '1000' }, dimensions: { type: 'string', default: '2048' } } });
+const count = Number(values.documents), dimensions = Number(values.dimensions);
+if (![1000, 5000, 10000].includes(count) || ![64, 2048].includes(dimensions)) throw new Error('Use 1000/5000/10000 documents and 64/2048 dimensions');
+const identity = new NodeIdentityProvider(), parser = new RemarkMarkdownParser();
+const dir = await mkdtemp(join(tmpdir(), 'ripple-bench-')), path = join(dir, 'kernel.sqlite');
+const elapsed = <T>(action: () => T) => { const start = performance.now(); const value = action(); return { value, ms: performance.now() - start }; };
+const summary = (samples: number[]) => { const sorted = [...samples].sort((a, b) => a - b); return { samples: samples.length, p50Ms: sorted[Math.floor(sorted.length * 0.5)], p95Ms: sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1)], maxMs: sorted.at(-1) }; };
+const repeat = (times: number, action: (i: number) => unknown) => summary(Array.from({ length: times }, (_, i) => elapsed(() => action(i)).ms));
+const name = (i: number): string => `知识条目${String(i).padStart(5, '0')}`;
+let storage = new SqliteStorage(path), service = new KnowledgeService({ storage, search: storage, parser, identity });
+const report: Record<string, unknown> = { generatedAt: new Date().toISOString(), documents: count, dimensions, profile: 'Synthetic Markdown and seeded normalized vectors; measures kernel/SQLite, never model inference or retrieval quality', runtime: { node: process.version, platform: process.platform, arch: process.arch, cpu: cpus()[0]?.model, memoryGiB: totalmem() / 1024 ** 3 }, textBytes: 0 };
+try {
+  const inputs = Array.from({ length: count }, (_, i) => ({ id: `doc-${i}`, path: `topics/${name(i)}.md`, markdown: `# ${name(i)}\n\n执行上下文与词法作用域决定标识符解析。${name((i + 1) % count)} 讨论相邻概念。\n\n## 执行行为\n该条目使用消息队列控制任务完成顺序，重复运行需要保留版本与证据。[[${name((i + 11) % count)}]]\n\n## 代码标识\n准确调用 \`Array.from()\`，比较 \`Qwen3.5-2B\` 与其它型号。编号 ${i} 保证内容独立。` }));
+  report.textBytes = inputs.reduce((n, d) => n + Buffer.byteLength(d.markdown), 0);
+  report.importMs = elapsed(() => service.ingestDocuments(inputs)).ms;
+  report.deterministicSnapshot = repeat(20, i => service.createExplorationSnapshot(`doc-${i}`));
+  let snapshot = service.createExplorationSnapshot('doc-0');
+  report.deterministicLens = repeat(101, i => service.getVisibleRelations(service.setLens(snapshot, i)));
+  report.search = repeat(20, () => service.search('词法作用域', { limit: 20 }));
+  report.exactSearch = repeat(20, () => service.search('Qwen3.5-2B', { mode: 'exact', limit: 20 }));
+  report.deterministicIncremental = repeat(8, i => { const doc = service.getNode(`doc-${i}`)!; service.ingestDocument({ id: doc.id, path: doc.path, markdown: doc.markdown + `\n增量文字 ${i}。` }); });
+  storage.close();
+  report.restartMs = elapsed(() => { storage = new SqliteStorage(path); service = new KnowledgeService({ storage, search: storage, parser, identity }); }).ms;
+  const config = structuredClone(DEFAULT_EMBEDDING_CONFIG);
+  const provider: EmbeddingProvider = { descriptor: { model: 'seeded-benchmark-fixture', revision: '1', dimensions, normalized: true, modalities: ['text'], maxInputTokens: 512, representation: 'synthetic-one-unit-per-document', tokenizer: 'unused' }, countTokens: async () => { throw new Error('No model calls in this benchmark'); }, embed: async () => { throw new Error('No model calls in this benchmark'); } };
+  const space = createEmbeddingSpace(provider.descriptor, config, identity);
+  let seed = 42; const random = (): number => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
+  const initial = service.exportState(), cached: EmbeddingSpaceCache = { space, config, records: [], documents: {} };
+  for (const doc of initial.documents) {
+    const vector = Array.from({ length: dimensions }, () => random());
+    const norm = Math.sqrt(vector.reduce((n, v) => n + v * v, 0)); for (let i = 0; i < vector.length; i++) vector[i] = vector[i]! / norm;
+    const section = doc.parsed.sections[0]!;
+    const unit: KnowledgeUnit = { id: `${doc.id}:fixture`, documentId: doc.id, revision: doc.revision, kind: 'text', contentHash: doc.contentHash, text: doc.markdown, tokenCount: 1, evidence: { documentId: doc.id, revision: doc.revision, sectionId: section.id, start: section.start, end: Math.min(section.end, section.start + 10) }, media: [] };
+    cached.records.push({ unit, vector } satisfies VectorRecord);
+    cached.documents[doc.id] = { revision: doc.revision, status: 'ready', readyCount: 1, unitCount: 1, errors: [] };
+  }
+  initial.embedding = { schemaVersion: 1, activeSpaceId: space.id, spaces: { [space.id]: cached } };
+  report.syntheticVectorPersistMs = elapsed(() => storage.save(initial)).ms;
+  // Release generator copies before loading the benchmarked state.
+  cached.records = []; initial.documents = []; delete initial.embedding;
+  report.vectorRestartMs = elapsed(() => { service = new KnowledgeService({ storage, search: storage, parser, identity }); }).ms;
+  report.vectorActivationMs = elapsed(() => service.configureEmbedding(provider, config)).ms;
+  report.semanticSnapshotColdCenters = repeat(20, i => service.createExplorationSnapshot(`doc-${i}`));
+  report.semanticSnapshotCachedCenter = repeat(20, () => service.createExplorationSnapshot('doc-0'));
+  snapshot = service.createExplorationSnapshot('doc-0');
+  report.snapshotBytes = Buffer.byteLength(JSON.stringify(snapshot)); report.candidates = snapshot.candidateSet.length;
+  report.semanticLens = repeat(101, i => service.getVisibleRelations(service.setLens(snapshot, i)));
+  report.incrementalWithVectorCache = repeat(5, i => { const doc = service.getNode(`doc-${i}`)!; service.ingestDocument({ id: doc.id, path: doc.path, markdown: doc.markdown + `\n修改使该文档旧向量失效 ${i}。` }); });
+  report.coverageAfterEdits = { status: service.getEmbeddingCoverage().status, readyUnits: service.getEmbeddingCoverage().readyUnits };
+  report.memoryMiB = Object.fromEntries(Object.entries(process.memoryUsage()).map(([key, value]) => [key, value / 1024 ** 2]));
+  storage.close(); report.databaseMiB = (await stat(path)).size / 1024 ** 2;
+  const output = resolve(`reports/local/kernel-benchmark-${count}-${dimensions}.json`); await mkdir(resolve('reports/local'), { recursive: true }); await writeFile(output, JSON.stringify(report, null, 2) + '\n'); console.log(JSON.stringify({ output, ...report }, null, 2));
+} finally { storage.close(); await rm(dir, { recursive: true, force: true }); }

@@ -1,0 +1,3188 @@
+{
+  "schemaVersion": 1,
+  "id": "ripple-relations-reference-v1",
+  "labelProtocol": {
+    "grades": {
+      "0": "无关",
+      "1": "弱相关",
+      "2": "值得一起读",
+      "3": "核心关联"
+    },
+    "relevantAt": 2,
+    "source": "assistant-authored-synthetic-reference",
+    "humanReviewed": false,
+    "limitations": "短篇教学样本；设备型号场景为虚构；不能代表真实用户知识库分布。开发和测试文档及候选池互不重叠，最终测试标签不参与调参。"
+  },
+  "documents": [
+    {
+      "id": "dev-async-0",
+      "path": "dev-async-0.md",
+      "markdown": "---\naliases: [\"Promise\"]\n---\n# Promise 的执行时机\n\nPromise 表示异步操作的最终结果。then 注册的处理函数不会打断正在运行的同步代码，而是在微任务检查点由运行时调用。理解这一点可以预测日志输出和链式回调的顺序。\n",
+      "split": "dev",
+      "group": "async",
+      "role": "related",
+      "contentHash": "ebfb17619aed7dbd2e4d38d2d66453568b8595fbc9a2ec19dd59e03067a771f6"
+    },
+    {
+      "id": "dev-async-1",
+      "path": "dev-async-1.md",
+      "markdown": "# 微任务检查点\n\n一次任务中的同步调用栈清空后，宿主会继续清空待处理的微任务，包括期间新增的微任务，随后才有机会执行下一项任务和更新画面。异步完成处理函数通过这个机制保持可预测的顺序。\n",
+      "split": "dev",
+      "group": "async",
+      "role": "related",
+      "contentHash": "239e83deda78ee12cf8d402a673835e3693614fd3115d0c587421f7d496604cb"
+    },
+    {
+      "id": "dev-async-2",
+      "path": "dev-async-2.md",
+      "markdown": "# 观察者通知与调度\n\n观察者模式把状态变化通知给订阅者。通知可以立即同步调用，也可以被调度到稍后的队列中；模式本身并不保证异步。比较这两种通知方式有助于解释重入和回调时机。\n\n参看 [[dev-async-0]]。\n",
+      "split": "dev",
+      "group": "async",
+      "role": "related",
+      "contentHash": "a0c526054cd758ad3e2df6addf82b2972550f231f519babed99e9dee2674fd24"
+    },
+    {
+      "id": "dev-async-3",
+      "path": "dev-async-3.md",
+      "markdown": "---\naliases: [\"Promise\"]\n---\n# Promise 在婚礼誓词中的含义\n\n英语婚礼誓词里的 promise 指向伴侣作出的长期承诺。它表达对共同生活的责任，需要结合情境理解其语气与情感，不涉及程序执行或任务队列。\n",
+      "split": "dev",
+      "group": "async",
+      "role": "hard-negative",
+      "contentHash": "7bf4d7101f1087f3d415c73fad085f0e063a0adcf84ec7ee669ca63dafee476f"
+    },
+    {
+      "id": "dev-auth-0",
+      "path": "dev-auth-0.md",
+      "markdown": "---\naliases: [\"Token\"]\n---\n# JWT 的校验\n\nJWT 把声明封装成带签名的令牌。服务端接收身份凭据后，需要验证签名和约定的签发者、受众、失效时间。HMAC 消息认证码可用于双方共享密钥的签名场景，密钥不能交给不受信任的客户端。\n",
+      "split": "dev",
+      "group": "auth",
+      "role": "related",
+      "contentHash": "1e4571f83b72a381f2aa42c67eee75b3e0fc19577f4be0a4c2c27ea7f8568d6f"
+    },
+    {
+      "id": "dev-auth-1",
+      "path": "dev-auth-1.md",
+      "markdown": "# HMAC 消息认证码\n\n消息认证码使用共享密钥约束消息完整性与来源。验证方重新计算摘要并进行安全比较；没有密钥的一方不能只改消息再构造合法认证码。它不提供消息保密性，也不能代替过期时间和重放控制。\n",
+      "split": "dev",
+      "group": "auth",
+      "role": "related",
+      "contentHash": "b8e9f8d0785d54132656be356828f048b422551f5ec72c00ce17a62b717455d8"
+    },
+    {
+      "id": "dev-auth-2",
+      "path": "dev-auth-2.md",
+      "markdown": "# Bearer 凭据传输\n\n持有者令牌通常通过 Authorization 请求头传递。得到凭据的一方即可使用对应权限，因此必须保护传输、限制有效期和作用范围，泄漏时还要有撤销办法。令牌的编码格式与传输方式是不同层面的选择。\n\n参看 [[dev-auth-0]]。\n",
+      "split": "dev",
+      "group": "auth",
+      "role": "related",
+      "contentHash": "d4a33c94b95dffd6416cd773c53e73e9f44e4a5a5051073bc52259ca2b3680d6"
+    },
+    {
+      "id": "dev-auth-3",
+      "path": "dev-auth-3.md",
+      "markdown": "---\naliases: [\"Token\"]\n---\n# 分词器里的 Token\n\n语言模型的分词器把文本切成词元，然后映射到整数编号。一个汉字、一段子词或标点都可能对应词元。输入长度预算按词元序列计算，这里的 Token 是文本编码单位，并非身份凭据。\n",
+      "split": "dev",
+      "group": "auth",
+      "role": "hard-negative",
+      "contentHash": "567a3596c2ee561fe42b06109a22fcd0780eb9e36b518c9cf4b565c0ed01913e"
+    },
+    {
+      "id": "dev-reactive-0",
+      "path": "dev-reactive-0.md",
+      "markdown": "---\naliases: [\"Vue\"]\n---\n# Vue 的依赖追踪\n\nVue 的依赖追踪在读取响应式状态时收集正在执行的副作用，并在状态写入后让相关副作用重新运行。派生值缓存会在所依赖的数据变化后失效。响应式依赖图用于限制需要重算的范围。\n",
+      "split": "dev",
+      "group": "reactive",
+      "role": "related",
+      "contentHash": "044620a142dc8310e12f2e45e63bdad8b47d1d2fa43dba2403511ab8d95413e6"
+    },
+    {
+      "id": "dev-reactive-1",
+      "path": "dev-reactive-1.md",
+      "markdown": "# 响应式依赖图\n\n运行中的计算会订阅自己读过的数据。数据改变时，系统只通知依赖它的计算；动态分支还要求删除上次运行留下的过期订阅。派生值可先标记为脏，再在下次读取时计算。\n",
+      "split": "dev",
+      "group": "reactive",
+      "role": "related",
+      "contentHash": "5d96f1a736d4bea70f195655f4bde94ba894072d1aa4534587c19feaffa872c1"
+    },
+    {
+      "id": "dev-reactive-2",
+      "path": "dev-reactive-2.md",
+      "markdown": "# Observable 的流式组合\n\nObservable 描述可被订阅的数据序列，可以用映射、过滤和合并算子构造新的序列。订阅需要明确取消与资源释放。流可以同步发射，也可以接收异步事件；它与根据读取行为收集依赖的状态系统有不同的组织方式。\n\n参看 [[dev-reactive-0]]。\n",
+      "split": "dev",
+      "group": "reactive",
+      "role": "related",
+      "contentHash": "5e26bcc11d9bf225677dd8c31738a5b3ea033672e56311614d3ec78eeb791cc8"
+    },
+    {
+      "id": "dev-reactive-3",
+      "path": "dev-reactive-3.md",
+      "markdown": "---\naliases: [\"Vue\"]\n---\n# Vue 影院排片\n\n本例中的 Vue 是虚构影院品牌。排片表列出影厅、开场时间、语言版本和座位情况。读者根据通勤时间与余票选择场次，这份指南不讨论前端框架或状态更新。\n",
+      "split": "dev",
+      "group": "reactive",
+      "role": "hard-negative",
+      "contentHash": "f19e4fecb885569e9adf2269670f855d7bf9099ef81a98ed813930d22691f785"
+    },
+    {
+      "id": "dev-sensor-0",
+      "path": "dev-sensor-0.md",
+      "markdown": "# ZX-120 温控模块\n\n虚构设备 ZX-120 用于恒温箱。它从探头读取温度，使用 PID 温度调节改变加热功率，使实际温度靠近设定值。设备型号需要完整匹配，安装时核对探头接线和额定负载。\n",
+      "split": "dev",
+      "group": "sensor",
+      "role": "related",
+      "contentHash": "320f6be8832093e7d8532a17b25f96e5e1736dd761bd80c081c7c003ae566258"
+    },
+    {
+      "id": "dev-sensor-1",
+      "path": "dev-sensor-1.md",
+      "markdown": "# PID 温度调节\n\n闭环恒温控制把测量值与目标值之差作为误差。比例项提供当前修正，积分项抵消持续偏差，微分项响应变化速度。功率饱和时应避免积分项持续累积，以减小恢复后的过冲。\n",
+      "split": "dev",
+      "group": "sensor",
+      "role": "related",
+      "contentHash": "a8ef0c416133b12976bb28cd020875b303185ad443093acd6fb95d3f71337bf0"
+    },
+    {
+      "id": "dev-sensor-2",
+      "path": "dev-sensor-2.md",
+      "markdown": "# 温度探头校准\n\n把温度探头放入已知参考温度环境，记录偏移与不同温区的误差。校准结果影响恒温箱的实际控制目标；稳定性、安装位置和采样间隔也会影响温度读数。\n\n参看 [[dev-sensor-0]]。\n",
+      "split": "dev",
+      "group": "sensor",
+      "role": "related",
+      "contentHash": "8c0516f29b98c7957dd6f337059ef089783eeb5bf94e6e8a0fb050836e9da9bd"
+    },
+    {
+      "id": "dev-sensor-3",
+      "path": "dev-sensor-3.md",
+      "markdown": "# ZX-120S 无线路由器\n\n虚构设备 ZX-120S 是无线路由器。它为访客网络分配地址，隔离不同网络的通信，并提供无线信道与接入密码配置。它不是 ZX-120 温控模块的升级固件，两者接口和使用领域不同。\n",
+      "split": "dev",
+      "group": "sensor",
+      "role": "hard-negative",
+      "contentHash": "e4bb787f487ccbb227e420fc5466c25d1d0f25bd8d19ca53e2c7fe0d25c9ecb4"
+    },
+    {
+      "id": "test-rust-0",
+      "path": "test-rust-0.md",
+      "markdown": "---\naliases: [\"Rust\"]\n---\n# Rust 所有权\n\nRust 所有权为一个值指定当前负责释放资源的所有者。借用规则限制共享引用与可变引用的组合，在编译阶段排除一类悬垂引用和数据竞争。阅读 Rust 借用检查可以理解引用为什么不能超出被引用值的有效范围。\n",
+      "split": "test",
+      "group": "rust",
+      "role": "related",
+      "contentHash": "a799fed27997936d83dd1e0080425751ea427edad9a87741e87f8bb8d2cdaa53"
+    },
+    {
+      "id": "test-rust-1",
+      "path": "test-rust-1.md",
+      "markdown": "# Rust 借用检查\n\n引用的有效期必须落在被引用数据仍然存在的范围内。共享访问期间不能同时进行不受约束的可变访问。编译器通过检查借用关系阻止失效地址被继续使用，而不是等运行到那里再回收对象。\n",
+      "split": "test",
+      "group": "rust",
+      "role": "related",
+      "contentHash": "0d5132cb7e0a7da6db039695c1fa5a6f4bc6ae5d58963879b2d875f0968d55d0"
+    },
+    {
+      "id": "test-rust-2",
+      "path": "test-rust-2.md",
+      "markdown": "# 资源作用域释放\n\n资源句柄可以绑定到局部对象的生命周期。离开作用域时运行清理逻辑，关闭文件或归还锁。所有权转移决定谁最终执行释放，这种方式需要考虑异常路径及资源之间的依赖顺序。\n\n参看 [[test-rust-0]]。\n",
+      "split": "test",
+      "group": "rust",
+      "role": "related",
+      "contentHash": "96e8151d2bd0238c5697482de125ae9b076f7c95acfbfe66a50d150f82b3b338"
+    },
+    {
+      "id": "test-rust-3",
+      "path": "test-rust-3.md",
+      "markdown": "---\naliases: [\"Rust\"]\n---\n# Rust 与铁的腐蚀\n\n英文 rust 在材料语境中指铁锈。铁在水和氧气参与下发生腐蚀，涂层、干燥储存或牺牲阳极可以减缓过程。本条目关心金属表面的变化，不涉及编程语言、内存或编译器。\n",
+      "split": "test",
+      "group": "rust",
+      "role": "hard-negative",
+      "contentHash": "e86dad4786b513179787398fdabe496eff6cee1897100c0f64d9ed0fef39471d"
+    },
+    {
+      "id": "test-durability-0",
+      "path": "test-durability-0.md",
+      "markdown": "# 数据库的原子提交\n\n事务把多个修改作为一个整体提交或回滚。崩溃可能发生在任意写入间隙，预写日志把恢复所需的信息先持久化，再更新数据页，使数据库能够判断哪些修改需要重放或撤销。\n",
+      "split": "test",
+      "group": "durability",
+      "role": "related",
+      "contentHash": "ccb457eb5812fc3817889409fdf537459810b992d0c54d32b9093a1f97709bc7"
+    },
+    {
+      "id": "test-durability-1",
+      "path": "test-durability-1.md",
+      "markdown": "# 预写日志\n\n数据页写回之前，数据库先持久化描述修改的日志。重启后读取日志恢复一致状态；检查点限制恢复时必须处理的日志范围。日志同步与提交确认之间的顺序决定故障后能保留哪些结果。\n",
+      "split": "test",
+      "group": "durability",
+      "role": "related",
+      "contentHash": "9f5f400d92290bb31ebb163e741d2bdbd38b417c905a4725e59acc9725ea62c7"
+    },
+    {
+      "id": "test-durability-2",
+      "path": "test-durability-2.md",
+      "markdown": "# 幂等消息消费者\n\n消息队列可能重复投递同一业务消息。消费者把消息标识与业务修改放进同一数据库事务，确认已经处理的消息便不再重复产生效果。提交成功而确认丢失时，重新投递仍能得到一致结果。\n\n参看 [[test-durability-0]]。\n",
+      "split": "test",
+      "group": "durability",
+      "role": "related",
+      "contentHash": "5bd9b06e62dffa20306e7c1f43829c71ad06d210a46e6d53b39bb63873189549"
+    },
+    {
+      "id": "test-durability-3",
+      "path": "test-durability-3.md",
+      "markdown": "---\naliases: [\"Journal\"]\n---\n# Journal 手账装订\n\n这里的 journal 是个人手账。作者选择纸张、封面与装订方式，记录旅程与日常观察。纸页的厚度会影响手感和摊平程度，本笔记不介绍数据库日志或系统故障恢复。\n",
+      "split": "test",
+      "group": "durability",
+      "role": "hard-negative",
+      "contentHash": "a36b81fdc43e2f34100d98ef4355e6339c6c5040ededb7c7ddf7426464326ad7"
+    },
+    {
+      "id": "test-apple-0",
+      "path": "test-apple-0.md",
+      "markdown": "---\naliases: [\"Apple\"]\n---\n# Apple 笔记本的统一内存\n\n本教学场景讨论 Apple 笔记本上的统一内存架构。处理器与图形计算共享系统内存预算。内存占用估算需要同时考虑应用状态、模型权重与运行过程中的临时缓冲区，不能把标称容量全留给单个任务。\n",
+      "split": "test",
+      "group": "apple",
+      "role": "related",
+      "contentHash": "89a8621fd516ceae587619d82f4fe6da545e32d552d9b982dadb4344cf1734aa"
+    },
+    {
+      "id": "test-apple-1",
+      "path": "test-apple-1.md",
+      "markdown": "# 内存占用估算\n\n推理任务需要保存参数数组和临时张量。参数数量乘以每个数值所用字节数得到权重占用的粗估值；峰值还包括中间结果、缓存和宿主进程。相同参数量在不同数值精度下有不同空间需求。\n",
+      "split": "test",
+      "group": "apple",
+      "role": "related",
+      "contentHash": "2c525d5aa174fc3bec57d7aa3b956817b93557100508a354af05ee76eefefb98"
+    },
+    {
+      "id": "test-apple-2",
+      "path": "test-apple-2.md",
+      "markdown": "# 内存压力与交换\n\n物理内存不足时，系统可能压缩数据或把不活跃页面移到存储设备。页面再次被访问时会产生额外等待，导致交互延迟波动。因此仅成功启动模型不能证明它在持续负载下依然流畅。\n\n参看 [[test-apple-0]]。\n",
+      "split": "test",
+      "group": "apple",
+      "role": "related",
+      "contentHash": "7657fb2e25497ab276582cfed8014a70ba39d2069320813abed8d04c5796e67f"
+    },
+    {
+      "id": "test-apple-3",
+      "path": "test-apple-3.md",
+      "markdown": "---\naliases: [\"Apple\"]\n---\n# Apple 果园疏果\n\n英文 apple 在这份果园笔记里指苹果。疏果时去掉部分幼果，调整枝条负载，帮助保留的果实获得生长空间。操作要结合树势与自然落果情况，不涉及电脑品牌或计算设备。\n",
+      "split": "test",
+      "group": "apple",
+      "role": "hard-negative",
+      "contentHash": "570a3161fc1fc1acf7209f14cee8a5694ee15db29121142e667f6270b5ec83b9"
+    },
+    {
+      "id": "test-compressor-0",
+      "path": "test-compressor-0.md",
+      "markdown": "# SG-240 空压机\n\n虚构设备 SG-240 为气动工具供气。储气罐压力下降时，压力开关与停机控制启动压缩单元；达到上限后停止。操作时核对最大允许压力、泄压部件与排水要求。\n",
+      "split": "test",
+      "group": "compressor",
+      "role": "related",
+      "contentHash": "5f82b0f7a8352fa39300837cf9da7cef4420697f20c4a4ba6583771a973f5683"
+    },
+    {
+      "id": "test-compressor-1",
+      "path": "test-compressor-1.md",
+      "markdown": "# 压力开关与停机控制\n\n压力开关使用不同的启动与停止阈值，避免测量值在一个边界附近抖动时频繁启停。控制回差要结合储气容积和用气波动设置，保护性泄压装置仍需独立工作。\n",
+      "split": "test",
+      "group": "compressor",
+      "role": "related",
+      "contentHash": "37688612765f40f34cd0e23dc7d072e4d308a642f77541edd79e0ac05eaeb6fe"
+    },
+    {
+      "id": "test-compressor-2",
+      "path": "test-compressor-2.md",
+      "markdown": "# 压缩空气冷凝水\n\n空气被压缩和冷却后会析出水分。储气罐底部需要按要求排水，干燥与过滤装置减少水分进入气动工具。环境湿度和连续运行时长都会影响积水量。\n\n参看 [[test-compressor-0]]。\n",
+      "split": "test",
+      "group": "compressor",
+      "role": "related",
+      "contentHash": "56356dcd354813c57e43d782ac938d29e28471cac5d1ff1bea94547fb19ed529"
+    },
+    {
+      "id": "test-compressor-3",
+      "path": "test-compressor-3.md",
+      "markdown": "# SG-240A 收款终端\n\n虚构设备 SG-240A 是零售收款终端。它读取付款介质，展示金额并把交易结果返回收银系统。该型号与 SG-240 空压机没有配件或固件兼容关系，维护时应按完整型号选择资料。\n",
+      "split": "test",
+      "group": "compressor",
+      "role": "hard-negative",
+      "contentHash": "6bba71d687662033b62749a1ce7c26d38a6a619b2b181c394b3d647f22e1f5f2"
+    }
+  ],
+  "labels": [
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-async-1"
+      ],
+      "split": "dev",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-async-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-async-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-auth-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 1,
+      "hardNegative": false,
+      "rationale": "共享通知调度或资源生命周期的背景，但文章解决的问题不同，直接帮助有限。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-0",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-async-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-async-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-auth-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-1",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-async-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-auth-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 1,
+      "hardNegative": false,
+      "rationale": "共享通知调度或资源生命周期的背景，但文章解决的问题不同，直接帮助有限。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-2",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-auth-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-async-3",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-auth-1"
+      ],
+      "split": "dev",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-auth-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-auth-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-0",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-auth-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-auth-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-1",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-auth-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-2",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-auth-3",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-reactive-1"
+      ],
+      "split": "dev",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-0",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-reactive-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-1",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-reactive-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-2",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-0"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-reactive-3",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-sensor-0",
+        "dev-sensor-1"
+      ],
+      "split": "dev",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-sensor-0",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-sensor-0",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-sensor-1",
+        "dev-sensor-2"
+      ],
+      "split": "dev",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-sensor-1",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "dev-sensor-2",
+        "dev-sensor-3"
+      ],
+      "split": "dev",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-rust-0",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-rust-0",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-rust-0",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-rust-1",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-rust-1",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-rust-2",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 1,
+      "hardNegative": false,
+      "rationale": "共享通知调度或资源生命周期的背景，但文章解决的问题不同，直接帮助有限。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 1,
+      "hardNegative": false,
+      "rationale": "共享通知调度或资源生命周期的背景，但文章解决的问题不同，直接帮助有限。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-3",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-rust-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-0",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-1",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-durability-2",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-3",
+        "test-durability-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-apple-1"
+      ],
+      "split": "test",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-apple-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-apple-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-0",
+        "test-compressor-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-apple-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-apple-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-1",
+        "test-compressor-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-apple-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-2",
+        "test-compressor-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-0"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-1"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-2"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-apple-3",
+        "test-compressor-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": false,
+      "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-compressor-1"
+      ],
+      "split": "test",
+      "grade": 3,
+      "hardNegative": false,
+      "rationale": "同一机制的概念与直接解释，是核心关联。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-compressor-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-0",
+        "test-compressor-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-compressor-2"
+      ],
+      "split": "test",
+      "grade": 2,
+      "hardNegative": false,
+      "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-1",
+        "test-compressor-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "nodes": [
+        "test-compressor-2",
+        "test-compressor-3"
+      ],
+      "split": "test",
+      "grade": 0,
+      "hardNegative": true,
+      "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+      "labelSource": "assistant-authored-synthetic-reference",
+      "reviewStatus": "unreviewed"
+    }
+  ]
+}

@@ -75,7 +75,8 @@ export class EmbeddingEngine {
     const statuses = Object.values(documents);
     const readyUnits = statuses.reduce((n, d) => n + d.readyCount, 0);
     return { spaceId: this.space.id, documents, readyUnits, totalUnits: statuses.reduce((n, d) => n + d.unitCount, 0),
-      status: statuses.every(d => d.status === 'ready') ? 'ready' : readyUnits ? 'partial' : statuses.some(d => d.errors.length) ? 'error' : 'pending' };
+      status: statuses.every(d => d.status === 'ready') ? 'ready' : readyUnits ? 'partial' : statuses.find(d => d.status === 'stale')?.status
+        ?? statuses.find(d => ['error', 'cancelled', 'limit-exceeded', 'unsupported'].includes(d.status))?.status ?? 'pending' };
   }
   private current(id: string, revision: number, sequence: number): boolean {
     return !this.stopped && this.jobs.get(id)?.sequence === sequence && this.documents().some(doc => doc.id === id && doc.revision === revision);
@@ -154,8 +155,15 @@ export class EmbeddingEngine {
         const stored = this.cache.spaces[this.space.id]!;
         const nextRecords = [...stored.records.filter(record => record.unit.documentId !== doc.id), ...ready].sort((a, b) => a.unit.id < b.unit.id ? -1 : a.unit.id > b.unit.id ? 1 : 0);
         if (JSON.stringify(stored.documents[doc.id]) !== JSON.stringify(state) || JSON.stringify(stored.records) !== JSON.stringify(nextRecords)) {
+          const previousRecords = stored.records, previousState = stored.documents[doc.id];
           stored.records = nextRecords; stored.documents[doc.id] = structuredClone(state);
-          this.publish(structuredClone(this.cache));
+          try { this.publish(structuredClone(this.cache)); }
+          catch (error) {
+            stored.records = previousRecords;
+            if (previousState) stored.documents[doc.id] = previousState; else delete stored.documents[doc.id];
+            if (this.jobs.get(doc.id)?.sequence === job.sequence) this.jobs.delete(doc.id);
+            throw error;
+          }
         }
       } else report.discarded += prepared.length;
       if (this.jobs.get(doc.id)?.sequence === job.sequence) this.jobs.delete(doc.id);

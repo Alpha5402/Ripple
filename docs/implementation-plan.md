@@ -1,6 +1,6 @@
 # K1–K3 实施计划
 
-此文件保留最初的 K1～K3 范围；后续 K4 实施见 [K4 计划](k4-plan.md) 与 [Embedding 文档](embedding.md)。
+此文件保留最初的 K1～K3 范围；后续 K4 实施见 [K4 计划](k4-plan.md) 与 [Embedding 文档](embedding.md)；K5/K6 见[后续计划](k5-k6-plan.md)、[关系评估](relation-eval.md)与[Kernel API](kernel-api.md)。
 
 依据：用户提供的 Ripple 设计基线 1.1（2026-09-12）。本次只交付确定性知识内核、SDK、CLI，不进入 K4 Embedding 或正式宿主阶段。
 

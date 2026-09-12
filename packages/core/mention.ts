@@ -1,33 +1,59 @@
 import { EntityIndex, nameKey, naturalNameAllowed } from './entity.js';
 import type { Document, EvidenceLocator, Mention, WikiLink } from './model.js';
 
-const escapePattern = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const latinWord = (value: string): boolean => /[\p{Script=Latin}\p{N}_]/u.test(value);
-export function extractReferences(doc: Document, index: EntityIndex): { mentions: Mention[]; wikiLinks: WikiLink[] } {
+// A literal trie scans each text span once per possible prefix, independent of vault name count.
+interface TrieNode { children: Map<string, TrieNode>; terminal?: true }
+const fold = (char: string): string => [...char.toUpperCase()].length === 1 ? char.toUpperCase().toLowerCase() : char.toLowerCase();
+export class NameMatcher {
+  private root: TrieNode = { children: new Map() };
+  constructor(index: EntityIndex) {
+    for (const name of new Set(index.definitions.filter(d => naturalNameAllowed(d.name, d.allowShort)).map(d => d.name))) {
+      let node = this.root;
+      for (const char of name) {
+        const key = fold(char);
+        let child = node.children.get(key);
+        if (!child) { child = { children: new Map() }; node.children.set(key, child); }
+        node = child;
+      }
+      node.terminal = true;
+    }
+  }
+  matches(text: string): { start: number; end: number; text: string }[] {
+    const chars = [...text], offsets: number[] = [];
+    let offset = 0;
+    for (const char of chars) { offsets.push(offset); offset += char.length; }
+    offsets.push(offset);
+    const found: { start: number; end: number; text: string }[] = [];
+    for (let i = 0; i < chars.length; i++) {
+      let node = this.root, last = -1;
+      for (let j = i; j < chars.length; j++) {
+        const child = node.children.get(fold(chars[j]!));
+        if (!child) break;
+        node = child;
+        if (node.terminal && !(latinWord(chars[i]!) && latinWord(chars[i - 1] ?? ''))
+          && !(latinWord(chars[j]!) && latinWord(chars[j + 1] ?? ''))) last = j;
+      }
+      if (last >= i) {
+        const start = offsets[i]!, end = offsets[last + 1]!;
+        found.push({ start, end, text: text.slice(start, end) }); i = last;
+      }
+    }
+    return found;
+  }
+}
+export function extractReferences(doc: Document, index: EntityIndex, matcher = new NameMatcher(index)): { mentions: Mention[]; wikiLinks: WikiLink[] } {
   const locate = (start: number, end: number, sectionId: string): EvidenceLocator => ({ documentId: doc.id, revision: doc.revision, start, end, sectionId });
   const wikiLinks: WikiLink[] = doc.parsed.wikiLinks.map(link => ({
     id: `${doc.id}@${doc.revision}:wiki:${link.start}`, sourceDocumentId: doc.id,
     text: doc.markdown.slice(link.start, link.end), targetText: link.target,
     resolution: index.resolveLink(link.target, doc.id), evidence: locate(link.start, link.end, link.sectionId),
   }));
-  const names = [...new Map(index.definitions.filter(d => naturalNameAllowed(d.name, d.allowShort)).map(d => [nameKey(d.name), d.name])).values()];
   const mentions: Mention[] = [];
   const decorated = new Set<string>();
   for (const span of doc.parsed.textSpans) {
     const text = doc.markdown.slice(span.start, span.end);
-    const matches: { start: number; end: number; text: string }[] = [];
-    for (const name of names) {
-      for (const match of text.matchAll(new RegExp(escapePattern(name), 'giu'))) {
-        const start = match.index;
-        const end = start + match[0].length;
-        // Boundaries apply to literal text spans; Markdown markup itself is a delimiter.
-        const previous = text[start - 1] ?? '';
-        const next = text[end] ?? '';
-        if ((latinWord(match[0][0]!) && latinWord(previous)) || (latinWord(match[0].at(-1)!) && latinWord(next))) continue;
-        matches.push({ start: span.start + start, end: span.start + end, text: match[0] });
-      }
-    }
-    matches.sort((a, b) => a.start - b.start || b.end - a.end);
+    const matches = matcher.matches(text).map(m => ({ ...m, start: span.start + m.start, end: span.start + m.end }));
     let consumed = -1;
     for (const match of matches) {
       if (match.start < consumed) continue;

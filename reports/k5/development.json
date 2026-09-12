@@ -1,0 +1,1887 @@
+[
+  {
+    "method": "mention-explicit",
+    "k": 3,
+    "threshold": 0.5,
+    "candidateBudget": 15,
+    "queries": 16,
+    "gradedPairs": 120,
+    "scoredQueries": 12,
+    "zeroRelevantQueries": 4,
+    "precisionAtK": 0.4444444444444444,
+    "oraclePrecisionAtK": 0.6666666666666666,
+    "ndcgAtK": 0.7825089874287138,
+    "hardNegativeVisibleRate": 0.08333333333333333,
+    "irrelevantVisibleRate": 0.009433962264150943,
+    "zeroRelevantQueryFalsePositiveRate": 0.25,
+    "perQuery": [
+      {
+        "center": "dev-async-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 2,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.9467676761267002,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.7871546029909718,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.5562983930884396,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 0,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": []
+      },
+      {
+        "center": "dev-auth-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 2,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.7871546029909718,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.6131471927654584,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 0,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": []
+      },
+      {
+        "center": "dev-reactive-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 2,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.7871546029909718,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.5562983930884396,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 0,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": []
+      },
+      {
+        "center": "dev-sensor-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 3,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.95583058934618,
+        "visible": 2,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-3"
+            ],
+            "score": 0.5,
+            "grade": 0,
+            "hardNegative": true
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.7871546029909718,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 1,
+        "precisionAtK": 0.3333333333333333,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.6131471927654584,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-2"
+            ],
+            "score": 0.3,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 1,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 1,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-3"
+            ],
+            "score": 0.5,
+            "grade": 0,
+            "hardNegative": true
+          }
+        ]
+      }
+    ],
+    "failures": [
+      {
+        "nodes": [
+          "dev-sensor-0",
+          "dev-sensor-3"
+        ],
+        "split": "dev",
+        "grade": 0,
+        "hardNegative": true,
+        "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0.5,
+        "explicit": 0,
+        "cosine": 0.6742294955057568,
+        "score": 0.5
+      }
+    ],
+    "missedUseful": [
+      {
+        "nodes": [
+          "dev-async-0",
+          "dev-async-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 1,
+        "cosine": 0.7696097121100208,
+        "score": 0.3
+      },
+      {
+        "nodes": [
+          "dev-async-1",
+          "dev-async-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.7465946456975613,
+        "score": 0
+      },
+      {
+        "nodes": [
+          "dev-auth-0",
+          "dev-auth-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 1,
+        "cosine": 0.7530366055811651,
+        "score": 0.3
+      },
+      {
+        "nodes": [
+          "dev-auth-1",
+          "dev-auth-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.6607418420184076,
+        "score": 0
+      },
+      {
+        "nodes": [
+          "dev-reactive-0",
+          "dev-reactive-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 1,
+        "cosine": 0.7240545766283366,
+        "score": 0.3
+      },
+      {
+        "nodes": [
+          "dev-reactive-1",
+          "dev-reactive-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.774485819963972,
+        "score": 0
+      },
+      {
+        "nodes": [
+          "dev-sensor-0",
+          "dev-sensor-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 1,
+        "cosine": 0.5961972544795368,
+        "score": 0.3
+      },
+      {
+        "nodes": [
+          "dev-sensor-1",
+          "dev-sensor-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.650158164702052,
+        "score": 0
+      }
+    ]
+  },
+  {
+    "method": "semantic",
+    "k": 3,
+    "threshold": 0.5,
+    "candidateBudget": 15,
+    "queries": 16,
+    "gradedPairs": 120,
+    "scoredQueries": 12,
+    "zeroRelevantQueries": 4,
+    "precisionAtK": 0.6666666666666666,
+    "oraclePrecisionAtK": 0.6666666666666666,
+    "ndcgAtK": 0.9180263343030891,
+    "hardNegativeVisibleRate": 0,
+    "irrelevantVisibleRate": 0.018867924528301886,
+    "zeroRelevantQueryFalsePositiveRate": 0,
+    "perQuery": [
+      {
+        "center": "dev-async-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 9,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.9467676761267002,
+        "visible": 2,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-1"
+            ],
+            "score": 0.6830769292678718,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-2"
+            ],
+            "score": 0.674024280275052,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-reactive-0"
+            ],
+            "score": 0.46807432013732914,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 7,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 2,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-1"
+            ],
+            "score": 0.6830769292678718,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-1",
+              "dev-async-2"
+            ],
+            "score": 0.6164866142439032,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-1",
+              "dev-reactive-0"
+            ],
+            "score": 0.44101131521590814,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 8,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.8145672023038535,
+        "visible": 5,
+        "irrelevantVisible": 2,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-2"
+            ],
+            "score": 0.7729901385494631,
+            "grade": 1,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-2"
+            ],
+            "score": 0.674024280275052,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-1",
+              "dev-async-2"
+            ],
+            "score": 0.6164866142439032,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 1,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-3"
+            ],
+            "score": 0.011482739991312274,
+            "grade": 0,
+            "hardNegative": true
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 9,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 2,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-1"
+            ],
+            "score": 0.729545950919683,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-2"
+            ],
+            "score": 0.6325915139529128,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-auth-0"
+            ],
+            "score": 0.17126098635618592,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 7,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-1"
+            ],
+            "score": 0.729545950919683,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-auth-1",
+              "dev-auth-2"
+            ],
+            "score": 0.40185460504601894,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-auth-1"
+            ],
+            "score": 0.08060381541604211,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 9,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-2"
+            ],
+            "score": 0.6325915139529128,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-auth-1",
+              "dev-auth-2"
+            ],
+            "score": 0.40185460504601894,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-auth-2"
+            ],
+            "score": 0.21036489229362076,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 3,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-2",
+              "dev-auth-3"
+            ],
+            "score": 0.15322411066473363,
+            "grade": 0,
+            "hardNegative": true
+          },
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-3"
+            ],
+            "score": 0.10698282074624033,
+            "grade": 0,
+            "hardNegative": true
+          },
+          {
+            "nodes": [
+              "dev-auth-1",
+              "dev-auth-3"
+            ],
+            "score": 0.012366950005583965,
+            "grade": 0,
+            "hardNegative": true
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 7,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 3,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-1"
+            ],
+            "score": 0.791647065619074,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-2"
+            ],
+            "score": 0.5601364415708415,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-0"
+            ],
+            "score": 0.5580793735493685,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 8,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 3,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-1"
+            ],
+            "score": 0.791647065619074,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-1",
+              "dev-reactive-2"
+            ],
+            "score": 0.68621454990993,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-1"
+            ],
+            "score": 0.6047185052723847,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 8,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.8145672023038535,
+        "visible": 3,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-2"
+            ],
+            "score": 0.7729901385494631,
+            "grade": 1,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-1",
+              "dev-reactive-2"
+            ],
+            "score": 0.68621454990993,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-2"
+            ],
+            "score": 0.5601364415708415,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 0,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": []
+      },
+      {
+        "center": "dev-sensor-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 3,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.606422698504514,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-3"
+            ],
+            "score": 0.4355737387643921,
+            "grade": 0,
+            "hardNegative": true
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-2"
+            ],
+            "score": 0.24049313619884188,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-1"
+            ],
+            "score": 0.1043271734981488,
+            "grade": 3,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 2,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.8339912323981488,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-1",
+              "dev-sensor-2"
+            ],
+            "score": 0.37539541175513,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-1"
+            ],
+            "score": 0.1043271734981488,
+            "grade": 3,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 2,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-1",
+              "dev-sensor-2"
+            ],
+            "score": 0.37539541175513,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-2"
+            ],
+            "score": 0.24049313619884188,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 1,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-3"
+            ],
+            "score": 0.4355737387643921,
+            "grade": 0,
+            "hardNegative": true
+          }
+        ]
+      }
+    ],
+    "failures": [
+      {
+        "nodes": [
+          "dev-async-2",
+          "dev-reactive-0"
+        ],
+        "split": "dev",
+        "grade": 0,
+        "hardNegative": false,
+        "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.7232317494197474,
+        "score": 0.5580793735493685
+      },
+      {
+        "nodes": [
+          "dev-async-2",
+          "dev-reactive-1"
+        ],
+        "split": "dev",
+        "grade": 0,
+        "hardNegative": false,
+        "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.7418874021089539,
+        "score": 0.6047185052723847
+      }
+    ],
+    "missedUseful": [
+      {
+        "nodes": [
+          "dev-auth-1",
+          "dev-auth-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.6607418420184076,
+        "score": 0.40185460504601894
+      },
+      {
+        "nodes": [
+          "dev-sensor-0",
+          "dev-sensor-1"
+        ],
+        "split": "dev",
+        "grade": 3,
+        "hardNegative": false,
+        "rationale": "同一机制的概念与直接解释，是核心关联。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0.5,
+        "explicit": 0,
+        "cosine": 0.5417308693992595,
+        "score": 0.1043271734981488
+      },
+      {
+        "nodes": [
+          "dev-sensor-0",
+          "dev-sensor-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 1,
+        "cosine": 0.5961972544795368,
+        "score": 0.24049313619884188
+      },
+      {
+        "nodes": [
+          "dev-sensor-1",
+          "dev-sensor-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.650158164702052,
+        "score": 0.37539541175513
+      }
+    ]
+  },
+  {
+    "method": "hybrid",
+    "k": 3,
+    "threshold": 0.5,
+    "candidateBudget": 15,
+    "queries": 16,
+    "gradedPairs": 120,
+    "scoredQueries": 12,
+    "zeroRelevantQueries": 4,
+    "precisionAtK": 0.6666666666666666,
+    "oraclePrecisionAtK": 0.6666666666666666,
+    "ndcgAtK": 0.9340460139466394,
+    "hardNegativeVisibleRate": 0.08333333333333333,
+    "irrelevantVisibleRate": 0.02830188679245283,
+    "zeroRelevantQueryFalsePositiveRate": 0.25,
+    "perQuery": [
+      {
+        "center": "dev-async-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 9,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.7895959410076381,
+        "visible": 2,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-2"
+            ],
+            "score": 0.771816996193,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-1"
+            ],
+            "score": 0.683076929268,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-reactive-0"
+            ],
+            "score": 0.468074320137,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 7,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 2,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-1"
+            ],
+            "score": 0.683076929268,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-1",
+              "dev-async-2"
+            ],
+            "score": 0.616486614244,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-1",
+              "dev-reactive-0"
+            ],
+            "score": 0.441011315216,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 8,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.8145672023038535,
+        "visible": 5,
+        "irrelevantVisible": 2,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-2"
+            ],
+            "score": 0.772990138549,
+            "grade": 1,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-2"
+            ],
+            "score": 0.771816996193,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-1",
+              "dev-async-2"
+            ],
+            "score": 0.616486614244,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-async-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 1,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-0",
+              "dev-async-3"
+            ],
+            "score": 0.011482739991,
+            "grade": 0,
+            "hardNegative": true
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 9,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.8339912323981488,
+        "visible": 2,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-2"
+            ],
+            "score": 0.742814059767,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-1"
+            ],
+            "score": 0.72954595092,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-auth-0"
+            ],
+            "score": 0.171260986356,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 7,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-1"
+            ],
+            "score": 0.72954595092,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-auth-1",
+              "dev-auth-2"
+            ],
+            "score": 0.401854605046,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-auth-1"
+            ],
+            "score": 0.080603815416,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 9,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-2"
+            ],
+            "score": 0.742814059767,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-auth-1",
+              "dev-auth-2"
+            ],
+            "score": 0.401854605046,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-auth-2"
+            ],
+            "score": 0.210364892294,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-auth-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 3,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-auth-2",
+              "dev-auth-3"
+            ],
+            "score": 0.153224110665,
+            "grade": 0,
+            "hardNegative": true
+          },
+          {
+            "nodes": [
+              "dev-auth-0",
+              "dev-auth-3"
+            ],
+            "score": 0.106982820746,
+            "grade": 0,
+            "hardNegative": true
+          },
+          {
+            "nodes": [
+              "dev-auth-1",
+              "dev-auth-3"
+            ],
+            "score": 0.012366950006,
+            "grade": 0,
+            "hardNegative": true
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 7,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 3,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-1"
+            ],
+            "score": 0.791647065619,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-2"
+            ],
+            "score": 0.6920955091,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-0"
+            ],
+            "score": 0.558079373549,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 8,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 3,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-1"
+            ],
+            "score": 0.791647065619,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-1",
+              "dev-reactive-2"
+            ],
+            "score": 0.68621454991,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-1"
+            ],
+            "score": 0.604718505272,
+            "grade": 0,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 8,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.8145672023038535,
+        "visible": 3,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-async-2",
+              "dev-reactive-2"
+            ],
+            "score": 0.772990138549,
+            "grade": 1,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-0",
+              "dev-reactive-2"
+            ],
+            "score": 0.6920955091,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-reactive-1",
+              "dev-reactive-2"
+            ],
+            "score": 0.68621454991,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-reactive-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 0,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": []
+      },
+      {
+        "center": "dev-sensor-0",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 3,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 0.95583058934618,
+        "visible": 2,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-3"
+            ],
+            "score": 0.5,
+            "grade": 0,
+            "hardNegative": true
+          },
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-2"
+            ],
+            "score": 0.468345195339,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-1",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 2,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 1,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-1"
+            ],
+            "score": 0.5,
+            "grade": 3,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-sensor-1",
+              "dev-sensor-2"
+            ],
+            "score": 0.375395411755,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-2",
+        "candidates": 15,
+        "relevant": 2,
+        "returned": 2,
+        "precisionAtK": 0.6666666666666666,
+        "oraclePrecisionAtK": 0.6666666666666666,
+        "ndcgAtK": 1,
+        "visible": 0,
+        "irrelevantVisible": 0,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-2"
+            ],
+            "score": 0.468345195339,
+            "grade": 2,
+            "hardNegative": false
+          },
+          {
+            "nodes": [
+              "dev-sensor-1",
+              "dev-sensor-2"
+            ],
+            "score": 0.375395411755,
+            "grade": 2,
+            "hardNegative": false
+          }
+        ]
+      },
+      {
+        "center": "dev-sensor-3",
+        "candidates": 15,
+        "relevant": 0,
+        "returned": 1,
+        "precisionAtK": 0,
+        "oraclePrecisionAtK": 0,
+        "ndcgAtK": null,
+        "visible": 1,
+        "irrelevantVisible": 1,
+        "top": [
+          {
+            "nodes": [
+              "dev-sensor-0",
+              "dev-sensor-3"
+            ],
+            "score": 0.5,
+            "grade": 0,
+            "hardNegative": true
+          }
+        ]
+      }
+    ],
+    "failures": [
+      {
+        "nodes": [
+          "dev-async-2",
+          "dev-reactive-0"
+        ],
+        "split": "dev",
+        "grade": 0,
+        "hardNegative": false,
+        "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.7232317494197474,
+        "score": 0.558079373549
+      },
+      {
+        "nodes": [
+          "dev-async-2",
+          "dev-reactive-1"
+        ],
+        "split": "dev",
+        "grade": 0,
+        "hardNegative": false,
+        "rationale": "关注的对象与阅读任务不同，没有在这两篇文章中给出直接衔接。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.7418874021089539,
+        "score": 0.604718505272
+      },
+      {
+        "nodes": [
+          "dev-sensor-0",
+          "dev-sensor-3"
+        ],
+        "split": "dev",
+        "grade": 0,
+        "hardNegative": true,
+        "rationale": "同名异义或相似型号的不同领域，不应根据表面术语推荐一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0.5,
+        "explicit": 0,
+        "cosine": 0.6742294955057568,
+        "score": 0.5
+      }
+    ],
+    "missedUseful": [
+      {
+        "nodes": [
+          "dev-auth-1",
+          "dev-auth-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.6607418420184076,
+        "score": 0.401854605046
+      },
+      {
+        "nodes": [
+          "dev-sensor-0",
+          "dev-sensor-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 1,
+        "cosine": 0.5961972544795368,
+        "score": 0.468345195339
+      },
+      {
+        "nodes": [
+          "dev-sensor-1",
+          "dev-sensor-2"
+        ],
+        "split": "dev",
+        "grade": 2,
+        "hardNegative": false,
+        "rationale": "同一问题下的机制、操作或约束互补，值得一起读。",
+        "labelSource": "assistant-authored-synthetic-reference",
+        "reviewStatus": "unreviewed",
+        "mention": 0,
+        "explicit": 0,
+        "cosine": 0.650158164702052,
+        "score": 0.375395411755
+      }
+    ]
+  }
+]

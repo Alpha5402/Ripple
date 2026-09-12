@@ -32,10 +32,14 @@
     "wemm:doctor": "node --import tsx scripts/wemm.ts doctor",
     "wemm:setup": "node --import tsx scripts/wemm.ts setup",
     "wemm:start": "node --import tsx scripts/wemm.ts start",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && npm test && npm run build",
+    "host:http": "node --import tsx apps/http-kernel/main.ts",
+    "eval:relations": "node --import tsx scripts/evaluate-relations.ts",
+    "eval:wiki": "node --import tsx scripts/review-wiki-relations.ts",
+    "benchmark:kernel": "node --import tsx scripts/benchmark-kernel.ts"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.16"
   },
   "dependencies": {
     "remark-frontmatter": "^5.0.0",

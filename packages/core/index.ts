@@ -7,3 +7,4 @@ export * from './service.js';
 export * from './embedding/model.js';
 export * from './embedding/config.js';
 export * from './embedding/chunk.js';
+export * from './errors.js';
