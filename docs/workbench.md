@@ -25,7 +25,7 @@ open release/current/Ripple-darwin-arm64/Ripple.app
 
 ## 公开 Web 与 iframe
 
-公开演示：[异步的知识花园](https://alpha5402.github.io/Ripple/)。嵌入地址为 `https://alpha5402.github.io/Ripple/?embed=1`。
+Web 入口：[Ripple](https://alpha5402.github.io/Ripple/)。默认显示欢迎页，不内置演示笔记。标题与两行英文使用 HTML 文本，轨道插画与 Logo 使用提供的原始品牌素材。
 
 ```sh
 npm run build:web
@@ -33,15 +33,13 @@ npm run audit:public
 npm run preview:web
 ```
 
-公开包来自 `fixtures/showcase` 的 10 篇专门编写的示例笔记，白名单在 `configs/public-demo.json`。提交的 `knowledge.json` 包含真实 WeMM 预计算信号，浏览器无需模型服务或密钥。默认导出命令不启用模型，会只生成确定性关系；要更新语义包需在本地模型运行时显式提供 embedding 配置并索引：
+点击「打开知识目录」选择本地 Markdown 文件夹，浏览器会建立名称提及和显式链接关系。文件仅在当前页面内处理，不上传；编辑不会写回原文件，刷新后需要重新选择目录。需要持久保存、文件监听和模型索引时使用桌面版。
 
-```sh
-npm run export:public -- --embedding configs/embedding.wemm-local.json --index
-```
+浏览器导入忽略隐藏目录和 AGENTS.md，限制 1000 篇笔记、单文件 4 MiB、总计 32 MiB。空目录或超限会显示错误并保留此前打开的内容。切换目录前会保护尚未保存的编辑。
 
-导出时从公开原文重新构建名称提及与链接，只保留两端都公开且版本一致的语义贡献，不导出向量、用户声明、模型端点或密钥。包含媒体的笔记必须先整理成适合公开的文本，不能直接导出。发布前 `audit:public` 核对每篇原文与示例白名单完全一致，并扫描构建文件。
+部署工作流 `.github/workflows/pages.yml` 只上传 `dist/web`，`audit:public` 检查产物未包含演示笔记或敏感字段。iframe 地址为 `https://alpha5402.github.io/Ripple/?embed=1`。
 
-部署工作流 `.github/workflows/pages.yml` 只上传 `dist/web`。iframe 使用公开地址加 `?embed=1`。访客可创建浏览器沙盒进行编辑，刷新后恢复公开包；不会写入服务器或本机原始目录。浏览器沙盒没有向量推理，修改后的旧语义证据会失效。
+测试用示例仍保留在 `fixtures/showcase`；显式执行 `npm run export:public` 会生成 `fixtures/showcase.precomputed.json`，该文件不随默认 Web 或桌面构建发布。
 
 ## 只读 MCP
 

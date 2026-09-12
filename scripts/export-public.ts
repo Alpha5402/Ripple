@@ -5,7 +5,7 @@ import { openSqliteVault } from '../packages/adapters/filesystem/sqlite-workspac
 import { configureEmbeddingFromFile } from '../packages/adapters/embedding-http/config.js';
 import { exportPublicBundle } from '../packages/adapters/public-snapshot/export.js';
 
-const { values } = parseArgs({ options: { vault: { type: 'string', default: 'fixtures/showcase' }, manifest: { type: 'string', default: 'configs/public-demo.json' }, output: { type: 'string', default: 'apps/workbench/public/knowledge.json' }, 'state-dir': { type: 'string', default: '.ripple/public-demo' }, embedding: { type: 'string' }, index: { type: 'boolean', default: false } } });
+const { values } = parseArgs({ options: { vault: { type: 'string', default: 'fixtures/showcase' }, manifest: { type: 'string', default: 'configs/public-demo.json' }, output: { type: 'string', default: 'fixtures/showcase.precomputed.json' }, 'state-dir': { type: 'string', default: '.ripple/public-demo' }, embedding: { type: 'string' }, index: { type: 'boolean', default: false } } });
 const manifest = JSON.parse(await readFile(values.manifest, 'utf8'));
 if (manifest.schemaVersion !== 1 || !Array.isArray(manifest.documents)) throw new Error('Invalid public manifest');
 const workspace = await openSqliteVault(resolve(values.vault), { stateDir: resolve(values['state-dir']), allMarkdown: true });
