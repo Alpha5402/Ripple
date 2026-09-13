@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import type { WorkbenchBridge, WorkbenchState } from '../host/contract.js';
+import LocalEmbeddingControl from './LocalEmbeddingControl.vue';
+import { isManagedEmbeddingUrl } from '../host/local-embedding.js';
 import type { EmbeddingConnection } from '../host/embedding-connection.js';
 const props = defineProps<{ bridge: WorkbenchBridge; state: WorkbenchState; embedded?: boolean }>();
 const emit = defineEmits<{ close: []; changed: [] }>();
@@ -21,6 +23,7 @@ async function connect() {
   catch (cause) { error.value = (cause as Error).message; }
   finally { connecting.value = false; }
 }
+async function localReady(baseUrl: string) { form.value.protocol = 'ripple'; form.value.baseUrl = baseUrl; await connect(); }
 async function index() {
   error.value = '';
   try { await props.bridge.command({ type: props.state.indexing ? 'cancel-index' : 'index' }); emit('changed'); }
@@ -32,11 +35,12 @@ function close() { if (!connecting.value) emit('close'); }
 <template>
   <component :is="embedded ? 'section' : 'dialog'" ref="dialog" class="embedding-dialog" :class="{ embedded }" aria-labelledby="embedding-heading" @cancel.prevent="close" @close="close">
     <header><div><h2 id="embedding-heading">语义关联</h2><p>连接 Embedding 模型，让内容相近的笔记自然相连。</p></div><button v-if="!embedded" type="button" class="subtle-button" :disabled="connecting" @click="close">关闭</button></header>
+    <LocalEmbeddingControl v-if="bridge.localEmbeddingStatus && form.protocol === 'ripple' && isManagedEmbeddingUrl(form.baseUrl)" :bridge="bridge" :disabled="connecting || state.indexing" @ready="localReady"/>
     <form @submit.prevent="connect">
       <fieldset :disabled="connecting || state.indexing">
         <label>服务类型<select v-model="form.protocol"><option value="ripple">本地 WeMM / Ripple 服务</option><option value="openai-compatible">兼容 OpenAI 的 Embedding 服务</option></select></label>
         <label>服务地址<input v-model.trim="form.baseUrl" type="url" required placeholder="http://127.0.0.1:8787"/></label>
-        <p class="embedding-hint">填写服务根地址或以 /v1 结尾的地址。{{ form.protocol === 'ripple' ? '请先启动本地 WeMM 服务。' : '模型名称应与服务提供方的 Embedding 模型名称一致。' }}</p>
+        <p class="embedding-hint">填写服务根地址或以 /v1 结尾的地址。{{ form.protocol === 'ripple' ? (bridge.localEmbeddingStatus ? '可使用上方按钮启动并连接本机服务。' : '浏览器不能启动本机进程，请通过 Ripple App 或终端启动服务。') : '模型名称应与服务提供方的 Embedding 模型名称一致。' }}</p>
         <label v-if="form.protocol === 'openai-compatible'">模型名称<input v-model.trim="form.model" required placeholder="填写 Embedding 模型名称"/></label>
         <label>API Key（无认证的本地服务可留空）<input v-model="form.apiKey" type="password" autocomplete="off" spellcheck="false" :placeholder="state.mode === 'desktop' ? '通过系统加密保存' : '仅在本次会话中使用'"/></label>
         <details><summary>索引参数</summary><div class="embedding-fields"><label v-if="form.protocol === 'openai-compatible'">模型输入上限<input v-model.number="form.maxInputTokens" type="number" min="64" max="1048576" required/></label><label>每段最大 Token<input v-model.number="form.chunkTokens" type="number" min="64" max="8192" required/></label><label>每批片段数<input v-model.number="form.batchSize" type="number" min="1" max="8" required/></label><label>语义质量下限<input v-model.number="form.qualityFloor" type="number" min="-1" max="1" step="0.01" required/><small>按模型调整，作为弱关系兜底，不决定邻域数量。</small></label></div></details>

@@ -1,5 +1,10 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('ripple', Object.freeze({
+  localEmbeddingStatus: () => ipcRenderer.invoke('ripple:local-embedding-status'),
+  startLocalEmbedding: () => ipcRenderer.invoke('ripple:local-embedding-start'),
+  stopLocalEmbedding: () => ipcRenderer.invoke('ripple:local-embedding-stop'),
+  setLocalEmbeddingAutoStart: (enabled) => ipcRenderer.invoke('ripple:local-embedding-auto', enabled),
+  chooseLocalEmbeddingRuntime: () => ipcRenderer.invoke('ripple:local-embedding-runtime'),
   supportsEmbedding: true,
   supportsKnowledgeSettings: true,
   supportsGlobalGraph: true,

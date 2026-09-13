@@ -1,3 +1,4 @@
+import type { LocalEmbeddingState } from './local-embedding.js';
 import type { FolderSelection } from '../ingestion/scope-preview.js';
 import { MAX_IGNORE_RULES_LENGTH } from '../ingestion/knowledge-filter.js';
 import { z } from 'zod';
@@ -50,6 +51,11 @@ export interface WorkbenchState {
 }
 export interface RecentWorkspace { id: string; label: string; location: string; lastOpened: number }
 export interface WorkbenchBridge {
+  localEmbeddingStatus?(): Promise<LocalEmbeddingState>;
+  startLocalEmbedding?(): Promise<LocalEmbeddingState>;
+  stopLocalEmbedding?(): Promise<LocalEmbeddingState>;
+  setLocalEmbeddingAutoStart?(enabled: boolean): Promise<LocalEmbeddingState>;
+  chooseLocalEmbeddingRuntime?(): Promise<LocalEmbeddingState | undefined>;
   supportsKnowledgeSettings?: boolean;
   supportsEmbedding?: boolean;
   supportsGlobalGraph?: boolean;

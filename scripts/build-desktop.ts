@@ -1,7 +1,8 @@
 import { build } from 'esbuild';
 import { build as viteBuild } from 'vite';
 import { mkdir, copyFile, writeFile } from 'node:fs/promises';
-await mkdir('dist/desktop', { recursive: true });
+await mkdir('dist/desktop/wemm', { recursive: true });
+await copyFile('deploy/wemm/server.py', 'dist/desktop/wemm/server.py');
 await build({ entryPoints: ['apps/desktop/main.ts'], bundle: true, platform: 'node', format: 'esm', outfile: 'dist/desktop/main.mjs', external: ['electron'] });
 await build({ entryPoints: ['apps/desktop/worker.ts'], bundle: true, platform: 'node', format: 'esm', outfile: 'dist/desktop/worker.mjs', banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" } });
 await copyFile('apps/desktop/preload.cjs', 'dist/desktop/preload.cjs');

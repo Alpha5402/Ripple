@@ -1,3 +1,5 @@
+import { LocalEmbeddingProcess } from '../../packages/host/local-embedding-process.js';
+import { isManagedEmbeddingUrl } from '../../packages/host/local-embedding.js';
 import { readVault } from '../../packages/adapters/filesystem/index.js';
 import { listMarkdownPaths } from '../../packages/adapters/filesystem/manifest.js';
 import { knowledgeFilter } from '../../packages/ingestion/knowledge-filter.js';
@@ -5,7 +7,7 @@ import { atomicJson } from '../../packages/adapters/filesystem/atomic-json.js';
 import { WorkspaceHistory } from '../../packages/host/workspace-history.js';
 import { safeStorage, nativeImage, app, BrowserWindow, dialog, ipcMain, Menu, protocol, net, shell } from 'electron';
 import { Worker } from 'node:worker_threads';
-import { join, resolve, relative, sep } from 'node:path';
+import { dirname, join, resolve, relative, sep } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, realpath, writeFile, rm } from 'node:fs/promises';
@@ -17,6 +19,7 @@ let window: BrowserWindow;
 let worker: Worker | undefined;
 let history: WorkspaceHistory;
 let activeStateDir: string | undefined;
+let localEmbedding: LocalEmbeddingProcess;
 let dirty = false, quitting = false, sequence = 0;
 const pending = new Map<number, { resolve: (value: any) => void; reject: (error: Error) => void }>();
 function askWorker(data: unknown, timeoutMs = 30000): Promise<any> {
@@ -57,6 +60,19 @@ async function openFolder(root: string, readOnly: boolean, ignoreRules?: string)
   await history.remember(root, readOnly);
   window.webContents.send('ripple:changed');
   window.setTitle(`Ripple — ${root.split(/[\\/]/).at(-1)}`);
+  const current = await askWorker({ command: { type: 'state' } });
+  if (localEmbedding.state.autoStart && current.result?.embeddingConnection?.protocol === 'ripple' && isManagedEmbeddingUrl(current.result.embeddingConnection.baseUrl, localEmbedding.state.baseUrl)) void resumeLocalEmbedding();
+}
+async function resumeLocalEmbedding() {
+  try {
+    await localEmbedding.start();
+    const response = await askWorker({ command: { type: 'state' } });
+    const state = response.result;
+    if (state?.autoIndex && !state.indexing && state.embeddingConnection?.protocol === 'ripple' && isManagedEmbeddingUrl(state.embeddingConnection.baseUrl, localEmbedding.state.baseUrl)) {
+      await askWorker({ command: { type: 'auto-index', enabled: true } });
+    }
+    window.webContents.send('ripple:changed');
+  } catch { /* Startup state and logs remain visible in settings. Reading stays available. */ }
 }
 function isAppUrl(value: string): boolean { const url = new URL(value); return url.protocol === 'ripple:' && url.hostname === 'app'; }
 function trusted(event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent): boolean {
@@ -71,6 +87,12 @@ async function mayLeave(): Promise<boolean> {
 void app.whenReady().then(async () => {
   history = new WorkspaceHistory(process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'));
   await history.load();
+  const candidates = [join(process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'), 'wemm')];
+  if (process.env.RIPPLE_WEMM_RUNTIME) candidates.unshift(process.env.RIPPLE_WEMM_RUNTIME);
+  for (let ancestor = here, i = 0; i < 8; i++, ancestor = dirname(ancestor)) candidates.push(join(ancestor, '.ripple/wemm'));
+  localEmbedding = new LocalEmbeddingProcess({ stateDir: process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'), candidates,
+    serverScript: app.isPackaged ? join(app.getAppPath() + '.unpacked', 'wemm/server.py') : join(here, 'wemm/server.py') });
+  await localEmbedding.initialize();
   const appIcon = nativeImage.createFromPath(join(here, 'renderer/brand/ripple-logo.png'));
   // Keep macOS's bundle icon treatment (background and frame) after launch.
   // Replacing it with the transparent in-app logo bypasses that treatment.
@@ -100,6 +122,20 @@ ipcMain.handle('ripple:command', async (event, command) => {
     } catch { /* Connection remains usable; the next run will request credentials again. */ }
   }
   return response;
+});
+ipcMain.handle('ripple:local-embedding-status', async event => { if (trusted(event)) return localEmbedding.refresh(); });
+ipcMain.handle('ripple:local-embedding-start', async event => { if (trusted(event)) return localEmbedding.start(); });
+ipcMain.handle('ripple:local-embedding-stop', async event => {
+  if (!trusted(event)) return;
+  const current = await askWorker({ command: { type: 'state' } });
+  if (localEmbedding.state.managed && current.result?.indexing && isManagedEmbeddingUrl(current.result.embeddingConnection?.baseUrl ?? '', localEmbedding.state.baseUrl)) await askWorker({ command: { type: 'cancel-index' } });
+  return localEmbedding.stop();
+});
+ipcMain.handle('ripple:local-embedding-auto', async (event, enabled) => { if (trusted(event) && typeof enabled === 'boolean') return localEmbedding.setAutoStart(enabled); });
+ipcMain.handle('ripple:local-embedding-runtime', async event => {
+  if (!trusted(event)) return;
+  const selected = await dialog.showOpenDialog(window, { title: '选择已有 WeMM 运行环境（包含 venv 和 models 的目录）', properties: ['openDirectory', 'showHiddenFiles'] });
+  if (!selected.canceled && selected.filePaths[0]) return localEmbedding.chooseRuntime(selected.filePaths[0]);
 });
 ipcMain.handle('ripple:recent-workspaces', event => trusted(event) ? history.list() : []);
 ipcMain.handle('ripple:forget-workspace', async (event, id) => { if (trusted(event) && typeof id === 'string') { await history.forget(id); window.webContents.send('ripple:changed'); } });
@@ -152,9 +188,10 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: '显示', submenu: [{ role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'togglefullscreen' }] },
   { label: '窗口', submenu: [{ role: 'minimize' }, { role: 'zoom' }, { role: 'front' }] },
 ]));
-window.on('close', event => { if (!quitting) { event.preventDefault(); void mayLeave().then(async allowed => { if (allowed) { quitting = true; await stopWorker(); window.destroy(); app.quit(); } }); } });
+window.on('close', event => { if (!quitting) { event.preventDefault(); void mayLeave().then(async allowed => { if (allowed) { quitting = true; await stopWorker(); await localEmbedding.stop(); window.destroy(); app.quit(); } }); } });
 await window.loadURL('ripple://app/');
 window.show();
+if (localEmbedding.restoreOnLaunch) void resumeLocalEmbedding();
 const vaultIndex = process.argv.indexOf('--vault');
 if (vaultIndex >= 0 && process.argv[vaultIndex + 1]) await openFolder(process.argv[vaultIndex + 1]!, process.argv.includes('--readonly'));
 else { const last = history.list()[0]; if (last) { try { await openFolder(last.location, last.readOnly); } catch { window.webContents.send('ripple:changed'); } } }
