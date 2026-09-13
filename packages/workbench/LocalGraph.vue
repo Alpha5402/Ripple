@@ -3,7 +3,7 @@ import { computed, ref, watch, onBeforeUnmount, onMounted } from 'vue';
 import { forceSimulation, forceManyBody, forceLink, forceCollide, forceX, forceY, type Simulation } from 'd3-force';
 import type { GlobalGraph, WorkbenchState } from '../host/contract.js';
 import { stepForces, type ForceNode } from './force-layout.js';
-const props = defineProps<{ state: WorkbenchState; selected?: string; globalGraph?: GlobalGraph; savedView?: { layout?: Record<string, { x: number; y: number }>; camera?: { x: number; y: number; zoom: number } } }>();
+const props = defineProps<{ state: WorkbenchState; compact?: boolean; selected?: string; globalGraph?: GlobalGraph; savedView?: { layout?: Record<string, { x: number; y: number }>; camera?: { x: number; y: number; zoom: number } } }>();
 const emit = defineEmits<{ preview: [id: string]; focus: [id: string]; evidence: [id: string]; view: [view: { layout?: Record<string, { x: number; y: number }>; camera?: { x: number; y: number; zoom: number } }] }>();
 const canvas = ref<SVGSVGElement>();
 const camera = ref({ x: 0, y: 0, zoom: 1 });
@@ -100,7 +100,7 @@ function resetCamera() {
   <div class="graph-surface force-graph">
     <header class="graph-header"><div class="graph-caption"><span class="eyebrow">{{ globalGraph ? 'KNOWLEDGE NETWORK' : 'LOCAL EXPLORATION' }}</span><h2>{{ globalGraph ? '全局知识网络' : '从这里，发现关联。' }}</h2><p>拖动节点 · 点击预览 · 双击探索</p></div><slot name="controls"/></header>
     <div class="graph-viewport">
-    <svg ref="canvas" class="local-graph" viewBox="0 0 1000 720" :aria-label="globalGraph ? '全局知识网络' : '当前笔记的局部知识图'" @pointerdown="down($event)" @pointermove="move" @pointerup="up" @pointercancel="up" @wheel.prevent="zoom($event.deltaY > 0 ? -.12 : .12)">
+    <svg ref="canvas" class="local-graph" :viewBox="compact ? '200 0 600 720' : '0 0 1000 720'" :aria-label="globalGraph ? '全局知识网络' : '当前笔记的局部知识图'" @pointerdown="down($event)" @pointermove="move" @pointerup="up" @pointercancel="up" @wheel.prevent="zoom($event.deltaY > 0 ? -.12 : .12)">
       <g :transform="`translate(${500 + camera.x} ${365 + camera.y}) scale(${camera.zoom})`">
         <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected, 'edge-active': hoveredEdge === relation.id || (hoveredNode && relation.nodes.includes(hoveredNode)) }" role="button" tabindex="0" :aria-label="`查看 ${relation.nodes.map(id => names.get(id)).join(' 与 ')} 的关系证据，权重 ${Math.round(relation.score * 100)}`" @pointerenter="hoveredEdge = relation.id" @pointerleave="hoveredEdge = undefined" @focus="hoveredEdge = relation.id" @blur="hoveredEdge = undefined" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)" @keydown.space.prevent="emit('evidence', relation.id)">
           <line class="edge-stroke" :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y" :style="{ opacity: .25 + relation.score * .4 }"/>

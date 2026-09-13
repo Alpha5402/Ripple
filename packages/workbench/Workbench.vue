@@ -56,6 +56,34 @@ const mobile = ref(false), contextOpen = ref(false);
 const hasInspector = computed(() => !!selectedRelation.value || (!!preview.value && !popup.value));
 const contextVisible = computed(() => (mode.value === 'reading' || hasInspector.value) && (!mobile.value || contextOpen.value));
 watch(mode, () => { selectedRelation.value = undefined; preview.value = undefined; popup.value = false; contextOpen.value = false; });
+const panelWidth = ref(420);
+const panelElement = ref<HTMLElement>();
+let panelDrag: { x: number; width: number; target: HTMLElement } | undefined;
+function clampPanelWidth(width: number) {
+  const available = panelElement.value?.parentElement?.clientWidth ?? window.innerWidth;
+  return Math.round(Math.max(280, Math.min(width, Math.max(280, available - 320))));
+}
+function resizePanel(event: PointerEvent) {
+  if (!panelDrag) return;
+  panelWidth.value = clampPanelWidth(panelDrag.width + panelDrag.x - event.clientX);
+}
+function startPanelResize(event: PointerEvent) {
+  if (event.button !== 0) return;
+  const target = event.currentTarget as HTMLElement;
+  panelDrag = { x: event.clientX, width: panelElement.value?.getBoundingClientRect().width ?? panelWidth.value, target };
+  target.setPointerCapture(event.pointerId);
+  event.preventDefault();
+}
+function endPanelResize() {
+  panelDrag = undefined;
+  try { localStorage.setItem('ripple:graph-panel-width', String(panelWidth.value)); } catch {}
+}
+function panelResizeKey(event: KeyboardEvent) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home'].includes(event.key)) return;
+  event.preventDefault();
+  panelWidth.value = clampPanelWidth(event.key === 'Home' ? 420 : panelWidth.value + (event.key === 'ArrowLeft' ? 24 : -24));
+  endPanelResize();
+}
 function closeInspector() { selectedRelation.value = undefined; preview.value = undefined; contextOpen.value = false; }
 let unsubscribe = () => {}, pendingNavigation: (() => Promise<void>) | undefined, readSequence = 0, previewSequence = 0, lensSequence = 0, searchSequence = 0;
 let queryTimer: ReturnType<typeof setTimeout>, scrollTimer: ReturnType<typeof setTimeout>;
@@ -175,7 +203,7 @@ function keyboard(event: KeyboardEvent) {
 }
 const preventUnload = (event: BeforeUnloadEvent) => { if (dirty.value) event.preventDefault(); };
 const resized = () => { const narrow = window.innerWidth <= 700; if (narrow && !mobile.value) sidebar.value = false; mobile.value = narrow; };
-onMounted(() => { void loadRecents(); resized(); sidebar.value = !mobile.value && !new URLSearchParams(location.search).has('embed'); void reload(); unsubscribe = props.bridge.subscribe(() => { void reload(); }); window.addEventListener('keydown', keyboard); window.addEventListener('beforeunload', preventUnload); window.addEventListener('resize', resized); });
+onMounted(() => { try { const saved = Number(localStorage.getItem('ripple:graph-panel-width')); if (saved >= 280 && saved <= 1600) panelWidth.value = saved; } catch {} void loadRecents(); resized(); sidebar.value = !mobile.value && !new URLSearchParams(location.search).has('embed'); void reload(); unsubscribe = props.bridge.subscribe(() => { void reload(); }); window.addEventListener('keydown', keyboard); window.addEventListener('beforeunload', preventUnload); window.addEventListener('resize', resized); });
 onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(scrollTimer); window.removeEventListener('keydown', keyboard); window.removeEventListener('beforeunload', preventUnload); window.removeEventListener('resize', resized); props.bridge.setDirty?.(false); });
 </script>
 <template>
@@ -211,11 +239,13 @@ onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(sc
             <div v-else-if="mode === 'global' && !globalGraph" class="reading-loading" role="status">{{ globalLoading ? '正在汇总全局知识网络…' : '暂时无法读取全局网络，请重新切换视图。' }}</div>
             <LocalGraph v-else :key="mode" :state="state" :global-graph="mode === 'global' ? visibleGlobal : undefined" :saved-view="mode === 'global' ? globalView : undefined" :selected="selectedRelation?.id" @preview="showPreview" @focus="exploreNode" @evidence="showEvidence" @view="graphView"><template #controls><GraphLens :value="mode === 'global' ? globalLens : lens" :global="mode === 'global'" :count="mode === 'global' ? visibleGlobal?.relations.length ?? 0 : state.visible?.relations.length ?? 0" :documents="globalGraph?.documents.length" @change="mode === 'global' ? globalLens = $event : setLens($event)"/></template></LocalGraph>
           </section>
-          <aside v-if="contextVisible" class="context-panel" :class="{ 'graph-inspector': mode !== 'reading' }" aria-label="关联与证据"><button v-if="mobile" class="mobile-panel-close icon-button" aria-label="关闭关联面板" @click="closeInspector"><Icon name="close"/></button>
+          <div v-if="contextVisible && !mobile" class="panel-resizer" role="separator" aria-label="调整关联图谱宽度" aria-orientation="vertical" :aria-valuenow="panelWidth" :aria-valuemin="280" :aria-valuemax="Math.max(280, (panelElement?.parentElement?.clientWidth ?? panelWidth + 320) - 320)" tabindex="0" @pointerdown="startPanelResize" @pointermove="resizePanel" @pointerup="endPanelResize" @pointercancel="endPanelResize" @lostpointercapture="endPanelResize" @keydown="panelResizeKey"/>
+          <aside v-if="contextVisible" ref="panelElement" class="context-panel" :style="mobile ? undefined : { width: `${panelWidth}px`, maxWidth: 'max(280px, calc(100% - 320px))' }" :class="{ 'graph-inspector': mode !== 'reading', 'reading-graph-panel': mode === 'reading' && !hasInspector }" aria-label="关联与证据"><button v-if="mobile" class="mobile-panel-close icon-button" aria-label="关闭关联面板" @click="closeInspector"><Icon name="close"/></button>
             <template v-if="selectedRelation"><div class="panel-heading"><span class="eyebrow">RELATION EVIDENCE</span><button class="icon-button" aria-label="关闭证据" @click="closeInspector"><Icon name="close" :size="16"/></button></div><h2>为何相连</h2><p class="relation-between">{{ titles.get(selectedRelation.nodes[0]) }}<span>↔</span>{{ titles.get(selectedRelation.nodes[1]) }}</p><div class="score-summary"><strong>{{ Math.round(selectedRelation.score * 100) }}<small>/ 100</small></strong><span>关系强度</span></div><div class="signal-tags"><span v-for="kind in relationKinds(selectedRelation)" :key="kind">{{ kind }}</span></div><div class="signal-directions"><p v-for="(signal, signalIndex) in selectedRelation.signals" :key="signalIndex">{{ titles.get(signal.from) }} <span>{{ signal.kind === 'semantic' ? '↔' : '→' }}</span> {{ titles.get(signal.to) }}</p></div><div class="evidence-list"><section v-for="(entry, index) in evidence" :key="index" class="evidence-card"><div><Icon name="note" :size="14"/><strong>{{ titles.get(entry.locator.documentId) }}</strong><span>r{{ entry.locator.revision }}</span></div><blockquote>{{ entry.result.status === 'valid' ? entry.result.excerpt ?? entry.result.text : '该片段的来源版本已变化，请刷新后重试。' }}</blockquote><button :disabled="entry.result.status !== 'valid'" @click="openEvidence(entry.locator)">定位原文 <Icon name="arrow" :size="13"/></button></section><p v-if="!evidence.length" class="muted">正在读取来源…</p></div><button class="panel-action" @click="focus(other(selectedRelation))">以关联笔记为中心 <Icon name="arrow" :size="15"/></button></template>
             <template v-else-if="preview && !popup"><div class="panel-heading"><span class="eyebrow">NOTE PREVIEW</span><button class="icon-button" aria-label="关闭预览" @click="closeInspector"><Icon name="close" :size="16"/></button></div><h2>{{ preview.document.parsed.title }}</h2><div class="preview-body prose" @click="mention($event, true)" v-html="previewBody"/><button v-if="previewRelation" class="panel-action secondary" @click="showEvidence(previewRelation.id)"><Icon name="evidence" :size="15"/>查看关联依据</button><button class="panel-action" @click="focus(preview.document.id)">以此为中心 <Icon name="arrow" :size="15"/></button></template>
 
-            <template v-else><div class="panel-heading"><span class="eyebrow">CONNECTED NOTES</span><span class="count-badge">{{ state.visible?.relations.length ?? 0 }}</span></div><h2>由此及彼</h2><p class="panel-description">沿着关联，发现下一篇值得读的笔记。</p><div class="related-list"><section v-for="relation in state.visible?.relations" :key="relation.id" class="related-card"><button class="related-title" @click="showPreview(other(relation))"><span class="note-glyph"><Icon name="note" :size="17"/></span><span>{{ titles.get(other(relation)) }}</span><Icon name="arrow" :size="14"/></button><div class="related-meta"><span>{{ relationKinds(relation).join(' · ') }}</span><button :aria-label="`查看 ${titles.get(other(relation))} 的关系证据`" @click="showEvidence(relation.id)">{{ Math.round(relation.score * 100) }} <Icon name="evidence" :size="12"/></button></div></section><div class="empty-relations" v-if="!state.visible?.relations.length"><Icon name="graph" :size="34"/><p>这一层还很安静</p><span>切换到探索视图，<br/>查看当前笔记的关联。</span></div></div><button v-if="state.visible?.remainingCount" class="panel-action secondary" @click="command({ type: 'more' })">再展开 {{ Math.min(40, state.visible.remainingCount) }} 条关联</button><div class="relation-note"><Icon name="evidence" :size="16"/><p>每一条关系，都有出处。<br/><span>点击分数查看原文与证据。</span></p></div></template>
+            <LocalGraph v-else compact :state="state" @preview="showPreview" @focus="focus" @evidence="showEvidence" @view="graphView"><template #controls><GraphLens :value="lens" :count="state.visible?.relations.length ?? 0" @change="setLens"/></template></LocalGraph>
+
           </aside>
         </div>
       </template>
