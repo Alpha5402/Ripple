@@ -1,3 +1,7 @@
+import { readVault } from '../../packages/adapters/filesystem/index.js';
+import { listMarkdownPaths } from '../../packages/adapters/filesystem/manifest.js';
+import { knowledgeFilter } from '../../packages/ingestion/knowledge-filter.js';
+import { atomicJson } from '../../packages/adapters/filesystem/atomic-json.js';
 import { WorkspaceHistory } from '../../packages/host/workspace-history.js';
 import { safeStorage, nativeImage, app, BrowserWindow, dialog, ipcMain, Menu, protocol, net, shell } from 'electron';
 import { Worker } from 'node:worker_threads';
@@ -30,11 +34,12 @@ async function stopWorker(): Promise<void> {
   await askWorker({ close: true }).catch(() => {});
   await previous.terminate(); worker = undefined;
 }
-async function openFolder(root: string, readOnly: boolean): Promise<void> {
+async function openFolder(root: string, readOnly: boolean, ignoreRules?: string): Promise<void> {
   root = await realpath(root);
   await stopWorker();
   const stateDir = join(process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'), 'vaults', createHash('sha256').update(resolve(root)).digest('hex').slice(0, 24));
   await mkdir(stateDir, { recursive: true });
+  if (ignoreRules !== undefined) await atomicJson(join(stateDir, 'knowledge-settings.json'), { ignoreRules });
   let apiKey = '';
   if (safeStorage.isEncryptionAvailable()) { try { apiKey = safeStorage.decryptString(await readFile(join(stateDir, 'embedding-secret.bin'))); } catch {} }
   worker = new Worker(join(here, 'worker.mjs'), { workerData: { root, stateDir, readOnly, apiKey } });
@@ -101,6 +106,27 @@ ipcMain.handle('ripple:open-recent', async (event, id) => {
   const entry = history.list().find(e => e.id === id); if (!entry) return false;
   try { await openFolder(entry.location, entry.readOnly); dirty = false; return true; }
   catch { await dialog.showMessageBox(window, { type: 'error', message: '工作区暂不可用', detail: '目录可能已移动、删除或尚未挂载。你可以重新选择目录，或从最近列表移除。' }); return false; }
+});
+let folderSelection: { token: string; root: string } | undefined;
+ipcMain.handle('ripple:prepare-folder', async event => {
+  if (!trusted(event) || !await mayLeave()) return;
+  folderSelection = undefined;
+  const result = await dialog.showOpenDialog(window, { title: '选择 Markdown 知识目录', properties: ['openDirectory'] });
+  if (result.canceled || !result.filePaths[0]) return;
+  const root = await realpath(result.filePaths[0]);
+  const paths = await listMarkdownPaths(root);
+  const stateDir = join(process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'), 'vaults', createHash('sha256').update(resolve(root)).digest('hex').slice(0, 24));
+  let ignoreRules = '';
+  try { ignoreRules = JSON.parse(await readFile(join(stateDir, 'knowledge-settings.json'), 'utf8')).ignoreRules ?? ''; } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+  const token = String(++sequence); folderSelection = { token, root };
+  return { token, label: root.split('/').at(-1), paths, ignoreRules };
+});
+ipcMain.handle('ripple:import-folder', async (event, token, rules, readOnly) => {
+  if (!trusted(event) || !folderSelection || token !== folderSelection.token || typeof readOnly !== 'boolean' || !await mayLeave()) return false;
+  knowledgeFilter(rules);
+  const { root } = folderSelection;
+  await readVault(root, { allMarkdown: true, ignoreRules: rules });
+  await openFolder(root, readOnly, rules); folderSelection = undefined; dirty = false; return true;
 });
 ipcMain.handle('ripple:choose-folder', async (event, readOnly) => {
   if (!trusted(event) || typeof readOnly !== 'boolean' || !await mayLeave()) return false;

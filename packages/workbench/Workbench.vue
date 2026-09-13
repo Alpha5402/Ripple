@@ -10,6 +10,8 @@ import GraphLens from './GraphLens.vue';
 import Welcome from './Welcome.vue';
 import WorkspaceSwitcher from './WorkspaceSwitcher.vue';
 import SettingsPage from './SettingsPage.vue';
+import ImportScope from './ImportScope.vue';
+import type { FolderSelection } from '../ingestion/scope-preview.js';
 const MarkEditor = defineAsyncComponent(() => import('./MarkEditor.vue'));
 
 const props = defineProps<{ bridge: WorkbenchBridge }>();
@@ -48,14 +50,17 @@ watch(() => [mode.value, state.value?.workspaceId ?? state.value?.label, state.v
 });
 function graphView(view: typeof globalView.value) {
   if (mode.value === 'global') globalView.value = { ...globalView.value, ...view };
-  else void props.bridge.command({ type: 'view', ...view }).catch(e => error.value = e.message);
+  else void command({ type: 'view', ...view }).catch(e => error.value = e.message);
 }
 function exploreNode(id: string) { void navigate(async () => { await command({ type: 'focus', id }, true); mode.value = 'explore'; }); }
 
 const mobile = ref(false), contextOpen = ref(false);
 const hasInspector = computed(() => !!selectedRelation.value || (!!preview.value && !popup.value));
 const contextVisible = computed(() => (mode.value === 'reading' || hasInspector.value) && (!mobile.value || contextOpen.value));
-watch(mode, () => { selectedRelation.value = undefined; preview.value = undefined; popup.value = false; contextOpen.value = false; });
+watch(mode, async value => {
+  selectedRelation.value = undefined; preview.value = undefined; popup.value = false; contextOpen.value = false;
+  if (value === 'reading') { await nextTick(); const saved = state.value?.current?.reading; if (mode.value === value && article.value && saved?.documentId === reading.value?.document.id) article.value.scrollTop = saved?.offset ?? 0; }
+});
 const panelWidth = ref(420);
 const panelElement = ref<HTMLElement>();
 let panelDrag: { x: number; width: number; target: HTMLElement } | undefined;
@@ -124,11 +129,11 @@ async function command(c: HostCommand, restoreReading = false) { const next = aw
 async function reload() { try { await apply(await props.bridge.command({ type: 'state' }) as WorkbenchState); } catch (e) { if ((e as { code?: string }).code !== 'NOT_FOUND') error.value = (e as Error).message; } }
 async function navigate(action: () => Promise<void>) {
   if (dirty.value) { pendingNavigation = action; draftDialog.value = true; return; }
-  editing.value = false; sourceLocation.value = undefined; popup.value = false; selectedRelation.value = undefined; preview.value = undefined; error.value = '';
+  evidenceReturn.value = undefined; editing.value = false; sourceLocation.value = undefined; popup.value = false; selectedRelation.value = undefined; preview.value = undefined; error.value = '';
   try { busy.value = true; await flushReading(); await action(); } catch (e) { error.value = (e as Error).message; } finally { busy.value = false; }
 }
 function focus(id: string) { void navigate(() => command({ type: 'focus', id }, true)); }
-async function flushReading() { clearTimeout(scrollTimer); if (reading.value && state.value?.current && article.value) await props.bridge.command({ type: 'view', reading: { documentId: reading.value.document.id, offset: article.value.scrollTop } }); }
+async function flushReading() { clearTimeout(scrollTimer); if (reading.value && state.value?.current && article.value) await command({ type: 'view', reading: { documentId: reading.value.document.id, offset: article.value.scrollTop } }); }
 function onScroll() { clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { void flushReading().catch(() => {}); }, 200); }
 async function setLens(value: number) {
   lens.value = value; const token = ++lensSequence;
@@ -154,12 +159,23 @@ function mention(event: MouseEvent, click = false) {
   const reference = [...source?.mentions ?? [], ...source?.links ?? []].find(ref => ref.id === target.dataset.reference);
   if (reference?.resolution.status === 'resolved' && reference.resolution.candidates[0]) { event.preventDefault(); void showPreview(reference.resolution.candidates[0].documentId, mode.value === 'reading'); }
 }
+const evidenceReturn = ref<{ mode: typeof mode.value; readingId?: string; offset: number; relationId?: string }>();
+async function returnToEvidence() {
+  const saved = evidenceReturn.value; if (!saved) return;
+  await navigate(async () => {
+    if (saved.readingId) { await command({ type: 'view', reading: { documentId: saved.readingId, offset: saved.offset } }); await loadReading(saved.readingId, saved.offset); }
+    mode.value = saved.mode; await nextTick();
+    if (saved.relationId) await showEvidence(saved.relationId);
+    evidenceReturn.value = undefined;
+  });
+}
 async function openEvidence(locator: EvidenceLocator) {
+  const origin = { mode: mode.value, readingId: reading.value?.document.id, offset: article.value?.scrollTop ?? state.value?.current?.reading?.offset ?? 0, relationId: selectedRelation.value?.id };
   await navigate(async () => {
     await loadReading(locator.documentId);
     if (reading.value?.document.revision !== locator.revision) throw new Error('来源已经更新，请刷新关系后重新定位。');
-    mode.value = 'reading'; sourceLocation.value = locator;
-    await props.bridge.command({ type: 'view', reading: { documentId: locator.documentId, offset: 0 } });
+    evidenceReturn.value = origin; mode.value = 'reading'; sourceLocation.value = locator;
+    await command({ type: 'view', reading: { documentId: locator.documentId, offset: 0 } });
     await nextTick();
     const area = sourceArea.value;
     if (area) {
@@ -183,8 +199,28 @@ async function resolveDraft(action: 'save' | 'discard' | 'cancel') {
   if (action === 'save' && !await save()) { draftDialog.value = false; return; }
   editing.value = false; draftDialog.value = false; const next = pendingNavigation; pendingNavigation = undefined; if (next) await navigate(next);
 }
-async function chooseFolder() { if (!props.bridge.chooseFolder) return; workspaceSwitcher.value = false; if (dirty.value) { pendingNavigation = chooseFolder; draftDialog.value = true; return; } try { if (await props.bridge.chooseFolder(readonlyOpen.value)) { editing.value = false; reading.value = undefined; globalGraph.value = undefined; globalView.value = {}; error.value = ''; workspaceSwitcher.value = false; await reload(); await loadRecents(); } } catch (cause) { error.value = (cause as Error).message; } }
+const importSelection = ref<FolderSelection>(), importing = ref(false), importError = ref('');
+async function finishFolderImport() {
+  editing.value = false; reading.value = undefined; globalGraph.value = undefined; globalView.value = {}; evidenceReturn.value = undefined; error.value = ''; workspaceSwitcher.value = false;
+  await reload(); await loadRecents();
+}
+async function confirmImport(rules: string) {
+  if (!importSelection.value || !props.bridge.importFolder) return;
+  importing.value = true; importError.value = '';
+  try { if (await props.bridge.importFolder(importSelection.value.token, rules, readonlyOpen.value)) { importSelection.value = undefined; await finishFolderImport(); } else importError.value = '导入未完成，请重新选择目录。'; }
+  catch (cause) { importError.value = (cause as Error).message; }
+  finally { importing.value = false; }
+}
+async function chooseFolder() {
+  workspaceSwitcher.value = false;
+  if (dirty.value) { pendingNavigation = chooseFolder; draftDialog.value = true; return; }
+  try {
+    if (props.bridge.prepareFolder && props.bridge.importFolder) { importError.value = ''; importSelection.value = await props.bridge.prepareFolder(); }
+    else if (await props.bridge.chooseFolder?.(readonlyOpen.value)) await finishFolderImport();
+  } catch (cause) { error.value = (cause as Error).message; }
+}
 function keyboard(event: KeyboardEvent) {
+  if (importSelection.value) return;
   if (draftDialog.value) {
     if (event.key === 'Escape') { event.preventDefault(); void resolveDraft('cancel'); }
     if (event.key === 'Tab') {
@@ -207,6 +243,7 @@ onMounted(() => { try { const saved = Number(localStorage.getItem('ripple:graph-
 onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(scrollTimer); window.removeEventListener('keydown', keyboard); window.removeEventListener('beforeunload', preventUnload); window.removeEventListener('resize', resized); props.bridge.setDirty?.(false); });
 </script>
 <template>
+  <ImportScope v-if="importSelection" :selection="importSelection" :busy="importing" :error="importError" @cancel="importSelection = undefined" @confirm="confirmImport"/>
   <SettingsPage v-if="settingsOpen && state" :bridge="bridge" :state="state" @close="settingsOpen = false" @changed="reload"/>
   <Welcome v-else-if="!state?.documents.length" :can-open="!!bridge.chooseFolder" :error="error" :recent-workspaces="recentWorkspaces" @open="chooseFolder" @recent="openRecent"/>
   <div v-else class="workbench" :class="{ 'sidebar-hidden': !sidebar, desktop: state?.mode === 'desktop', 'is-exploring': mode !== 'reading' }">
@@ -222,7 +259,7 @@ onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(sc
       <div class="sidebar-bottom"><button class="workspace-status" @click="statusExpanded = !statusExpanded"><span class="status-dot" :class="{ indexing: state?.indexing }"/><span>{{ state?.indexing ? '正在整理语义关联' : '知识库已就绪' }}</span><Icon name="more" :size="16"/></button><template v-if="statusExpanded"><div class="status-details"><p>{{ state?.coverage.deterministic.documents ?? 0 }} 篇笔记 · {{ state?.readOnly ? '只读目录' : state?.mode === 'public' ? '浏览器沙盒' : '可编辑目录' }}</p><p v-for="notice in state?.notices" :key="notice">{{ notice }}</p><p v-if="state?.syncStatus">{{ state.syncStatus }}</p><button v-if="state?.mode === 'public'" @click="navigate(() => command({ type: 'refresh' }))">同步目录</button><p v-if="state?.autoIndex">自动增量索引已开启</p><p>语义索引：{{ state?.indexing ? '正在索引' : state?.coverage.semantic.status === 'not-configured' ? '尚未配置' : state?.coverage.semantic.status === 'ready' ? '已就绪' : '待更新 / 部分完成' }} · {{ state?.coverage.semantic.readyUnits ?? 0 }} 个片段</p><button v-if="bridge.chooseEmbedding && !bridge.supportsEmbedding" @click="bridge.chooseEmbedding?.().then(reload)">连接模型…</button><button v-if="!bridge.supportsEmbedding && state?.mode === 'desktop' && state?.coverage.semantic.status !== 'not-configured'" @click="command({ type: state?.indexing ? 'cancel-index' : 'index' })">{{ state?.indexing ? '取消索引' : '增量索引' }}</button></div></template><button v-if="bridge.recentWorkspaces" class="open-folder" @click="loadRecents(); workspaceSwitcher = true">最近工作区…</button><button v-if="bridge.supportsEmbedding || bridge.supportsKnowledgeSettings" class="open-folder" @click="navigate(async () => { settingsOpen = true; })">设置…</button><template v-if="bridge.chooseFolder"><label v-if="state?.mode === 'desktop'" class="readonly-choice"><input type="checkbox" v-model="readonlyOpen"/>只读打开新目录</label><button class="open-folder" @click="chooseFolder"><Icon name="folder" :size="16"/>打开工作区…</button></template><span v-else class="public-footnote">{{ state?.mode === 'harness' ? 'Harness · 只读知识工作台' : '本地知识 · 浏览器沙盒' }}</span></div>
     </aside>
     <main :inert="draftDialog" class="main-space">
-      <header class="toolbar"><div class="toolbar-leading"><button class="icon-button" :aria-label="sidebar ? '收起目录' : '展开目录'" @click="sidebar = !sidebar"><Icon name="sidebar"/></button><button class="icon-button" aria-label="返回上一个探索中心" :disabled="!state?.canBack || busy" @click="navigate(() => command({ type: 'back' }, true))"><Icon name="back"/></button><span class="toolbar-divider"/><div class="breadcrumb"><span>知识空间</span><Icon name="back" :size="12" class="breadcrumb-chevron"/><strong>{{ mode === 'global' ? '全局知识网络' : currentTitle }}</strong></div></div><div class="view-switch" role="group" aria-label="工作台视图"><button :class="{ active: mode === 'reading' }" :aria-pressed="mode === 'reading'" @click="mode = 'reading'"><Icon name="book" :size="15"/>阅读</button><button :class="{ active: mode === 'explore' }" :aria-pressed="mode === 'explore'" @click="navigate(async () => { mode = 'explore'; })"><Icon name="graph" :size="15"/>探索</button><button v-if="bridge.supportsGlobalGraph" :class="{ active: mode === 'global' }" :aria-pressed="mode === 'global'" @click="navigate(async () => { mode = 'global'; })"><Icon name="graph" :size="15"/>全局</button></div><div class="toolbar-trailing"><button v-if="mobile && (mode === 'reading' || hasInspector)" class="icon-button" aria-label="显示或关闭关联面板" @click="contextOpen = !contextOpen"><Icon name="evidence"/></button><span class="readonly-badge" v-if="state?.readOnly">只读</span><button class="icon-button" aria-label="重新扫描并刷新关系" @click="navigate(() => command({ type: 'refresh' }, true))"><Icon name="refresh"/></button><button v-if="reading && !state?.readOnly && !editing" class="subtle-button" @click="startEdit"><Icon name="edit" :size="15"/>编辑</button></div></header>
+      <header class="toolbar"><div class="toolbar-leading"><button class="icon-button" :aria-label="sidebar ? '收起目录' : '展开目录'" @click="sidebar = !sidebar"><Icon name="sidebar"/></button><button class="icon-button" :aria-label="evidenceReturn ? '返回关系与图谱' : '返回上一个探索中心'" :disabled="(!state?.canBack && !evidenceReturn) || busy" @click="evidenceReturn ? returnToEvidence() : navigate(() => command({ type: 'back' }, true))"><Icon name="back"/></button><span class="toolbar-divider"/><div class="breadcrumb"><span>知识空间</span><Icon name="back" :size="12" class="breadcrumb-chevron"/><strong>{{ mode === 'global' ? '全局知识网络' : currentTitle }}</strong></div></div><div class="view-switch" role="group" aria-label="工作台视图"><button :class="{ active: mode === 'reading' }" :aria-pressed="mode === 'reading'" @click="mode = 'reading'"><Icon name="book" :size="15"/>阅读</button><button :class="{ active: mode === 'explore' }" :aria-pressed="mode === 'explore'" @click="navigate(async () => { mode = 'explore'; })"><Icon name="graph" :size="15"/>探索</button><button v-if="bridge.supportsGlobalGraph" :class="{ active: mode === 'global' }" :aria-pressed="mode === 'global'" @click="navigate(async () => { mode = 'global'; })"><Icon name="graph" :size="15"/>全局</button></div><div class="toolbar-trailing"><button v-if="mobile && (mode === 'reading' || hasInspector)" class="icon-button" aria-label="显示或关闭关联面板" @click="contextOpen = !contextOpen"><Icon name="evidence"/></button><span class="readonly-badge" v-if="state?.readOnly">只读</span><button class="icon-button" aria-label="重新扫描并刷新关系" @click="navigate(() => command({ type: 'refresh' }, true))"><Icon name="refresh"/></button><button v-if="reading && !state?.readOnly && !editing" class="subtle-button" @click="startEdit"><Icon name="edit" :size="15"/>编辑</button></div></header>
       <div class="error-banner" role="alert" v-if="error"><span>{{ error }}</span><button @click="error = ''" aria-label="关闭错误提示"><Icon name="close" :size="15"/></button></div>
       <div class="stale-banner" v-if="state?.visible && state.visible.status !== 'current'"><span>知识内容已变化，当前关联需要刷新。</span><button @click="navigate(() => command({ type: 'refresh' }, true))">刷新关联</button></div>
       <template v-if="state?.current && reading">
@@ -232,9 +269,9 @@ onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(sc
               <div class="reading-topline"><span><span class="tiny-dot"/>{{ editing ? (dirty ? '有未保存的编辑' : '编辑模式') : 'READ & CONNECT' }}</span><span>{{ reading.document.markdown.length.toLocaleString() }} 字符<span class="middot">·</span>r{{ reading.document.revision }}</span></div>
               <div v-if="editing" class="editor-toolbar"><span>Mark-it</span><button :class="{ active: sourceMode }" @click="sourceMode = !sourceMode">{{ sourceMode ? '返回富文本' : 'Markdown 源码' }}</button><span class="spacer"/><button @click="navigate(async () => { await loadReading(reading!.document.id); })">结束编辑</button><button class="primary-button" :disabled="busy" @click="save">保存 <kbd>⌘S</kbd></button></div>
               <div v-if="editing" class="editor-scroll"><textarea v-if="sourceMode" class="source-editor" aria-label="Markdown 源码编辑器" :value="displayDraft" @input="draft = applyTextareaEdit(draft, ($event.target as HTMLTextAreaElement).value)" spellcheck="false"/><MarkEditor v-else ref="editor" :source="draft" @change="draft = $event"/></div>
-              <div v-else-if="sourceLocation" class="source-location"><div class="editor-toolbar"><span>来源原文 · {{ reading.document.parsed.title }} · 已选中引用</span><span class="spacer"/><button @click="sourceLocation = undefined">返回阅读</button></div><textarea ref="sourceArea" class="source-editor" aria-label="关系来源原文" :value="reading.document.markdown" readonly wrap="off" spellcheck="false"/></div>
+              <div v-else-if="sourceLocation" class="source-location"><div class="editor-toolbar"><span>来源原文 · {{ reading.document.parsed.title }} · 已选中引用</span><span class="spacer"/><button v-if="evidenceReturn" @click="returnToEvidence">← 返回关系与图谱</button><button @click="sourceLocation = undefined">阅读本文</button></div><textarea ref="sourceArea" class="source-editor" aria-label="关系来源原文" :value="reading.document.markdown" readonly wrap="off" spellcheck="false"/></div>
               <article v-else ref="article" class="reading-body prose" @scroll="onScroll" @click="mention($event, true)" @mouseover="mention($event)" v-html="body"/>
-              <div class="reading-footer"><span><Icon name="sparkle" :size="14"/>带下划线的自然提及可预览关联笔记</span><button v-if="reading.document.id !== state.current.snapshot.focusNode" @click="focus(reading.document.id)">以本文为中心 <Icon name="arrow" :size="14"/></button><button v-else @click="navigate(async () => { mode = 'explore'; })">展开知识 <Icon name="arrow" :size="14"/></button></div>
+              <div class="reading-footer"><button v-if="evidenceReturn && !sourceLocation" @click="returnToEvidence">← 返回关系与图谱</button><span><Icon name="sparkle" :size="14"/>带下划线的自然提及可预览关联笔记</span><button v-if="reading.document.id !== state.current.snapshot.focusNode" @click="focus(reading.document.id)">以本文为中心 <Icon name="arrow" :size="14"/></button><button v-else @click="navigate(async () => { mode = 'explore'; })">展开知识 <Icon name="arrow" :size="14"/></button></div>
             </div>
             <div v-else-if="mode === 'global' && !globalGraph" class="reading-loading" role="status">{{ globalLoading ? '正在汇总全局知识网络…' : '暂时无法读取全局网络，请重新切换视图。' }}</div>
             <LocalGraph v-else :key="mode" :state="state" :global-graph="mode === 'global' ? visibleGlobal : undefined" :saved-view="mode === 'global' ? globalView : undefined" :selected="selectedRelation?.id" @preview="showPreview" @focus="exploreNode" @evidence="showEvidence" @view="graphView"><template #controls><GraphLens :value="mode === 'global' ? globalLens : lens" :global="mode === 'global'" :count="mode === 'global' ? visibleGlobal?.relations.length ?? 0 : state.visible?.relations.length ?? 0" :documents="globalGraph?.documents.length" @change="mode === 'global' ? globalLens = $event : setLens($event)"/></template></LocalGraph>

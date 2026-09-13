@@ -76,3 +76,17 @@ export async function readDirectory(handle: DirectoryHandle, ignoreRules = ''): 
   }
   await walk(handle, ''); return documents.sort((a, b) => a.path.localeCompare(b.path));
 }
+
+/** Names only: selecting a folder does not read Markdown bodies. */
+export async function listDirectoryPaths(handle: DirectoryHandle): Promise<string[]> {
+  const paths: string[] = [];
+  async function walk(directory: DirectoryHandle, prefix: string): Promise<void> {
+    for await (const child of directory.values()) {
+      if (child.name.startsWith('.') || child.name.toLowerCase() === 'agents.md') continue;
+      const path = prefix + child.name;
+      if (child.kind === 'directory') await walk(child, path + '/');
+      else if (/\.(md|markdown)$/i.test(child.name)) paths.push(path);
+    }
+  }
+  await walk(handle, ''); return paths.sort();
+}

@@ -1,3 +1,4 @@
+import type { FolderSelection } from '../ingestion/scope-preview.js';
 import { MAX_IGNORE_RULES_LENGTH } from '../ingestion/knowledge-filter.js';
 import { z } from 'zod';
 import { embeddingConnectionSchema, type SafeEmbeddingConnection } from './embedding-connection.js';
@@ -57,6 +58,8 @@ export interface WorkbenchBridge {
   recentWorkspaces?(): Promise<RecentWorkspace[]>;
   openRecent?(id: string): Promise<boolean>;
   forgetWorkspace?(id: string): Promise<void>;
+  prepareFolder?(): Promise<FolderSelection | undefined>;
+  importFolder?(token: string, ignoreRules: string, readOnly: boolean): Promise<boolean>;
   chooseFolder?(readOnly: boolean): Promise<boolean>;
   chooseEmbedding?(): Promise<boolean>;
   setDirty?(dirty: boolean): void;

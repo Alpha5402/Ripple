@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('ripple', Object.freeze({
   recentWorkspaces: () => ipcRenderer.invoke('ripple:recent-workspaces'),
   openRecent: (id) => ipcRenderer.invoke('ripple:open-recent', id),
   forgetWorkspace: (id) => ipcRenderer.invoke('ripple:forget-workspace', id),
+  prepareFolder: () => ipcRenderer.invoke('ripple:prepare-folder'),
+  importFolder: (token, rules, readOnly) => ipcRenderer.invoke('ripple:import-folder', token, rules, readOnly),
   chooseFolder: (readOnly) => ipcRenderer.invoke('ripple:choose-folder', readOnly),
   chooseEmbedding: () => ipcRenderer.invoke('ripple:choose-embedding'),
   setDirty: (dirty) => ipcRenderer.send('ripple:dirty', !!dirty),

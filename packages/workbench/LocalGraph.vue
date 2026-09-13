@@ -13,6 +13,23 @@ const names = computed(() => new Map(props.state.documents.map(doc => [doc.id, d
 const focusId = computed(() => props.globalGraph ? '' : props.state.current?.snapshot.focusNode ?? '');
 const relations = computed(() => props.globalGraph?.relations ?? props.state.visible?.graphRelations ?? props.state.visible?.relations ?? []);
 const nodes = computed(() => props.globalGraph ? props.globalGraph.documents.map(d => d.id) : [...new Set([focusId.value, ...relations.value.flatMap(r => r.nodes)].filter(Boolean))]);
+const activeNodes = computed(() => {
+  const result = new Set<string>();
+  if (hoveredNode.value) { result.add(hoveredNode.value); for (const r of relations.value) if (r.nodes.includes(hoveredNode.value)) r.nodes.forEach(id => result.add(id)); }
+  else { const edge = relations.value.find(r => r.id === (hoveredEdge.value ?? props.selected)); edge?.nodes.forEach(id => result.add(id)); }
+  return result;
+});
+const labelPriority = computed(() => {
+  const degree = new Map(nodes.value.map(id => [id, 0]));
+  for (const r of relations.value) for (const id of r.nodes) degree.set(id, (degree.get(id) ?? 0) + 1);
+  return [...nodes.value].sort((a,b) => (degree.get(b)! - degree.get(a)!) || a.localeCompare(b));
+});
+const visibleLabels = computed(() => {
+  const fraction = camera.value.zoom < .45 ? .12 : camera.value.zoom < .85 ? .3 : camera.value.zoom < 1.3 ? .65 : 1;
+  const result = new Set(labelPriority.value.slice(0, Math.max(3, Math.ceil(nodes.value.length * fraction))));
+  if (focusId.value) result.add(focusId.value);
+  activeNodes.value.forEach(id => result.add(id)); return result;
+});
 const links = computed(() => relations.value.map(r => ({ source: r.nodes[0], target: r.nodes[1], score: r.score })));
 const pos = (id: string) => layout.value[id] ?? { x: 0, y: 0 };
 const trim = (name: string) => Array.from(name).length > 18 ? Array.from(name).slice(0, 17).join('') + '…' : name;
@@ -102,19 +119,19 @@ function resetCamera() {
     <div class="graph-viewport">
     <svg ref="canvas" class="local-graph" :viewBox="compact ? '200 0 600 720' : '0 0 1000 720'" :aria-label="globalGraph ? '全局知识网络' : '当前笔记的局部知识图'" @pointerdown="down($event)" @pointermove="move" @pointerup="up" @pointercancel="up" @wheel.prevent="zoom($event.deltaY > 0 ? -.12 : .12)">
       <g :transform="`translate(${500 + camera.x} ${365 + camera.y}) scale(${camera.zoom})`">
-        <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected, 'edge-active': hoveredEdge === relation.id || (hoveredNode && relation.nodes.includes(hoveredNode)) }" role="button" tabindex="0" :aria-label="`查看 ${relation.nodes.map(id => names.get(id)).join(' 与 ')} 的关系证据，权重 ${Math.round(relation.score * 100)}`" @pointerenter="hoveredEdge = relation.id" @pointerleave="hoveredEdge = undefined" @focus="hoveredEdge = relation.id" @blur="hoveredEdge = undefined" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)" @keydown.space.prevent="emit('evidence', relation.id)">
+        <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected, 'graph-muted': activeNodes.size > 0 && !(hoveredNode ? relation.nodes.includes(hoveredNode) : relation.id === (hoveredEdge ?? selected)), 'edge-active': hoveredEdge === relation.id || (hoveredNode && relation.nodes.includes(hoveredNode)) }" role="button" tabindex="0" :aria-label="`查看 ${relation.nodes.map(id => names.get(id)).join(' 与 ')} 的关系证据，权重 ${Math.round(relation.score * 100)}`" @pointerenter="hoveredEdge = relation.id" @pointerleave="hoveredEdge = undefined" @focus="hoveredEdge = relation.id" @blur="hoveredEdge = undefined" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)" @keydown.space.prevent="emit('evidence', relation.id)">
           <line class="edge-stroke" :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y" :style="{ opacity: .25 + relation.score * .4 }"/>
           <line class="edge-hit" :x1="pos(relation.nodes[0]).x" :y1="pos(relation.nodes[0]).y" :x2="pos(relation.nodes[1]).x" :y2="pos(relation.nodes[1]).y"/>
           <text class="edge-weight" text-anchor="middle" :x="(pos(relation.nodes[0]).x + pos(relation.nodes[1]).x) / 2" :y="(pos(relation.nodes[0]).y + pos(relation.nodes[1]).y) / 2 - 9">{{ Math.round(relation.score * 100) }}</text>
         </g>
-        <g v-for="id in nodes" :key="id" class="graph-node" :class="{ center: id === focusId, visited: state.current?.visited.includes(id) }" :transform="`translate(${pos(id).x} ${pos(id).y})`" role="button" tabindex="0" :aria-label="`${id === focusId ? '当前中心' : '预览'}：${names.get(id)}`" @pointerenter="hoveredNode = id" @pointerleave="hoveredNode = undefined" @pointerdown="down($event, id)" @keydown.enter="emit('preview', id)" @keydown.space.prevent="explore(id)">
+        <g v-for="id in nodes" :key="id" class="graph-node" :class="{ 'graph-muted': activeNodes.size > 0 && !activeNodes.has(id), 'node-active': activeNodes.has(id), center: id === focusId, visited: state.current?.visited.includes(id) }" :transform="`translate(${pos(id).x} ${pos(id).y})`" role="button" tabindex="0" :aria-label="`${id === focusId ? '当前中心' : '预览'}：${names.get(id)}`" @focus="hoveredNode = id" @blur="hoveredNode = undefined" @pointerenter="hoveredNode = id" @pointerleave="hoveredNode = undefined" @pointerdown="down($event, id)" @keydown.enter="emit('preview', id)" @keydown.space.prevent="explore(id)">
           <circle class="node-hit" :r="globalGraph ? Math.max(18, 10 / camera.zoom) : 18"/><circle class="node-dot" :r="globalGraph ? (id === focusId ? 4.5 : 3) / camera.zoom : id === focusId ? 7 : 4.5"/>
-          <text class="node-label" text-anchor="middle" :y="globalGraph ? Math.max(25, 15 / camera.zoom) : 25" :style="globalGraph ? { fontSize: `${Math.max(12, 9 / camera.zoom)}px` } : undefined">{{ trim(names.get(id) ?? '') }}</text><title>{{ names.get(id) }}</title>
+          <text v-show="visibleLabels.has(id)" class="node-label" text-anchor="middle" :y="globalGraph ? Math.max(25, 15 / camera.zoom) : 25" :style="globalGraph ? { fontSize: `${Math.max(12, 9 / camera.zoom)}px` } : undefined">{{ activeNodes.has(id) || camera.zoom >= 1.3 ? names.get(id) : trim(names.get(id) ?? '') }}</text><title>{{ names.get(id) }}</title>
         </g>
       </g>
     </svg>
     <div class="graph-controls"><button aria-label="缩小图谱" @click="zoom(-.15)">−</button><span>{{ Math.round(camera.zoom * 100) }}%</span><button aria-label="放大图谱" @click="zoom(.15)">+</button><button @click="resetCamera">复位</button></div>
-    <div class="graph-legend"><template v-if="!globalGraph"><span class="legend-dot"/> 当前笔记 </template><span class="legend-dot neighbor"/> {{ globalGraph ? '知识笔记' : '关联笔记' }} <span class="legend-line"/> 悬停查看权重</div>
+    <div class="graph-legend"><template v-if="!globalGraph"><span class="legend-dot"/> 当前笔记 </template><span class="legend-dot neighbor"/> {{ globalGraph ? '知识笔记' : '关联笔记' }} <span class="legend-line"/> 悬停聚焦邻域 · 放大显示更多标签</div>
     </div>
   </div>
 </template>
@@ -132,4 +149,5 @@ function resetCamera() {
 .force-graph .graph-edge:focus-visible{outline:none}.force-graph .graph-edge:focus-visible>.edge-stroke{stroke:#416dcc;stroke-width:2.5}
 .force-graph .graph-edge.edge-active>.edge-stroke{stroke:#587dd0;stroke-width:1.6}
 @media(prefers-reduced-motion:reduce){.force-graph *{animation:none!important;transition:none!important}}
+.force-graph .graph-node,.force-graph .graph-edge{transition:opacity .15s}.force-graph .graph-muted{opacity:.16}.force-graph .graph-node.node-active>.node-dot{fill:var(--accent)}.force-graph .graph-node.node-active .node-label{fill:var(--ink);font-weight:550}
 </style>

@@ -1,7 +1,7 @@
 import { knowledgeFilter } from '../ingestion/knowledge-filter.js';
 import { MemoryStorage } from '../adapters/storage-memory/index.js';
 import { restoreEmbedding, type EmbeddingPreferences } from '../host/embedding-preferences.js';
-import { BrowserWorkspaceStore, readDirectory, type BrowserSnapshot, type BrowserWorkspace, type DirectoryHandle } from './browser-workspaces.js';
+import { BrowserWorkspaceStore, readDirectory, listDirectoryPaths, type BrowserSnapshot, type BrowserWorkspace, type DirectoryHandle } from './browser-workspaces.js';
 import { collectGlobalGraph } from '../host/global-graph.js';
 import { connectEmbedding, embeddingErrorMessage, type SafeEmbeddingConnection } from '../host/embedding-connection.js';
 import { PublicKnowledgeService } from '../adapters/public-snapshot/service.js';
@@ -199,12 +199,51 @@ export async function loadPublicBridge(): Promise<WorkbenchBridge> {
     } finally { switching = false; }
     void synchronize();
   }
-  async function importSources(label: string, sources: { path: string; markdown: string }[], handle?: DirectoryHandle, target?: BrowserWorkspace): Promise<void> {
-    if (target) { if (target.id !== active?.id) await activate(target); const selected = active!; if (handle) { selected.handle = handle; selected.location = `本地目录 · ${selected.label}`; } await syncSources(selected, sources); await persist(selected, current.snapshot()); changed(); return; }
+  async function importSources(label: string, sources: { path: string; markdown: string }[], handle?: DirectoryHandle, target?: BrowserWorkspace, rules?: string): Promise<void> {
+    if (target) { if (target.id !== active?.id) { if (rules !== undefined) target.snapshot = { ...target.snapshot, ignoreRules: rules }; await activate(target); } const selected = active!; if (rules !== undefined) await current.command({ type: 'configure-knowledge', ignoreRules: rules }); if (handle) { selected.handle = handle; selected.location = `本地目录 · ${selected.label}`; } await syncSources(selected, sources); await persist(selected, current.snapshot()); changed(); return; }
     const bundle = { ...empty, title: label, documents: sources.map(d => ({ ...d, id: crypto.randomUUID() })) };
     const fresh = createPublicBridge(bundle);
+    if (rules !== undefined) await fresh.command({ type: 'configure-knowledge', ignoreRules: rules });
     const workspace: BrowserWorkspace = { id: crypto.randomUUID(), label, location: handle ? `本地目录 · ${label}` : `目录快照 · ${label}`, lastOpened: Date.now(), snapshot: fresh.snapshot(), sourceHashes: Object.fromEntries(sources.map(d => [d.path, identity.hash(d.markdown)])), ...(handle ? { handle } : {}) };
     await fresh.dispose(); await activate(workspace);
+  }
+  let prepared: { token: string; label: string; handle?: DirectoryHandle; files?: File[]; target?: BrowserWorkspace } | undefined;
+  async function prepareFolder() {
+    prepared = undefined;
+    const picker = (window as unknown as { showDirectoryPicker?: (options: { mode: 'read' }) => Promise<DirectoryHandle> }).showDirectoryPicker;
+    if (picker) {
+      try {
+        const handle = await picker.call(window, { mode: 'read' });
+        let target: BrowserWorkspace | undefined;
+        for (const entry of await store?.list() ?? []) if (entry.handle && await handle.isSameEntry(entry.handle)) { target = entry; break; }
+        const paths = await listDirectoryPaths(handle);
+        prepared = { token: crypto.randomUUID(), label: handle.name, handle, ...(target ? { target } : {}) };
+        return { token: prepared.token, label: handle.name, paths, ignoreRules: target?.snapshot.ignoreRules ?? '' };
+      } catch (error) { if ((error as DOMException).name === 'AbortError') return undefined; throw error; }
+    }
+    return new Promise<import('../ingestion/scope-preview.js').FolderSelection | undefined>((resolve) => {
+      const input = document.createElement('input'); input.type = 'file'; input.multiple = true; input.setAttribute('webkitdirectory', ''); input.hidden = true;
+      input.oncancel = () => { input.remove(); resolve(undefined); };
+      input.onchange = () => {
+        const selected = [...input.files ?? []];
+        const files = selected.filter(f => /\.(md|markdown)$/i.test(f.name) && f.name.toLowerCase() !== 'agents.md' && !(f.webkitRelativePath || f.name).split('/').some(part => part.startsWith('.')));
+        prepared = { token: crypto.randomUUID(), label: selected[0]?.webkitRelativePath.split('/')[0] || '我的笔记', files };
+        resolve({ token: prepared.token, label: prepared.label, paths: files.map(file => file.webkitRelativePath ? file.webkitRelativePath.split('/').slice(1).join('/') : file.name), ignoreRules: '' }); input.remove();
+      };
+      document.body.append(input); input.click();
+    });
+  }
+  async function importFolder(token: string, rules: string) {
+    if (!prepared || prepared.token !== token) throw new Error('目录选择已过期，请重新选择');
+    const selection = prepared, excluded = knowledgeFilter(rules);
+    let sources: {path: string; markdown: string}[];
+    if (selection.handle) sources = await readDirectory(selection.handle, rules);
+    else {
+      const files = (selection.files ?? []).map(file => ({ file, path: file.webkitRelativePath ? file.webkitRelativePath.split('/').slice(1).join('/') : file.name })).filter(({path}) => !excluded(path));
+      if (files.length > 1000 || files.some(({file}) => file.size > 4*1024*1024) || files.reduce((n,{file}) => n+file.size,0) > 32*1024*1024) throw new Error('目录较大，请缩小知识范围或使用桌面版。');
+      sources = await Promise.all(files.map(async ({file,path}) => ({path,markdown:await file.text()})));
+    }
+    await importSources(selection.label, sources, selection.handle, selection.target, rules); prepared = undefined; return true;
   }
   async function choose(target?: BrowserWorkspace): Promise<boolean> {
     const picker = (window as unknown as { showDirectoryPicker?: (options: { mode: 'read' }) => Promise<DirectoryHandle> }).showDirectoryPicker;
@@ -254,6 +293,7 @@ export async function loadPublicBridge(): Promise<WorkbenchBridge> {
     async openRecent(id) { if (id === active?.id) { await synchronize(true); return true; } const workspace = await store?.get(id); if (!workspace) throw new Error('工作区缓存已不存在'); await activate(workspace); return true; },
     async forgetWorkspace(id) { if (id === active?.id) throw new Error('请先切换到其他工作区，再移除此缓存'); await store?.forget(id); changed(); },
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+    prepareFolder, importFolder,
     chooseFolder: () => choose(),
   };
 }
