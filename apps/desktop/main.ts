@@ -72,7 +72,9 @@ void app.whenReady().then(async () => {
   history = new WorkspaceHistory(process.env.RIPPLE_DESKTOP_STATE ?? app.getPath('userData'));
   await history.load();
   const appIcon = nativeImage.createFromPath(join(here, 'renderer/brand/ripple-logo.png'));
-  if (!appIcon.isEmpty()) app.dock?.setIcon(appIcon);
+  // Keep macOS's bundle icon treatment (background and frame) after launch.
+  // Replacing it with the transparent in-app logo bypasses that treatment.
+  if (!app.isPackaged && !appIcon.isEmpty()) app.dock?.setIcon(appIcon);
 const assets = join(here, 'renderer');
 protocol.handle('ripple', async request => {
   const url = new URL(request.url);
@@ -82,7 +84,7 @@ protocol.handle('ripple', async request => {
   response.headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'");
   return response;
 });
-window = new BrowserWindow({ icon: appIcon, width: 1420, height: 920, minWidth: 980, minHeight: 660, show: false, backgroundColor: '#f7f8fa', title: 'Ripple', titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 20, y: 21 }, vibrancy: 'sidebar', webPreferences: { preload: join(here, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
+window = new BrowserWindow({ ...(process.platform === 'darwin' && app.isPackaged ? {} : { icon: appIcon }), width: 1420, height: 920, minWidth: 980, minHeight: 660, show: false, backgroundColor: '#f7f8fa', title: 'Ripple', titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 20, y: 21 }, vibrancy: 'sidebar', webPreferences: { preload: join(here, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
 window.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:\/\//.test(url)) void shell.openExternal(url); return { action: 'deny' }; });
 window.webContents.on('will-navigate', (event, url) => { if (!isAppUrl(url)) event.preventDefault(); });
 window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
