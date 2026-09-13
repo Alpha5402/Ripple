@@ -5,6 +5,7 @@ import type { Relation, EvidenceLocator } from '../core/model.js';
 import { renderReading } from './render.js';
 import { applyTextareaEdit, textareaSource } from '../host/source-edit.js';
 import Icon from './Icon.vue';
+import FileTree from './FileTree.vue';
 import LocalGraph from './LocalGraph.vue';
 import GraphLens from './GraphLens.vue';
 import Welcome from './Welcome.vue';
@@ -96,11 +97,6 @@ let previousFocus: HTMLElement | null = null;
 const displayDraft = computed(() => textareaSource(draft.value));
 const dirty = computed(() => editing.value && draft.value !== baseline.value);
 const documents = computed(() => state.value?.documents.filter(d => !searchIds.value || searchIds.value.includes(d.id)) ?? []);
-const groups = computed(() => {
-  const result = new Map<string, typeof documents.value>();
-  for (const document of documents.value) { const group = document.path.includes('/') ? document.path.split('/').slice(0, -1).join(' / ') : '知识笔记'; const list = result.get(group) ?? []; list.push(document); result.set(group, list); }
-  return [...result];
-});
 const titles = computed(() => new Map(state.value?.documents.map(d => [d.id, d.title]) ?? []));
 const currentTitle = computed(() => titles.value.get(state.value?.current?.snapshot.focusNode ?? '') ?? '知识从这里展开');
 const body = computed(() => reading.value ? renderReading(reading.value) : '');
@@ -253,7 +249,7 @@ onBeforeUnmount(() => { unsubscribe(); clearTimeout(queryTimer); clearTimeout(sc
       <div class="library-label"><span>{{ state?.label ?? '你的知识空间' }}</span><span>{{ state?.documents.length ?? 0 }}</span></div>
       <label class="search-field"><Icon name="search" :size="16"/><input ref="searchInput" v-model="query" placeholder="搜索笔记" aria-label="搜索笔记"/><kbd>⌘K</kbd></label>
       <nav class="document-tree">
-        <details v-for="[group, docs] in groups" :key="group" open><summary><Icon name="folder" :size="15"/><span>{{ group }}</span><small>{{ docs.length }}</small></summary><button v-for="doc in docs" :key="doc.id" class="document-link" :class="{ active: state?.current?.snapshot.focusNode === doc.id }" :aria-current="state?.current?.snapshot.focusNode === doc.id ? 'page' : undefined" @click="focus(doc.id)"><Icon name="note" :size="15"/><span>{{ doc.title }}</span><span class="visited-dot" v-if="state?.current?.visited.includes(doc.id)" title="已访问"/></button></details>
+        <FileTree :key="state?.workspaceId ?? state?.label" :documents="documents" :active="state?.current?.snapshot.focusNode" :visited="state?.current?.visited" :searching="!!query.trim()" @open="focus"/>
         <p class="muted empty-search" v-if="query && !documents.length">没有匹配的笔记</p>
       </nav>
       <div class="sidebar-bottom"><button class="workspace-status" @click="statusExpanded = !statusExpanded"><span class="status-dot" :class="{ indexing: state?.indexing }"/><span>{{ state?.indexing ? '正在整理语义关联' : '知识库已就绪' }}</span><Icon name="more" :size="16"/></button><template v-if="statusExpanded"><div class="status-details"><p>{{ state?.coverage.deterministic.documents ?? 0 }} 篇笔记 · {{ state?.readOnly ? '只读目录' : state?.mode === 'public' ? '浏览器沙盒' : '可编辑目录' }}</p><p v-for="notice in state?.notices" :key="notice">{{ notice }}</p><p v-if="state?.syncStatus">{{ state.syncStatus }}</p><button v-if="state?.mode === 'public'" @click="navigate(() => command({ type: 'refresh' }))">同步目录</button><p v-if="state?.autoIndex">自动增量索引已开启</p><p>语义索引：{{ state?.indexing ? '正在索引' : state?.coverage.semantic.status === 'not-configured' ? '尚未配置' : state?.coverage.semantic.status === 'ready' ? '已就绪' : '待更新 / 部分完成' }} · {{ state?.coverage.semantic.readyUnits ?? 0 }} 个片段</p><button v-if="bridge.chooseEmbedding && !bridge.supportsEmbedding" @click="bridge.chooseEmbedding?.().then(reload)">连接模型…</button><button v-if="!bridge.supportsEmbedding && state?.mode === 'desktop' && state?.coverage.semantic.status !== 'not-configured'" @click="command({ type: state?.indexing ? 'cancel-index' : 'index' })">{{ state?.indexing ? '取消索引' : '增量索引' }}</button></div></template><button v-if="bridge.recentWorkspaces" class="open-folder" @click="loadRecents(); workspaceSwitcher = true">最近工作区…</button><button v-if="bridge.supportsEmbedding || bridge.supportsKnowledgeSettings" class="open-folder" @click="navigate(async () => { settingsOpen = true; })">设置…</button><template v-if="bridge.chooseFolder"><label v-if="state?.mode === 'desktop'" class="readonly-choice"><input type="checkbox" v-model="readonlyOpen"/>只读打开新目录</label><button class="open-folder" @click="chooseFolder"><Icon name="folder" :size="16"/>打开工作区…</button></template><span v-else class="public-footnote">{{ state?.mode === 'harness' ? 'Harness · 只读知识工作台' : '本地知识 · 浏览器沙盒' }}</span></div>
