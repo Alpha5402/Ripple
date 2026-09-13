@@ -17,3 +17,7 @@
 .source-location{flex:1;min-height:0;display:flex;flex-direction:column}.source-location>.source-editor{flex:1;min-height:0;line-height:23px}.source-location>.source-editor::selection{background:#c8dbff;color:#172942}
 .mobile-sidebar-close{position:absolute;right:12px;top:24px;z-index:1}
 .sidebar-logo{display:block;object-fit:contain;flex:none}.reading-loading{display:grid;place-items:center;flex:1;color:var(--secondary);font-size:13px}
+
+/* Graph views reserve space for the canvas; the inspector appears only for a selection. */
+.workspace-content{position:relative}.context-panel.graph-inspector{position:relative;width:310px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--line)}
+@media(max-width:700px){.context-panel{bottom:0}.context-panel.graph-inspector{position:absolute;inset:0 0 0 auto;width:min(85vw,310px)}}

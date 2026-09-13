@@ -10,7 +10,7 @@ const camera = ref({ x: 0, y: 0, zoom: 1 });
 const layout = ref<Record<string, { x: number; y: number }>>({});
 const hoveredEdge = ref<string>(), hoveredNode = ref<string>();
 const names = computed(() => new Map(props.state.documents.map(doc => [doc.id, doc.title])));
-const focusId = computed(() => props.state.current?.snapshot.focusNode ?? '');
+const focusId = computed(() => props.globalGraph ? '' : props.state.current?.snapshot.focusNode ?? '');
 const relations = computed(() => props.globalGraph?.relations ?? props.state.visible?.graphRelations ?? props.state.visible?.relations ?? []);
 const nodes = computed(() => props.globalGraph ? props.globalGraph.documents.map(d => d.id) : [...new Set([focusId.value, ...relations.value.flatMap(r => r.nodes)].filter(Boolean))]);
 const links = computed(() => relations.value.map(r => ({ source: r.nodes[0], target: r.nodes[1], score: r.score })));
@@ -98,7 +98,8 @@ function resetCamera() {
 </script>
 <template>
   <div class="graph-surface force-graph">
-    <div class="graph-caption"><span class="eyebrow">{{ globalGraph ? 'GLOBAL KNOWLEDGE' : 'LOCAL EXPLORATION' }}</span><h2>{{ globalGraph ? '看见知识的全貌。' : '从这里，发现关联。' }}</h2><p>拖动节点 · 点击预览 · 双击探索</p></div>
+    <header class="graph-header"><div class="graph-caption"><span class="eyebrow">{{ globalGraph ? 'KNOWLEDGE NETWORK' : 'LOCAL EXPLORATION' }}</span><h2>{{ globalGraph ? '全局知识网络' : '从这里，发现关联。' }}</h2><p>拖动节点 · 点击预览 · 双击探索</p></div><slot name="controls"/></header>
+    <div class="graph-viewport">
     <svg ref="canvas" class="local-graph" viewBox="0 0 1000 720" :aria-label="globalGraph ? '全局知识网络' : '当前笔记的局部知识图'" @pointerdown="down($event)" @pointermove="move" @pointerup="up" @pointercancel="up" @wheel.prevent="zoom($event.deltaY > 0 ? -.12 : .12)">
       <g :transform="`translate(${500 + camera.x} ${365 + camera.y}) scale(${camera.zoom})`">
         <g v-for="relation in relations" :key="relation.id" class="graph-edge" :class="{ selected: relation.id === selected, 'edge-active': hoveredEdge === relation.id || (hoveredNode && relation.nodes.includes(hoveredNode)) }" role="button" tabindex="0" :aria-label="`查看 ${relation.nodes.map(id => names.get(id)).join(' 与 ')} 的关系证据，权重 ${Math.round(relation.score * 100)}`" @pointerenter="hoveredEdge = relation.id" @pointerleave="hoveredEdge = undefined" @focus="hoveredEdge = relation.id" @blur="hoveredEdge = undefined" @pointerdown.stop @click.stop="emit('evidence', relation.id)" @keydown.enter="emit('evidence', relation.id)" @keydown.space.prevent="emit('evidence', relation.id)">
@@ -113,11 +114,12 @@ function resetCamera() {
       </g>
     </svg>
     <div class="graph-controls"><button aria-label="缩小图谱" @click="zoom(-.15)">−</button><span>{{ Math.round(camera.zoom * 100) }}%</span><button aria-label="放大图谱" @click="zoom(.15)">+</button><button @click="resetCamera">复位</button></div>
-    <div class="graph-legend"><span class="legend-dot"/> 当前笔记 <span class="legend-dot neighbor"/> 关联笔记 <span class="legend-line"/> 悬停查看权重</div>
+    <div class="graph-legend"><template v-if="!globalGraph"><span class="legend-dot"/> 当前笔记 </template><span class="legend-dot neighbor"/> {{ globalGraph ? '知识笔记' : '关联笔记' }} <span class="legend-line"/> 悬停查看权重</div>
+    </div>
   </div>
 </template>
 <style>
-.force-graph.graph-surface{background:var(--canvas,#f8f9fc)}
+.force-graph.graph-surface{background:var(--canvas,#f8f9fc);display:flex;flex-direction:column}.graph-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:30px;padding:25px 30px 22px;flex-shrink:0}.graph-header .graph-caption{position:static;pointer-events:auto;min-width:180px}.graph-header .graph-caption h2{font-size:20px;margin:8px 0 6px}.graph-header .graph-caption p{margin:0;color:var(--secondary,#7b8ca7)}.graph-viewport{position:relative;min-height:0;flex:1;overflow:hidden}.graph-viewport .local-graph{display:block}@media(max-width:850px){.graph-header{padding:20px;gap:20px;flex-wrap:wrap}.graph-header .graph-lens{flex:1;max-width:none;min-width:220px}.graph-header .graph-caption h2{font-size:18px}}
 .force-graph .graph-node{cursor:grab;filter:none}.force-graph .graph-node:active{cursor:grabbing}
 .force-graph .graph-node>.node-hit{fill:transparent;stroke:none;filter:none}
 .force-graph .graph-node>.node-dot{fill:#8796b0;stroke:none;filter:none;transition:fill .15s}
